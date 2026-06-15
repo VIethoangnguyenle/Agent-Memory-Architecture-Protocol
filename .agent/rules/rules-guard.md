@@ -1,0 +1,106 @@
+# rules-guard.md — Guard Rules (Pre-invoke, DNA, KI)
+
+> Sub-file của RULES.md. Đọc qua manifest `RULES.md`.
+
+---
+
+## 14. Guard Rules — Pre-invoke Guardrails
+
+### R-Guard-1: Kiểm tra pre_conditions trước khi gọi skill
+
+- Mỗi skill có thể khai báo block `pre_conditions:` trong frontmatter.
+- Trước khi thực thi bất kỳ skill nào có `pre_conditions:`, agent **PHẢI**:
+  1. Đọc từng condition trong list.
+  2. Kiểm tra điều kiện (`not_empty`, `not_skeleton`, `exists`, `phase_done`).
+  3. Nếu **tất cả** pass → thực thi skill bình thường.
+  4. Nếu **bất kỳ** condition fail → thực hiện `on_fail` action và **ABORT** skill đó.
+- `on_fail` action thường là:
+  - `ABORT — <hướng dẫn>`: dừng hoàn toàn, thông báo user.
+  - `WARN — <hướng dẫn>`: tiếp tục nhưng ghi cảnh báo vào AGENT_TRANSPARENCY.
+- Không được bypass `pre_conditions` dù context có vẻ đủ — guard phải chạy deterministically.
+- Lý do (Arthur AI): "Pre-LLM guardrails should be fast and deterministic." Guards ngăn lỗi lan truyền sang downstream skills.
+
+### R-Guard-2: Artifact-type pre-check trước khi sinh code
+
+Trước khi bắt đầu viết bất kỳ artifact nào (factory, service, repository, entity, etc.), agent PHẢI:
+
+1. Xác định artifact type từ tên class/file sẽ sinh:
+   - Chứa `Factory` → kiểm tra conventions.yaml **Factory Design Boundary** section
+   - Chứa `Service` → kiểm tra conventions.yaml **Service Pattern** section (nếu có)
+   - Chứa `Repository` / `Repo` → kiểm tra conventions.yaml **Repository rules** (nếu có)
+   - Bất kỳ → đọc `author-dna.yaml` confirmed entries về naming + complexity
+
+2. Ghi checkpoint vào AGENT_TRANSPARENCY trước khi sinh code:
+   ```
+   [R-Guard-2] Artifact: {ArtifactName} ({type})
+   Conventions checked: {section names} — {key constraints ghi nhớ}
+   DNA checked: {relevant entries, e.g. "prefer immutable (dna-003), descriptive naming (dna-007)"}
+   ```
+
+3. Nếu conventions.yaml không tồn tại hoặc status=draft:
+   → WARN "conventions.yaml chưa có/approved — sinh code với generic patterns, **rủi ro lệch kiến trúc**"
+   → Hạ confidence của output xuống THẤP trong AGENT_TRANSPARENCY
+
+4. Nếu author-dna.yaml không tồn tại hoặc status=draft:
+   → WARN "author-dna.yaml chưa có/approved — sinh code với generic style, có thể vi phạm preference của tác giả"
+
+- **Không được** bắt đầu viết code trước khi checkpoint này được ghi.
+- Lý do: nguyên nhân trực tiếp của incident 2026-06-08 — agent sinh code mà không tham chiếu DNA + conventions.
+
+### R-DNA-7: Capture teaching moment ngay trong phiên
+
+**Teaching moment** = user (tác giả) sửa code của agent VÀ giải thích nguyên tắc kỹ thuật:
+- "không dùng setter, dùng toBuilder()"
+- "Factory không được chứa business logic"
+- "đây sai rồi, phải là..."
+- Hoặc bất kỳ correction nào kèm nguyên tắc design/coding.
+
+**Bước 0 — Phân tách abstraction level TRƯỚC khi ghi** (bắt buộc):
+
+```
+1. Bỏ hết tên cụ thể (table, class, method, column) — bài học còn đúng không?
+   CÓ  → author-dna.yaml   (WHY/HOW — thinking lens)
+   KHÔNG → tiếp câu 2
+
+2. Bài học về naming / structure / organization pattern?
+   CÓ  → conventions.yaml  (WHAT — structural rules)
+   KHÔNG → tiếp câu 3
+
+3. Bài học về kiến trúc / component / relationship cụ thể?
+   CÓ  → knowledge-snapshot.md  (WHAT IS — architecture map)
+   KHÔNG → không cần ghi
+```
+
+Một teaching moment có thể sinh entries ở **nhiều file** — không gộp vào 1 chỗ.
+Dấu hiệu ghi SAI level: entry author-dna phải liệt kê tên bảng/cột/dòng code.
+
+**Sau khi phân tách**:
+1. **Ngay lập tức** đề xuất capture cho user xác nhận:
+   - "Anh vừa dạy về `{topic}`. Em phân tách:
+     - author-dna: `{thinking level — bỏ tên cụ thể}`
+     - knowledge-snapshot: `{factual level}` (nếu có)
+     Confirm?"
+2. **Sau confirm**: ghi vào đúng file theo phân tách, `confirmed: true`, `source: author-described ({date})`.
+3. **Không được defer** sang phiên sau — teaching moment phải capture ngay trong phiên.
+4. **Nếu user từ chối**: ghi WARN vào AGENT_TRANSPARENCY:
+   "[R-DNA-7] Teaching moment chưa capture: `{principle}`. Có thể mất sau phiên này."
+
+Điều kiện nhận biết: user dùng "không được", "phải dùng", "sai rồi", "thay bằng",
+hoặc sửa code agent trực tiếp kèm giải thích.
+
+Lý do: Incident 2026-06-08 — 13 rules học được chỉ ghi vào KI external (mất sau phiên),
+không vào `author-dna.yaml` (persistent).
+
+### R-KI-1: KI external phải là pointer, không phải source
+
+Khi bootstrap phát hiện external KI (Antigravity, Cursor rules, `.cursorrules`, v.v.):
+
+1. **Bắt buộc** WARN trong bootstrap report.
+2. **Bắt buộc** đề xuất action cleanup cụ thể:
+   "Replace nội dung `{ki_file}` bằng: `# Xem .knowledge-layer/templates/conventions.yaml + author-dna.yaml`"
+3. **Bắt buộc** ghi `[R-KI-1] KI cleanup pending: {path}` vào AGENT_TRANSPARENCY.
+4. Nếu KI file duplicate conventions/DNA: **từ chối dùng KI file đó trong phiên** — chỉ dùng `.knowledge-layer/`.
+5. Nhắc lại mỗi bootstrap cho đến khi cleanup xong.
+
+Không được dùng "khuyến nghị" hay "có thể" — đây là hard enforcement.
+Lý do: KI external không version-controlled, không có DNA judgment layer, tạo false sense of completeness.

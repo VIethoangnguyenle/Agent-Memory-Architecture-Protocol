@@ -1,0 +1,7 @@
+# Active context files không commit (runtime state)
+REQUIREMENT.md
+EXPLORE_CONTEXT.md
+AGENT_TRANSPARENCY.md
+TOKEN_LOG.md
+ideation/*.md
+!ideation/.gitkeep

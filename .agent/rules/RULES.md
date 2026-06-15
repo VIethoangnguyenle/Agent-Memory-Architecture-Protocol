@@ -1,0 +1,47 @@
+# RULES.md — Agent Rules Manifest
+
+> Entry point cho toàn bộ rule system.
+> Bootstrap đọc file này trước, sau đó load các sub-file theo thứ tự.
+
+---
+
+## 1. Scope & Priority
+
+- **Scope**: áp dụng cho tất cả agent, tool, skill, workflow trong repo này.
+- **Ưu tiên**:
+  1. Policy tổ chức / luật pháp (nếu có).
+  2. Rules trong `RULES.md`.
+  3. Hướng dẫn trong `AGENTS.md`.
+  4. Hướng dẫn trong từng `SKILL.md`.
+  5. Chat trực tiếp với user.
+
+---
+
+---
+
+## Rule Index — Sub-files
+
+| File | Nội dung | Sections |
+|------|----------|---------|
+| `rules/rules-flow.md` | Flow bắt buộc, Spec/Apply, Bootstrap | §2, §6, §11 |
+| `rules/rules-tool.md` | Quyền MCP & tool | §3 |
+| `rules/rules-exec.md` | Data, Architecture, Cost, Observability | §4, §5, §7, §8 |
+| `rules/rules-knowledge.md` | Knowledge Lifecycle, Path Convention, Conventions | §10, §12, §13 |
+| `rules/rules-guard.md` | Pre-invoke Guards, R-DNA-7, R-KI-1 | §14 |
+
+> §9 (Path Convention Deprecated) đã bị xoá — xem §12 thay thế.
+
+---
+
+## Load Order (bootstrap)
+
+```
+READ: RULES.md                    ← manifest + §1 Scope/Priority
+READ: rules/rules-flow.md         ← critical: flow constraints
+READ: rules/rules-tool.md         ← tool permissions
+READ: rules/rules-exec.md         ← data/arch/cost/obs
+READ: rules/rules-knowledge.md    ← knowledge lifecycle + path
+READ: rules/rules-guard.md        ← pre-invoke guards (đọc SAU cùng để override)
+```
+
+**Quan trọng**: Phải đọc đủ 6 file. Thiếu bất kỳ file nào = guardrails không đầy đủ.

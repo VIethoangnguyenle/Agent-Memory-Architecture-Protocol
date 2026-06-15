@@ -1,0 +1,487 @@
+# author-dna.yaml
+# Coding philosophy và style của tác giả — "judgment layer" cho agent.
+# Generated bởi: author-dna-builder (/dna-scan + interview + /approve-dna)
+#
+# QUAN TRỌNG:
+#   - Khác với conventions.yaml (naming rules), file này là LENS để agent
+#     EVALUATE design và PROPOSE solution.
+#   - Status: APPROVED — agent SỬ DỤNG file này làm judgment layer.
+#   - Agent dùng ở MỌI PHA: spec → apply → architecture review.
+
+meta:
+  author: "hoangnlv"
+  interview_date: "2026-06-04"
+  approved_at: "2026-06-04T17:49:00+07:00"
+  scanned_by: "author-dna-builder"
+  status: approved
+  stats:
+    hypotheses_proposed: 10
+    hypotheses_confirmed: 7
+    hypotheses_rejected: 0
+    hypotheses_partial: 3
+    principles_author_added: 3
+    session_updates:
+      - date: "2026-06-09"
+        trigger: "workflow-violation — incident LimitAdjustment 2026-06-08"
+        rules_added: 13
+        added_by: "knowledge-curator (post-incident corrective)"
+  source_split:
+    codebase_inferred: 10
+    author_described: 9
+  load_priority_policy:
+    # Tiered loading — load theo độ phức tạp task, áp dụng cho CẢ 3 file knowledge.
+    # Agent tự phân loại task khi bootstrap, load tầng tương ứng.
+    #
+    # ┌─────────────────────────────────────────────────────────────────────┐
+    # │ Task tier     │ conventions.yaml     │ author-dna.yaml        │ knowledge-snapshot.md │
+    # ├───────────────┼──────────────────────┼────────────────────────┼───────────────────────┤
+    # │ SMALL         │ naming only          │ HP (hard) + thresholds │ skip                  │
+    # │ fix bug,      │                      │                        │                       │
+    # │ rename, tweak │                      │                        │                       │
+    # ├───────────────┼──────────────────────┼────────────────────────┼───────────────────────┤
+    # │ MEDIUM        │ naming + package     │ HP + SP (style)        │ relevant module only  │
+    # │ new endpoint, │ + design_patterns    │ + thresholds           │                       │
+    # │ new handler   │ + implementation_wf  │                        │                       │
+    # ├───────────────┼──────────────────────┼────────────────────────┼───────────────────────┤
+    # │ LARGE         │ all                  │ all                    │ all                   │
+    # │ new module,   │                      │                        │                       │
+    # │ architecture  │                      │                        │                       │
+    # └─────────────────────────────────────────────────────────────────────┘
+    #
+    # Quy tắc phân loại:
+    #   SMALL: sửa bug, rename, thêm field, config change, format code
+    #   MEDIUM: tạo class mới, thêm endpoint, viết handler/factory mới
+    #   LARGE: tạo module/feature mới, thay đổi kiến trúc, refactor cross-module
+
+# ─────────────────────────────────────────────────────────────────
+# SECTION 1: Hard Principles
+# Agent KHÔNG đề xuất solution vi phạm các nguyên tắc này.
+# ─────────────────────────────────────────────────────────────────
+hard_principles:
+  - id: HP-1
+    name: "Chain of Responsibility cho Validation phức tạp"
+    description: >
+      Khi chuỗi validation phức tạp trong một luồng phức tạp — nhiều bước kiểm tra,
+      if/else chồng chất trong một function, và các bước validate cần reuse ở nhiều nơi —
+      thì dùng Chain of Responsibility pattern (ValidationProcessorChain) để tách mỗi bước
+      thành processor riêng, compose qua buildValidationProcessorChain().
+      Xuất phát từ nhu cầu clean code + reuse, KHÔNG phải rule ép buộc cho mọi validation.
+      Base giao dịch (Base*Handler) đã wire sẵn pattern này — handler kế thừa base
+      thì tuân theo flow đã thiết kế. Ngoài base giao dịch, tự chọn cách validate phù hợp.
+    agent_action: FLAG_AND_WARN
+    confirmed: true
+    source: codebase-inferred + author-confirmed + author-clarified (2026-06-11)
+    author_note: >
+      Tư duy: trong chuỗi validate phức tạp, không muốn if/else quá nhiều trong 1 function,
+      muốn reuse code ở nhiều nơi → đó là lúc dùng pattern này. Xuất phát từ nhu cầu,
+      không phải rule ép buộc. Base giao dịch là nơi anh áp dụng pattern này.
+    exemplar:
+      node_id: ""
+      file_path: "transaction/data/src/main/java/vn/vnpay/omni/transaction/data/chain/DefaultValidationProcessorChain.java"
+      description: "VirtualChain inner record auto-chain processors, exemplar chính trong base giao dịch"
+    scope: complex-validation-flows
+    exceptions:
+      - "Validation đơn giản (1-2 check) không cần pattern — viết trực tiếp OK"
+      - "Module ngoài base giao dịch tự chọn cách validate phù hợp"
+
+  - id: HP-6
+    name: "Zero Nesting — Cấm if lồng và for lồng"
+    description: >
+      KHÔNG lồng if hoặc for nhiều cấp cho business logic.
+      If lồng chỉ chấp nhận khi body là throw hoặc return (guard clause).
+      For lồng: KHÔNG BAO GIỞ dùng. Extract inner loop thành method riêng,
+      hoặc dùng Stream/flatMap/collect.
+      Ví dụ SAI: for (a) { for (b) { ... } }
+      Ví dụ OK:  for (a) { processItem(a); }  // processItem có thể chứa loop riêng
+    agent_action: REJECT_AND_PROPOSE
+    confirmed: true
+    source: author-described
+    author_note: "Cực kỳ ghét if lồng và for lồng. If lồng chỉ dùng để throw/return."
+    exemplar:
+      node_id: ""
+      file_path: ""
+      description: "Author principle — không infer từ code, mà author tuyên bố trực tiếp"
+    scope: all
+    exceptions: []
+
+  - id: HP-7
+    name: "No Else, Minimal If Body"
+    description: >
+      Hạn chế dùng else. If block phải kết thúc bằng return hoặc throw
+      (guard clause), không cần else. Nếu if có body phức tạp, extract
+      thành một function riêng và gọi function đó.
+      Hạn chế để quá nhiều logic bên trong if block.
+      Ví dụ OK:  if (invalid) { throw ...; }  // rồi tiếp tục happy path
+      Ví dụ OK:  if (condition) { return handleSpecialCase(request); }
+      Ví dụ SAI: if (a) { ...20 dòng logic... } else { ...15 dòng khác... }
+    agent_action: REJECT_AND_PROPOSE
+    confirmed: true
+    source: author-described
+    author_note: "Hạn chế else. If xong là return/throw/gọi 1 function. Không để nhiều logic trong if."
+    exemplar:
+      node_id: ""
+      file_path: ""
+      description: "Author principle — guard clause + extract method style"
+    scope: all
+    exceptions: []
+
+  - id: HP-8
+    name: "SOLID + Clean Code"
+    description: >
+      Luôn tuân theo nguyên tắc SOLID và Clean Code:
+      (S) Single Responsibility — mỗi class/method chỉ làm 1 việc.
+      (O) Open/Closed — mở rộng qua abstract/interface, không sửa code cũ.
+      (L) Liskov Substitution — subclass thay thế được base mà không phá logic.
+      (I) Interface Segregation — interface nhỏ, chuyên biệt, không ép implement thừa.
+      (D) Dependency Inversion — phụ thuộc vào abstraction, không vào concrete.
+      Clean Code: tên biến/method rõ nghĩa, method ngắn, không side-effect ẩn,
+      không magic number, không comment thừa (code tự document).
+    agent_action: REJECT_AND_PROPOSE
+    confirmed: true
+    source: author-described
+    author_note: "Luôn tuân theo SOLID và Clean Code"
+    exemplar:
+      node_id: ""
+      file_path: ""
+      description: "Nguyên tắc nền tảng — HP-6 (zero nesting) và HP-7 (no else) là biểu hiện cụ thể"
+    scope: all
+    exceptions: []
+
+  - id: HP-2
+    name: "Template Method qua Base* Abstract Classes"
+    description: >
+      Framework cho handler/executor/factory phải dùng Template Method pattern:
+      abstract Base class với protected override points. Subclass chỉ override
+      các hook method cụ thể (buildValidationProcessorChain, buildTransactionModel,
+      onConfirmed, onConfirmedSuccess, onConfirmedFailure...).
+      Constructor của Base class phải protected.
+    agent_action: REJECT_AND_PROPOSE
+    confirmed: true
+    source: codebase-inferred + author-confirmed
+    exemplar:
+      node_id: ""
+      file_path: "transaction/business/src/main/java/vn/vnpay/omni/transaction/business/module/confirm_transaction/executor/BaseTransactionConfirmExecutor.java"
+      description: "Base executor với 4 protected override points, constructor protected, deep inheritance chain"
+    scope: all
+    exceptions: []
+
+  - id: HP-3
+    name: "Strategy Pattern cho Routing Logic Phức Tạp"
+    description: >
+      Khi if/else quá nhiều trong logic routing phức tạp, cần sử dụng
+      Strategy pattern (Executor/Manager, Map-based lookup, auto-register).
+      Không bắt buộc cho mọi dispatch — chỉ khi logic routing phức tạp
+      với nhiều case. If/else đơn giản (2-3 case) vẫn OK.
+    agent_action: FLAG_AND_WARN
+    confirmed: true
+    source: codebase-inferred + author-confirmed
+    author_note: "Khi if/else quá nhiều, cần strategy pattern cho routing phức tạp"
+    exemplar:
+      node_id: ""
+      file_path: "transaction/business/src/main/java/vn/vnpay/omni/transaction/business/module/confirm_transaction/executor/BaseTransactionConfirmExecutorManager.java"
+      description: "Map-based executor lookup, executor self-register qua ITransactionServiceDefinition"
+    scope: complex-routing
+    exceptions:
+      - "If/else đơn giản (2-3 case) không cần pattern"
+
+  - id: HP-5
+    name: "Factory = Pure Data Access, No Business Logic"
+    description: >
+      Factory class chỉ chứa data access logic:
+      entity↔model mapping, cache config, query delegation.
+      Business logic KHÔNG nằm trong Factory.
+      API chuẩn (create, update, delete, getModel, getModelOrNull, getList)
+      có sẵn từ IDataFactory (dvnh-common).
+    agent_action: FLAG_AND_WARN
+    confirmed: true
+    source: codebase-inferred + author-confirmed
+    author_note: "BillingTemplateFactory là case đặc biệt"
+    exemplar:
+      node_id: ""
+      file_path: "common/base/src/main/java/vn/vnpay/omni/base/module_jpa/auth_method/factory/AuthMethodFactory.java"
+      description: "Pure data access: chỉ override mapping + cache + query, throw UNSUPPORTED cho operations không hỗ trợ"
+    scope: all
+    exceptions:
+      - "BillingTemplateFactory — case đặc biệt, author chấp nhận"
+
+  - id: HP-9
+    name: "Config-Driven Architecture — Trace Framework Before Asking"
+    description: >
+      Kiến trúc hệ thống là config-driven: business decisions (approval flow,
+      auth methods, workflow stages, limits...) được abstract thành runtime config
+      trong DB, không hardcode trong code.
+
+      Khi gặp UC mới, trace Base handler/framework layer TRƯỚC khi đặt open questions.
+      Câu trả lời thường nằm trong config tables, không nằm trong code.
+
+      Thay vì hỏi "hệ thống có behavior X không?",
+      hãy hỏi "behavior X được config ở đâu?".
+    agent_action: TRACE_FRAMEWORK_FIRST
+    confirmed: true
+    source: author-described (2026-06-10)
+    author_note: >
+      Phát hiện khi dạy về GD phi tài chính (HP-9 ban đầu viết sai level — ghi tên bảng/cột
+      vào author-dna thay vì knowledge-snapshot). Bài học generic: áp dụng cho mọi UC
+      trong hệ thống config-driven, không chỉ nonfinancial.
+      Chi tiết cụ thể (AD_SERVICE, OMNI_NONFINANCIAL_WORKFLOW_STAGE) → knowledge-snapshot.md.
+    scope: all
+
+  - id: HP-10
+    name: "Post-Implementation Review: make it work → make it right"
+    description: >
+      Sau khi implement xong (code chạy đúng), phải review lại code:
+      1. So sánh các class/handler cùng nhóm nghiệp vụ
+      2. Tìm logic trùng lặp > 70%
+      3. Extract Template Method: base class gom logic chung, abstract method cho điểm khác biệt.
+      Không ai bắt nhìn thấy base class ngay từ đầu — nhưng sau khi implement xong,
+      PHẢI review để phát hiện cơ hội extract template.
+    agent_action: FLAG_AND_WARN
+    confirmed: true
+    source: author-described (2026-06-11)
+    author_note: >
+      Code chạy đúng chưa đủ, phải clean và reusable.
+    scope: all
+    question_to_ask: "Các class này bản chất là cùng 1 loại thao tác chỉ khác ở 1-2 điểm nhỏ không?"
+    exceptions: []
+
+  - id: HP-11
+    name: "Bản chất nghiệp vụ quyết định template — không phải tên action"
+    description: >
+      Nhiều action dù tên khác nhau nhưng bản chất nghiệp vụ giống nhau.
+      Khi nhận diện được bản chất chung → sẽ thấy template method pattern tự nhiên.
+      Tư duy đúng: nhóm các action theo BẢN CHẤT NGHIỆP VỤ, không theo TÊN ACTION.
+    agent_action: FLAG_AND_WARN
+    confirmed: true
+    source: author-described (2026-06-11)
+    author_note: >
+      Đừng bị tên action đánh lừa. Các action cùng bản chất → 1 base class,
+      chỉ cần abstract methods cho điểm khác biệt.
+    scope: all
+    exceptions: []
+
+# ─────────────────────────────────────────────────────────────────
+# SECTION 2: Style Preferences (Soft)
+# Agent ưu tiên approach này, nhưng không reject nếu vi phạm.
+# ─────────────────────────────────────────────────────────────────
+style_preferences:
+  - id: SP-1
+    prefer: "Java Record cho stateless processors"
+    over: "Regular class với constructor + fields"
+    reason: >
+      Ưu tiên dùng record cho stateless processor, nhưng class cũng OK.
+      Không bắt buộc — chỉ là preferred style.
+      Record enforce immutability + reduce boilerplate.
+    confirmed: true
+    source: codebase-inferred + author-confirmed
+    author_note: "Có thể là class hoặc record, không bắt buộc nhưng ưu tiên record"
+    exemplar:
+      node_id: ""
+      file_path: "transaction/business/financial/src/main/java/vn/vnpay/omni/transaction/business/financial/module/action/init/processor/ValidateWorkflowProcessor.java"
+
+  - id: SP-2
+    prefer: "Constructor injection"
+    over: "@Autowired field injection"
+    reason: >
+      100% handler/executor/processor dùng constructor injection.
+      Base class có protected constructor nhận tất cả dependencies.
+      Record classes tự enforce constructor injection.
+      @Autowired field injection chỉ chấp nhận ở Quartz Job classes.
+    confirmed: true
+    source: codebase-inferred + author-confirmed
+    author_note: "@Autowired chỉ dùng với các class job Quartz"
+    exemplar:
+      node_id: ""
+      file_path: "napas-service/src/main/java/vn/vnpay/omni/napas_service/module/napas/handler/BaseInitNapasTransReqHandler.java"
+
+  - id: SP-3
+    prefer: "FunctionUtil.execute() + FunctionStrategy callback"
+    over: "Try/catch inline trong handler"
+    reason: >
+      Standardize callback pattern: execute → onSuccess → onFailure → onUnknownFailure.
+      Áp dụng cho: confirm transaction flow, Kafka consumer, event handler.
+      Đảm bảo mọi flow trên đều có error handling nhất quán.
+    confirmed: true
+    source: codebase-inferred + author-confirmed
+    author_note: "Dùng cho confirm flow hoặc đối với các luồng consumer kafka, event"
+    exemplar:
+      node_id: ""
+      file_path: "transaction/business/src/main/java/vn/vnpay/omni/transaction/business/module/confirm_transaction/handler/BaseConfirmTransactionHandler.java"
+
+  - id: SP-4
+    prefer: "Modern Java syntax (pattern matching switch, arrow switch, record)"
+    over: "Old-style switch/case/break"
+    reason: >
+      Ưu tiên dùng modern Java syntax cho code mới:
+      pattern matching switch (case Type var ->), arrow switch expressions,
+      record classes, sealed types khi phù hợp.
+    confirmed: true
+    source: codebase-inferred + author-confirmed
+    author_note: "Ưu tiên dùng modern Java"
+    exemplar:
+      node_id: ""
+      file_path: "common/base/src/main/java/vn/vnpay/omni/base/module_jpa/workflow/factory/WorkflowStageCustomerFactory.java"
+
+  - id: SP-5
+    prefer: "Javadoc trên constructor @param + public/protected method"
+    over: "Không có documentation"
+    reason: >
+      Luôn có Javadocs. Cụ thể:
+      - Class-level: @author + @since annotation, mô tả ngắn class làm gì.
+        @author PHẢI lấy từ persona.yaml → user (ví dụ: "hoangnlv") + hậu tố "@vnpay.vn".
+        @since dùng format: "Time DD/MM/YYYY HH:mm SA/CH" với timestamp hiện tại.
+        Đây là config-driven — persona thay đổi thì @author thay đổi theo.
+      - Protected/public method: mô tả MỤC ĐÍCH của method (method này phục vụ gì,
+        khi nào được gọi, trả về gì), không chỉ lặp lại tên method.
+
+      - Constructor @param: mỗi param có @param tag giải thích.
+      Javadoc giúp developer hiểu ngữ cảnh sử dụng mà không cần đọc implementation.
+    confirmed: true
+    source: codebase-inferred + author-confirmed + author-described (2026-06-11)
+    author_note: "Luôn có javadocs, mô tả mục đích chứ không lặp lại tên. @author lấy từ persona.yaml user, không hardcode."
+    exemplar:
+      node_id: ""
+      file_path: "transaction/business/src/main/java/vn/vnpay/omni/transaction/business/module/confirm_transaction/executor/BaseTransactionConfirmExecutor.java"
+
+  - id: SP-6
+    prefer: "Sắp xếp injected fields theo độ dài dòng tăng dần"
+    over: "Không sắp xếp hoặc sắp theo alphabet"
+    reason: >
+      Tạo hình bậc thang (staircase) khi đọc code — dễ scan nhanh danh sách
+      dependencies, gọn mắt hơn. Thuần tuý thẩm mỹ, không ảnh hưởng logic.
+    confirmed: true
+    source: author-described (2026-06-11)
+    author_note: "Sở thích cá nhân, KHÔNG quan trọng"
+    exemplar:
+      node_id: ""
+      file_path: "transaction/business/financial/src/main/java/vn/vnpay/omni/transaction/business/financial/module/action/batch_approve/handler/impl/DefaultInitBatchApproveFinancialTransactionsHandler.java"
+
+# ─────────────────────────────────────────────────────────────────
+# SECTION 3: Creative Overrides
+# Những nơi tác giả chủ đích break convention vì lý do có cơ sở.
+# ─────────────────────────────────────────────────────────────────
+creative_overrides: []
+# Chưa có — chờ interview để capture
+
+# ─────────────────────────────────────────────────────────────────
+# SECTION 4: Pattern Preferences  [load_priority: on_demand]
+# Design pattern nào tác giả prefer cho từng use case.
+# Load khi: R-Guard-2 detect artifact type = handler/executor/processor/factory phức tạp
+# Skip khi: task chỉ liên quan naming/simple CRUD/config change
+# ─────────────────────────────────────────────────────────────────
+pattern_preferences:
+  - use_case: "Validation pipeline trong transaction handler"
+    preferred_pattern: "Chain of Responsibility (ValidationProcessorChain)"
+    instead_of: "Sequential validation trong handler method"
+    confirmed: false
+    occurrence_in_codebase: 15
+    exemplar:
+      node_id: ""
+      file_path: "transaction/data/src/main/java/vn/vnpay/omni/transaction/data/chain/ValidationProcessorChain.java"
+    agent_instruction: >
+      Khi handler mới cần validation, LUÔN tạo ValidationProcessor records
+      và compose qua buildValidationProcessorChain(). Không viết validation
+      inline trong handler.
+
+  - use_case: "Dispatch business logic theo service code / type"
+    preferred_pattern: "Executor + Manager (Map-based lookup)"
+    instead_of: "if/else-if chain hoặc switch/case"
+    confirmed: false
+    occurrence_in_codebase: 6
+    exemplar:
+      node_id: ""
+      file_path: "transaction/business/src/main/java/vn/vnpay/omni/transaction/business/module/confirm_transaction/executor/BaseTransactionConfirmExecutorManager.java"
+    agent_instruction: >
+      Khi phát hiện >2 case xử lý khác nhau theo service code,
+      SUGGEST Executor/Manager pattern. Executor tự register qua getConfigs().
+
+  - use_case: "Tạo framework cho business handler/executor"
+    preferred_pattern: "Template Method (abstract Base class + protected hooks)"
+    instead_of: "Interface-only hoặc flat composition"
+    confirmed: false
+    occurrence_in_codebase: 20
+    exemplar:
+      node_id: ""
+      file_path: "transaction/business/financial/src/main/java/vn/vnpay/omni/transaction/business/financial/module/action/init/handler/BaseInitFinancialTransReqHandler.java"
+    agent_instruction: >
+      Khi tạo handler/executor mới, PHẢI tạo Base abstract class trước
+      với protected hooks. Concrete class chỉ override hooks cần thiết.
+
+  - use_case: "Post-processing sau business operation"
+    preferred_pattern: "Spring Event (publish success/failure events)"
+    instead_of: "Inline side-effects trong handler/executor"
+    confirmed: true
+    occurrence_in_codebase: 4
+    exemplar:
+      node_id: ""
+      file_path: "transaction/business/financial/src/main/java/vn/vnpay/omni/transaction/business/financial/module/action/confirm/executor/BaseFinancialTransactionConfirmExecutor.java"
+    agent_instruction: >
+      MINDSET: Event-driven post-processing nghĩa là sự thành công/thất bại
+      của logic SAU event sẽ KHÔNG ảnh hưởng tới kết quả trả cho client.
+      Dùng event khi side-effect (notification, audit, cache evict, sync)
+      có thể fail mà không ảnh hưởng business result.
+      KHÔNG dùng event cho logic mà kết quả trả cho client phụ thuộc vào nó.
+    author_note: "Sự thành công thất bại của logic sau event không ảnh hưởng tới kết quả trả cho client"
+
+  - use_case: "Construction model phức tạp — nhiều fields, tổng hợp từ nhiều domain model"
+    preferred_pattern: "Custom CRTP Builder với buildWith* composite methods"
+    instead_of: "Lombok @Builder/@SuperBuilder với setter từng field"
+    confirmed: true
+    occurrence_in_codebase: 1
+    exemplar:
+      node_id: ""
+      file_path: "transaction/data/src/main/java/vn/vnpay/omni/transaction/data/module/transaction/model/BaseTransactionModel.java"
+    agent_instruction: >
+      Chỉ custom builder khi model là complex aggregate: nhiều fields, tổng hợp
+      từ nhiều nguồn (Customer, Bank, Service, Workflow...). buildWith*(sourceModel)
+      đóng gói mapping logic, giảm call site từ N dòng setter → 1 dòng.
+      Model đơn giản hoặc có inheritance nhưng construction đơn giản → @SuperBuilder đủ.
+    author_note: "Custom builder để code ngắn gọn hơn ở call site"
+
+# ─────────────────────────────────────────────────────────────────
+# SECTION 5: Complexity Thresholds
+# ─────────────────────────────────────────────────────────────────
+complexity_thresholds:
+  max_nesting_depth: 1 # Tối đa 1 level if — KHÔNG nested if
+  max_method_branches: 3
+  max_lines_per_method: 30
+  early_return_required: true
+  confirmed: true
+  source: author-described
+  author_note: "Cực kỳ ghét if lồng — dùng early return, guard clause, extract method"
+
+# ─────────────────────────────────────────────────────────────────
+# SECTION 6: Codebase Evidence Summary
+# ─────────────────────────────────────────────────────────────────
+codebase_evidence_summary:
+  scan_date: "2026-06-04"
+  methods_analyzed: 0 # Chưa chạy full method-level scan
+  avg_nesting_depth: 0.0
+  pct_methods_zero_nesting: 0
+  early_return_frequency: 0.0
+  switch_count_total: 5 # Rất ít — chủ yếu enum converter + cache eviction
+  instanceof_count_total: 3 # Rất ít — chủ yếu pattern matching style
+  patterns_found:
+    - pattern: "Chain of Responsibility (ValidationProcessorChain)"
+      count: 15
+      exemplar_node_id: ""
+    - pattern: "Template Method (Base* abstract classes)"
+      count: 20
+      exemplar_node_id: ""
+    - pattern: "Executor/Manager (Map-based dispatch)"
+      count: 6
+      exemplar_node_id: ""
+    - pattern: "Record Processors (stateless validation)"
+      count: 10
+      exemplar_node_id: ""
+    - pattern: "FunctionStrategy Callback"
+      count: 2
+      exemplar_node_id: ""
+    - pattern: "Spring Event Post-Processing"
+      count: 4
+      exemplar_node_id: ""
+
+# ─────────────────────────────────────────────────────────────────
+# SECTION 7: Rejected Hypotheses Log
+# ─────────────────────────────────────────────────────────────────
+rejected_hypotheses: []
+# Chưa có — chờ interview
