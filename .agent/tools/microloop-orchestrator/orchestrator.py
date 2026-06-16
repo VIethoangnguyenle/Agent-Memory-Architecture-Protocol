@@ -27,3 +27,13 @@ def topo_sort(tasks):
     if len(ordered) != len(tasks):
         raise ValueError("dependency cycle detected in tasks")
     return ordered
+
+
+def slice_dna(dna, principle_ids):
+    """Extract only requested principle entries + always-global thresholds (anti-bloat)."""
+    wanted = set(principle_ids)
+    return {
+        "complexity_thresholds": dna.get("complexity_thresholds", {}),
+        "hard_principles": [p for p in dna.get("hard_principles", []) if p["id"] in wanted],
+        "style_preferences": [p for p in dna.get("style_preferences", []) if p["id"] in wanted],
+    }
