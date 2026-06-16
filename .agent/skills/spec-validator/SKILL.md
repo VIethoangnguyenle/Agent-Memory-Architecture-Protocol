@@ -155,7 +155,7 @@ spec-validator.pre_apply_gate()     ← nếu BLOCK: dừng, hỏi user
   ↓
 spec-validator.check_ac_coverage()  ← nếu WARN: hiển thị, hỏi user có muốn tiếp không
   ↓
-[user confirm] → /opsx:apply
+[user confirm] → micro-loop orchestration (SP1b: per-task executor + mechanical gate)
   ↓
 spec-validator.post_apply_verify()  ← sau apply
 ```
@@ -202,8 +202,8 @@ INPUT:
   changed_files — danh sách file đã thay đổi (từ apply output)
 
 PRE-CONDITION:
-  DNA-RELOAD (bước 2a trong task.md) đã chạy
-  → author-dna.yaml đã trong context
+  DNA đã trong context của executor qua `dna_slice` trong TASK_HANDOFF (SP1b micro-loop).
+  → author-dna.yaml slice liên quan task đã sẵn (thay cho DNA-RELOAD nghi thức cũ).
 
 STEPS:
 
@@ -267,7 +267,7 @@ RESULT:
 
 ### Gotchas cho DNA Check
 
-- **[G5] DNA-RELOAD phải chạy trước**: `post_apply_dna_check` giả định DNA đã trong context (bước 2a). Nếu DNA-RELOAD chưa chạy → kết quả check không đáng tin.
+- **[G5] DNA phải có trong context qua handoff**: `post_apply_dna_check` (phần semantic) giả định DNA slice đã trong context executor qua `dna_slice` của TASK_HANDOFF (SP1b). Nếu handoff thiếu `dna_slice` → kết quả check không đáng tin.
 - **[G6] Checklist là dynamic**: Skill KHÔNG hardcode rule cụ thể (HP-6, HP-7…). Rule nào có trong `author-dna.yaml` thì check, không có thì skip. Nếu project đổi DNA → checklist tự đổi theo.
 - **[G7] Conventions draft bị skip**: Chỉ load `conventions.yaml` khi `status: approved`. Draft conventions KHÔNG được enforce — đây là by-design.
 - **[G8] False negative**: Check dựa trên agent judgment + pattern matching, không phải AST analysis. Violations phức tạp (e.g. nesting qua method extraction) có thể miss.
