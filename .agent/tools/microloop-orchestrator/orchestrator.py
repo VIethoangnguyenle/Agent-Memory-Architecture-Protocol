@@ -37,3 +37,16 @@ def slice_dna(dna, principle_ids):
         "hard_principles": [p for p in dna.get("hard_principles", []) if p["id"] in wanted],
         "style_preferences": [p for p in dna.get("style_preferences", []) if p["id"] in wanted],
     }
+
+
+def build_handoff(task, dna, spec_slice, snapshot_slice, written_files, boundary, feedback=None):
+    """Assemble TASK_HANDOFF dict (spec §5.2). dna_slice is anti-bloat (only task principles)."""
+    return {
+        "task": {"id": task["id"], "desc": task["desc"]},
+        "dna_slice": slice_dna(dna, task.get("principle_ids", [])),
+        "spec_slice": spec_slice,
+        "snapshot_slice": snapshot_slice,
+        "written_files": written_files,
+        "boundary": boundary,
+        "feedback": feedback,
+    }
