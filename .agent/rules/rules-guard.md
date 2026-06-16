@@ -81,6 +81,11 @@ Dấu hiệu ghi SAI level: entry author-dna phải liệt kê tên bảng/cột
      - knowledge-snapshot: `{factual level}` (nếu có)
      Confirm?"
 2. **Sau confirm**: ghi vào đúng file theo phân tách, `confirmed: true`, `source: author-described ({date})`.
+   - Nếu principle vừa ghi là **mechanically checkable** (map được sang `ir_rule` — xem
+     `author-dna-builder/references/check-spec-mapping.md`): emit luôn `mechanically_checkable: true`
+     + `check_spec`, rồi chạy rule-projector regenerate ruleset ngay trong phiên (SP1a §3.2 — active path):
+     `python3 .agent/tools/rule-projector/projector.py --dna <dna> --conventions <conv> --out generated/`
+     → `python3 .agent/tools/rule-projector/backends/checkstyle.py --ir generated/rules.json --out generated/checkstyle.generated.xml`
 3. **Không được defer** sang phiên sau — teaching moment phải capture ngay trong phiên.
 4. **Nếu user từ chối**: ghi WARN vào AGENT_TRANSPARENCY:
    "[R-DNA-7] Teaching moment chưa capture: `{principle}`. Có thể mất sau phiên này."
