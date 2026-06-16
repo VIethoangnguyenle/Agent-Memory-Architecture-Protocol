@@ -131,7 +131,7 @@ PRIORITY 1: .knowledge-layer/active/REQUIREMENT.md
 PRIORITY 2: .knowledge-layer/active/EXPLORE_CONTEXT.md
             → Bối cảnh DB + code đang active
 
-PRIORITY 3: .knowledge-layer/templates/knowledge-snapshot.md
+PRIORITY 3: .knowledge-layer/long-term/knowledge-snapshot.md
             → Kiến trúc hệ thống tổng thể
 
 PRIORITY 4: .knowledge-layer/archive/{latest-ticket}/
@@ -289,7 +289,7 @@ Khi một task hoàn thành (sau `/task apply` hoặc user đóng task):
 1. Skill `knowledge-curator` sẽ:
    - Copy toàn bộ `.knowledge-layer/active/` → `.knowledge-layer/archive/{ticket-id}/`
    - Reset `.knowledge-layer/active/` về template skeleton
-   - Cập nhật `.knowledge-layer/templates/knowledge-snapshot.md` với phát hiện mới từ task
+   - Cập nhật `.knowledge-layer/long-term/knowledge-snapshot.md` với phát hiện mới từ task
 
 2. Nếu user muốn tiếp task cũ:
    - Restore từ `.knowledge-layer/archive/{ticket-id}/` → `.knowledge-layer/active/`
@@ -315,14 +315,14 @@ Persona là **lớp tương tác** — điều chỉnh cách nói, không điề
 Persona được cấu hình tại:
 
 ```txt
-.knowledge-layer/templates/persona.yaml          ← local (gitignored)
-.knowledge-layer/templates/persona.template.yaml  ← template (committed)
+.knowledge-layer/long-term/persona.yaml          ← local (gitignored)
+.knowledge-layer/long-term/persona.template.yaml  ← template (committed)
 ```
 
 Mỗi user copy template và tùy chỉnh theo phong cách cá nhân:
 
 ```bash
-cp .knowledge-layer/templates/persona.template.yaml .knowledge-layer/templates/persona.yaml
+cp .knowledge-layer/long-term/persona.template.yaml .knowledge-layer/long-term/persona.yaml
 # Sửa persona.yaml theo sở thích
 ```
 

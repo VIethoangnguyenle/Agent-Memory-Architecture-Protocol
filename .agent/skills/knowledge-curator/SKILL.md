@@ -14,7 +14,7 @@ description: >
 
 - **Archive** context đã hoàn thành vào `.knowledge-layer/archive/{ticket-id}/` sau khi task xong.
 - **Reset** `.knowledge-layer/active/` về template skeleton sạch sẵn sàng cho task mới.
-- **Cập nhật** `.knowledge-layer/templates/knowledge-snapshot.md` với phát hiện mới từ task vừa hoàn thành.
+- **Cập nhật** `.knowledge-layer/long-term/knowledge-snapshot.md` với phát hiện mới từ task vừa hoàn thành.
 - **Rotate** archive khi quá nhiều (giữ N tickets gần nhất, nén/log các ticket cũ hơn).
 
 Skill này là **lifecycle manager** — không sinh requirement, không review kiến trúc.
@@ -107,7 +107,7 @@ STEPS:
 ```
 INPUT:  discoveries — list các phát hiện từ task vừa hoàn thành
         (trích từ EXPLORE_CONTEXT.md và AGENT_TRANSPARENCY.md)
-OUTPUT: .knowledge-layer/templates/knowledge-snapshot.md được cập nhật
+OUTPUT: .knowledge-layer/long-term/knowledge-snapshot.md được cập nhật
 
 STEPS:
 1. Đọc EXPLORE_CONTEXT.md + AGENT_TRANSPARENCY.md của task vừa xong
@@ -342,7 +342,7 @@ Trong knowledge-snapshot.md, thêm section (nếu cần):
 
 | Repo | Snapshot path | Verified | Quan hệ |
 |------|--------------|----------|---------|
-| (ví dụ: shared-lib) | (ví dụ: ../shared-lib/.knowledge-layer/templates/knowledge-snapshot.md) | (YYYY-MM) | (upstream dependency) |
+| (ví dụ: shared-lib) | (ví dụ: ../shared-lib/.knowledge-layer/long-term/knowledge-snapshot.md) | (YYYY-MM) | (upstream dependency) |
 ```
 
 **Quy tắc:**

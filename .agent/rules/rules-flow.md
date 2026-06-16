@@ -57,7 +57,7 @@
 ### R-Spec-1: Spec chỉ dựa trên REQUIREMENT + context
 
 - Khi sinh spec, chỉ được dùng thông tin từ:
-  - `.knowledge-layer/active/REQUIREMENT.md`, `.knowledge-layer/active/EXPLORE_CONTEXT.md`, `.knowledge-layer/templates/knowledge-snapshot.md`, code/DB đã explore.
+  - `.knowledge-layer/active/REQUIREMENT.md`, `.knowledge-layer/active/EXPLORE_CONTEXT.md`, `.knowledge-layer/long-term/knowledge-snapshot.md`, code/DB đã explore.
 
 ### R-Spec-2: Không tự động “fix” requirement
 

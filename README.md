@@ -149,7 +149,7 @@ cp Agent-Memory-Architecture-Protocol/AGENTS.md your-project/AGENTS.md
 
 ```bash
 cd your-project
-cp .knowledge-layer/templates/persona.template.yaml .knowledge-layer/templates/persona.yaml
+cp .knowledge-layer/long-term/persona.template.yaml .knowledge-layer/long-term/persona.yaml
 # Sửa persona.yaml theo phong cách tương tác mong muốn
 ```
 

@@ -4,7 +4,7 @@
 
 ## Full YAML Template
 
-Ghi ra `.knowledge-layer/templates/conventions.draft.yaml`:
+Ghi ra `.knowledge-layer/long-term/conventions.draft.yaml`:
 
 ```yaml
 # conventions.draft.yaml
@@ -168,7 +168,7 @@ EXCEPTIONS phát hiện ({n}):
 NEEDS REVIEW ({n} câu hỏi):
   ❓ {pattern} — {lý do cần xác nhận}
 
-→ File đã được ghi tại: .knowledge-layer/templates/conventions.draft.yaml
+→ File đã được ghi tại: .knowledge-layer/long-term/conventions.draft.yaml
 → Mở file, review và edit trực tiếp trong IDE.
 → Khi xong: chạy /approve-conventions để commit chính thức.
 ```

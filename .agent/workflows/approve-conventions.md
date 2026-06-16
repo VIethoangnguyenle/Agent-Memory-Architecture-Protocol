@@ -14,7 +14,7 @@ Workflow này chỉ chạy khi user đã:
 ## Bước 1 — Validate file
 
 ```
-CHECK: .knowledge-layer/templates/conventions.draft.yaml tồn tại?
+CHECK: .knowledge-layer/long-term/conventions.draft.yaml tồn tại?
   → Không tồn tại: ABORT
     "conventions.draft.yaml không tìm thấy. Chạy /convention-scan trước."
 
@@ -35,7 +35,7 @@ CHECK: Các section bắt buộc còn đủ?
 ## Bước 2 — Cross-check với knowledge-snapshot.md
 
 ```
-READ: .knowledge-layer/templates/knowledge-snapshot.md
+READ: .knowledge-layer/long-term/knowledge-snapshot.md
   → Nếu không tồn tại: SKIP bước này, ghi WARN vào AGENT_TRANSPARENCY.
 
 FOR EACH entry trong conventions.draft.yaml:

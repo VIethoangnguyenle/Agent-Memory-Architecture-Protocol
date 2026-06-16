@@ -49,7 +49,7 @@ Agent infrastructure (skills, workflows, scripts, rules) nằm ở `.agent/`.
 | REQUIREMENT | `.knowledge-layer/active/REQUIREMENT.md` | requirement-analyst, spec-extract | db-explorer, codebase-explorer, architecture-reviewer, openspec-propose |
 | EXPLORE_CONTEXT | `.knowledge-layer/active/EXPLORE_CONTEXT.md` | db-explorer, codebase-explorer, architecture-reviewer | architecture-reviewer, openspec-propose |
 | AGENT_TRANSPARENCY | `.knowledge-layer/active/AGENT_TRANSPARENCY.md` | Mọi skill + workflow | User, architecture-reviewer |
-| Knowledge Snapshot | `.knowledge-layer/templates/knowledge-snapshot.md` | knowledge-curator (tích luỹ) | codebase-explorer, architecture-reviewer, bootstrap |
+| Knowledge Snapshot | `.knowledge-layer/long-term/knowledge-snapshot.md` | knowledge-curator (tích luỹ) | codebase-explorer, architecture-reviewer, bootstrap |
 | Ideation files | `.knowledge-layer/active/ideation/ideation-*.md` | /task (IDEA_ONLY) | /idea-to-task |
 | Archive | `.knowledge-layer/archive/{ticket-id}/` | knowledge-curator | bootstrap, context-loader |
 | Archive Log | `.knowledge-layer/archive/ARCHIVE_LOG.md` | knowledge-curator | bootstrap |

@@ -6,7 +6,7 @@ trigger: Sau 5+ tasks, nếu Violation Log cho thấy Lớp 1-3 không đủ
 related:
   - .agent/workflows/task.md (flow hiện tại)
   - .agent/skills/spec-validator/SKILL.md §6 (DNA check hiện tại)
-  - .knowledge-layer/templates/author-dna.yaml (DNA source)
+  - .knowledge-layer/long-term/author-dna.yaml (DNA source)
 ---
 
 # Multi-Agent Escalation Sketch (Kịch bản B)

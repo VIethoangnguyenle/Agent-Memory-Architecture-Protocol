@@ -152,7 +152,7 @@ Default enforcement nếu không hỏi: `FLAG_AND_WARN`.
 Sau interview, agent tổng hợp thành file:
 
 ```
-GENERATE: .knowledge-layer/templates/author-dna.draft.yaml
+GENERATE: .knowledge-layer/long-term/author-dna.draft.yaml
 
 FOR EACH confirmed hypothesis:
   → Encode vào section phù hợp (hard_principles / style_preferences / creative_overrides)

@@ -48,7 +48,7 @@ Tóm tắt nhanh:
 | REQUIREMENT | `.knowledge-layer/active/REQUIREMENT.md` |
 | EXPLORE_CONTEXT | `.knowledge-layer/active/EXPLORE_CONTEXT.md` |
 | AGENT_TRANSPARENCY | `.knowledge-layer/active/AGENT_TRANSPARENCY.md` |
-| Knowledge Snapshot | `.knowledge-layer/templates/knowledge-snapshot.md` |
+| Knowledge Snapshot | `.knowledge-layer/long-term/knowledge-snapshot.md` |
 | Ideation | `.knowledge-layer/active/ideation/ideation-*.md` |
 
 ---

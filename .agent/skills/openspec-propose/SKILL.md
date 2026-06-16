@@ -44,7 +44,7 @@ When ready to implement, run /opsx:apply
    Trước khi tạo change, kiểm tra và đọc context từ pipeline `/task`:
    - `.knowledge-layer/active/REQUIREMENT.md` → dùng làm input cho proposal (what & why).
    - `.knowledge-layer/active/EXPLORE_CONTEXT.md` → dùng làm input cho design (how).
-   - `.knowledge-layer/templates/knowledge-snapshot.md` → bối cảnh hệ thống tổng quan.
+   - `.knowledge-layer/long-term/knowledge-snapshot.md` → bối cảnh hệ thống tổng quan.
 
    Nếu các file này có nội dung (không chỉ là template trống):
    - Dùng chúng để populate `proposal.md`, `design.md` thay vì hỏi user từ đầu.

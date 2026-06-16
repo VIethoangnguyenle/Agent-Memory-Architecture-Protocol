@@ -59,7 +59,7 @@ Agent không được tự ý bỏ qua KG tools chỉ vì grep/search cho cảm 
 
 - `.knowledge-layer/active/REQUIREMENT.md`
 - (Tuỳ chọn) `.knowledge-layer/active/EXPLORE_CONTEXT.md`
-- `.knowledge-layer/templates/knowledge-snapshot.md` (nếu có)
+- `.knowledge-layer/long-term/knowledge-snapshot.md` (nếu có)
 - Trạng thái tool:
   - Socraticode có khả dụng không
   - Repo có sử dụng Understand-Anything không

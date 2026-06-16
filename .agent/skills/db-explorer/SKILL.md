@@ -57,7 +57,7 @@ Dùng `db-explorer` khi:
 - `.knowledge-layer/active/REQUIREMENT.md`:
   - Entity/khái niệm dữ liệu chính.
   - Luồng xử lý chạm tới dữ liệu.
-- (Tuỳ chọn) `.knowledge-layer/active/EXPLORE_CONTEXT.md` và `.knowledge-layer/templates/knowledge-snapshot.md`:
+- (Tuỳ chọn) `.knowledge-layer/active/EXPLORE_CONTEXT.md` và `.knowledge-layer/long-term/knowledge-snapshot.md`:
   - Thông tin database đã từng được khám phá.
 - Khả năng truy cập database qua MCP `db-remote` (hoặc provider tương tự):
   - Ít nhất phải có quyền **đọc metadata** (schema, catalog, system views).
@@ -139,7 +139,7 @@ Ngoài ra:
 1. Dùng MCP `db-remote` để:
    - Liệt kê database / schema / namespace sẵn có.
 2. Kết hợp với:
-   - `.knowledge-layer/templates/knowledge-snapshot.md` (nếu có).
+   - `.knowledge-layer/long-term/knowledge-snapshot.md` (nếu có).
    - Tên/ghi chú của database/schema.
 3. Chọn ra tập database/schema **nhiều khả năng liên quan** đến requirement.
 4. Ghi vào `.knowledge-layer/active/EXPLORE_CONTEXT.md` một bảng ngắn:

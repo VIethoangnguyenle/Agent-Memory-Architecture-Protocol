@@ -41,7 +41,7 @@ IF external KI detected:
      "[R-KI-1] KI conflict pending cleanup: {path}"
   3. Đề xuất action trong bootstrap report:
      "→ Action: Replace nội dung {ki_file} bằng pointer:
-        `# Xem .knowledge-layer/templates/conventions.yaml + author-dna.yaml`"
+        `# Xem .knowledge-layer/long-term/conventions.yaml + author-dna.yaml`"
   4. Nếu phát hiện KI file duplicate conventions/DNA:
      **Từ chối dùng KI file đó trong phiên này** — chỉ dùng .knowledge-layer/.
 
@@ -50,7 +50,7 @@ IF external KI NOT detected:
 ```
 
 **Lý do**: Incident 2026-06-08 — agent dựa vào `~/.gemini/antigravity/knowledge/factory-rules.md`
-(không version-controlled, không có DNA judgment layer) thay vì `.knowledge-layer/templates/conventions.yaml`.
+(không version-controlled, không có DNA judgment layer) thay vì `.knowledge-layer/long-term/conventions.yaml`.
 External KI tạo ảo giác "đã đủ context" trong khi thiếu hoàn toàn judgment layer.
 
 **Periodic re-scan**: Ngoài bootstrap, cũng chạy scan này khi:
@@ -129,9 +129,9 @@ Nạp file theo thứ tự ưu tiên. Logic đầy đủ: `context-loader.md`.
 | P1 | `.knowledge-layer/active/EXPLORE_CONTEXT.md` | Tồn tại + không phải skeleton | status = "empty" |
 | P1 | `.knowledge-layer/active/AGENT_TRANSPARENCY.md` | Tồn tại | bỏ qua |
 | P2 | `.knowledge-layer/active/ideation/ideation-*.md` | Tất cả file .md | danh sách rỗng |
-| P2 | `.knowledge-layer/templates/knowledge-snapshot.md` | Luôn nạp nếu tồn tại | **BLOCK** — ghi vào bootstrap report: "⛔ knowledge-snapshot.md MISSING — độ tin cậy kiến trúc = KHÔNG XÁC ĐỊNH. Chạy `/index-source` để tạo." |
-| P2 | `.knowledge-layer/templates/conventions.yaml` | status=approved | **BLOCK** — như hiện tại |
-| P2 | `.knowledge-layer/templates/author-dna.yaml` | status=approved | **BLOCK** — như hiện tại |
+| P2 | `.knowledge-layer/long-term/knowledge-snapshot.md` | Luôn nạp nếu tồn tại | **BLOCK** — ghi vào bootstrap report: "⛔ knowledge-snapshot.md MISSING — độ tin cậy kiến trúc = KHÔNG XÁC ĐỊNH. Chạy `/index-source` để tạo." |
+| P2 | `.knowledge-layer/long-term/conventions.yaml` | status=approved | **BLOCK** — như hiện tại |
+| P2 | `.knowledge-layer/long-term/author-dna.yaml` | status=approved | **BLOCK** — như hiện tại |
 | P4 | `.knowledge-layer/archive/` | Chỉ khi P1 trống | đọc metadata của ≤10 ticket gần nhất |
 
 **Skeleton detection**: File là template skeleton nếu chứa `<!-- TODO: fill in -->` hoặc độ dài < 200 ký tự.

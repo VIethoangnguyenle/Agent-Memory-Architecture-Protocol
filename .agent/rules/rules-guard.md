@@ -97,7 +97,7 @@ Khi bootstrap phát hiện external KI (Antigravity, Cursor rules, `.cursorrules
 
 1. **Bắt buộc** WARN trong bootstrap report.
 2. **Bắt buộc** đề xuất action cleanup cụ thể:
-   "Replace nội dung `{ki_file}` bằng: `# Xem .knowledge-layer/templates/conventions.yaml + author-dna.yaml`"
+   "Replace nội dung `{ki_file}` bằng: `# Xem .knowledge-layer/long-term/conventions.yaml + author-dna.yaml`"
 3. **Bắt buộc** ghi `[R-KI-1] KI cleanup pending: {path}` vào AGENT_TRANSPARENCY.
 4. Nếu KI file duplicate conventions/DNA: **từ chối dùng KI file đó trong phiên** — chỉ dùng `.knowledge-layer/`.
 5. Nhắc lại mỗi bootstrap cho đến khi cleanup xong.

@@ -35,7 +35,7 @@ Quản lý **vòng đời tri thức** trong hệ thống AMAP:
    - Tables/columns mới phát hiện
    - Modules/services đã map
    - Business rules đã xác nhận
-2. Merge vào .knowledge-layer/templates/knowledge-snapshot.md:
+2. Merge vào .knowledge-layer/long-term/knowledge-snapshot.md:
    - Không ghi đè — chỉ bổ sung thông tin mới
    - Đánh dấu timestamp và ticket_id nguồn
 ```

@@ -101,7 +101,7 @@ This tells you:
 Ngoài `openspec list`, cũng kiểm tra context từ pipeline `/task`:
 - `.knowledge-layer/active/REQUIREMENT.md` — yêu cầu đã chuẩn hoá.
 - `.knowledge-layer/active/EXPLORE_CONTEXT.md` — bối cảnh DB + code + kiến trúc.
-- `.knowledge-layer/templates/knowledge-snapshot.md` — tổng quan hệ thống.
+- `.knowledge-layer/long-term/knowledge-snapshot.md` — tổng quan hệ thống.
 
 Nếu có nội dung → dùng làm bối cảnh khi explore, giúp cuộc thảo luận bám sát thực tế hệ thống.
 

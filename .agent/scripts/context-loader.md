@@ -22,9 +22,9 @@ Tránh tình trạng agent dùng context cũ của task khác.
 │ P1        │ .knowledge-layer/active/AGENT_TRANSPARENCY.md   │ Luôn nạp nếu có │
 │ P1        │ .knowledge-layer/active/TOKEN_LOG.md             │ Luôn nạp nếu có │
 │ P2        │ .knowledge-layer/active/ideation/ideation-*.md  │ Tất cả file .md │
-│ P3 (tĩnh) │ .knowledge-layer/templates/knowledge-snapshot.md│ Luôn nạp nếu có │
-│ P3 (tĩnh) │ .knowledge-layer/templates/conventions.yaml     │ Chỉ khi status=approved│
-│ P3 (tĩnh) │ .knowledge-layer/templates/author-dna.yaml      │ Chỉ khi status=approved│
+│ P3 (tĩnh) │ .knowledge-layer/long-term/knowledge-snapshot.md│ Luôn nạp nếu có │
+│ P3 (tĩnh) │ .knowledge-layer/long-term/conventions.yaml     │ Chỉ khi status=approved│
+│ P3 (tĩnh) │ .knowledge-layer/long-term/author-dna.yaml      │ Chỉ khi status=approved│
 │ P4 (thấp) │ .knowledge-layer/archive/{ticket-id}/           │ Chỉ khi P1 trống│
 └─────────────────────────────────────────────────────────────────────────┘
 ```
@@ -81,7 +81,7 @@ Nếu section không tìm thấy trong conventions.yaml → load toàn bộ file
 > **Agent PHẢI** (không phải "khuyến nghị"):
 > 1. Trong phiên detect: WARN user ngay trong bootstrap report (PHASE 0.5).
 > 2. Đề xuất action cụ thể: "Replace nội dung `{ki_file}` bằng 1 dòng pointer:
->    `# Xem .knowledge-layer/templates/conventions.yaml + author-dna.yaml`"
+>    `# Xem .knowledge-layer/long-term/conventions.yaml + author-dna.yaml`"
 > 3. Ghi vào AGENT_TRANSPARENCY: "[R-KI-1] KI conflict detected: {path}. Cleanup pending."
 > 4. Nếu user chưa cleanup sau 2 phiên: nhắc lại mỗi bootstrap cho đến khi xử lý.
 >
@@ -120,7 +120,7 @@ REQUIRED:
   → .knowledge-layer/active/EXPLORE_CONTEXT.md  (PHẢI có, nếu không: WARN, hạ tin cậy)
 
 OPTIONAL:
-  → .knowledge-layer/templates/knowledge-snapshot.md
+  → .knowledge-layer/long-term/knowledge-snapshot.md
   → .knowledge-layer/archive/{ticket-id}/       (nếu active context khác ticket)
 ```
 

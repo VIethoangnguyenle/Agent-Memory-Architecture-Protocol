@@ -13,11 +13,11 @@ pre_conditions:
   - file: .knowledge-layer/active/EXPLORE_CONTEXT.md
     condition: not_skeleton
     on_fail: "WARN — EXPLORE_CONTEXT thiếu, độ tin cậy kiến trúc sẽ là TRUNG BÌNH — cân nhắc chạy db-explorer / codebase-explorer trước"
-  - file: .knowledge-layer/templates/conventions.yaml
+  - file: .knowledge-layer/long-term/conventions.yaml
     condition: exists
     on_fail: "WARN — conventions.yaml chưa có, đánh giá boundary không đầy đủ"
     load_scope: full  # override selective loading — arch-reviewer cần toàn bộ design_patterns
-  - file: .knowledge-layer/templates/author-dna.yaml
+  - file: .knowledge-layer/long-term/author-dna.yaml
     condition: exists
     on_fail: "WARN — author-dna.yaml chưa có, hard principles không được áp dụng"
     load_scope: hard_principles+complexity_thresholds  # pattern_preferences không cần ở Pha 1
@@ -64,7 +64,7 @@ Không dùng skill này:
   - Thông tin từ `db-explorer` (tầng database).
   - Thông tin từ `codebase-explorer` (tầng code, module, entrypoint).
   - Các ghi chú kiến trúc hiện có (nếu đã được cập nhật trước đó).
-- `.knowledge-layer/templates/knowledge-snapshot.md` (nếu có):
+- `.knowledge-layer/long-term/knowledge-snapshot.md` (nếu có):
   - Bức tranh tổng thể kiến trúc hệ thống, các hệ thống phụ thuộc.
 - `.knowledge-layer/active/AGENT_TRANSPARENCY.md`:
   - Trạng thái tool/skill đã chạy:
@@ -153,7 +153,7 @@ Dựa vào `AGENT_TRANSPARENCY` + thực tế tool:
 
 ### Bước 2 — Tóm tắt kiến trúc hiện tại liên quan tới yêu cầu
 
-1. Từ `.knowledge-layer/active/EXPLORE_CONTEXT.md` + `.knowledge-layer/templates/knowledge-snapshot.md`:
+1. Từ `.knowledge-layer/active/EXPLORE_CONTEXT.md` + `.knowledge-layer/long-term/knowledge-snapshot.md`:
    - Xác định:
      - Service/module chính xử lý use case.
      - Integration (API, message, job nền…) liên quan.

@@ -125,7 +125,7 @@ Sau khi nhận diện:
    - Cập nhật section "Kiến trúc code hiện tại (codebase-explorer)" trong `.knowledge-layer/active/EXPLORE_CONTEXT.md`.
    - **Ghi kèm node_id** cho mỗi component quan trọng → cho phép architecture-reviewer dùng `get_node_source(id)` sau.
 4. Gọi `architecture-reviewer`:
-   - Đối chiếu `.knowledge-layer/active/REQUIREMENT.md` + `.knowledge-layer/active/EXPLORE_CONTEXT.md` + `.knowledge-layer/templates/knowledge-snapshot.md`.
+   - Đối chiếu `.knowledge-layer/active/REQUIREMENT.md` + `.knowledge-layer/active/EXPLORE_CONTEXT.md` + `.knowledge-layer/long-term/knowledge-snapshot.md`.
    - Nếu EXPLORE_CONTEXT có node IDs → dùng KG tools (`find_impact`, `get_node_source`, `get_relationships`) để verify.
    - Đánh giá:
      - Điểm align với kiến trúc hiện tại.
@@ -308,9 +308,9 @@ Mục tiêu: dùng OpenSpec để áp dụng spec đã được chấp thuận v
 2a. **[DNA-RELOAD — BẮT BUỘC]** Trước khi sinh bất kỳ đoạn code nào:
     > Gate này chống Mode Switching — kéo DNA/conventions về recency window ngay trước khi code.
     > Kết hợp với Session Boundary (Lớp 1) tạo "sandwich defense": rule ở đầu (bootstrap) + cuối (re-read) context.
-    - **READ**: `.knowledge-layer/templates/author-dna.yaml`
+    - **READ**: `.knowledge-layer/long-term/author-dna.yaml`
       - Focus: `hard_principles` (HP-1..HP-11) + `complexity_thresholds` + `style_preferences` liên quan
-    - **READ**: `.knowledge-layer/templates/conventions.yaml` (nếu tồn tại, `status: approved`)
+    - **READ**: `.knowledge-layer/long-term/conventions.yaml` (nếu tồn tại, `status: approved`)
     - Ghi checkpoint vào AGENT_TRANSPARENCY:
       ```
       [DNA-RELOAD] Re-read DNA + conventions trước Pha 3.
@@ -401,7 +401,7 @@ Sau khi `/task apply` Pha 3 hoàn thành thành công:
      - Các table/column mới phát hiện
      - Modules/services đã map
      - Business rules đã xác nhận
-   - Cập nhật .knowledge-layer/templates/knowledge-snapshot.md
+   - Cập nhật .knowledge-layer/long-term/knowledge-snapshot.md
 
 3. Gọi knowledge-curator.reset_active_context():
    - Reset active/ về skeleton sạch

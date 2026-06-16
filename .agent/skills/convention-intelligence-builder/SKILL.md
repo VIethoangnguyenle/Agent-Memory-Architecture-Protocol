@@ -13,7 +13,7 @@ description: >
 
 ## 1. Mục tiêu
 
-Extract **implicit conventions** từ codebase thực tế — không phải generic best practice — và đưa chúng vào `.knowledge-layer/templates/conventions.yaml` để agent dùng khi sinh spec và code.
+Extract **implicit conventions** từ codebase thực tế — không phải generic best practice — và đưa chúng vào `.knowledge-layer/long-term/conventions.yaml` để agent dùng khi sinh spec và code.
 
 Hai nguồn được scan đồng thời qua UA Knowledge Graph:
 - **Project codebase** (`PROJECT_ROOTS`) — convention project-native, có thể có exception có lý do.
@@ -105,7 +105,7 @@ FOR EACH pattern category:
 
 ### Bước 4 — Sinh conventions.draft.yaml
 
-Ghi ra `.knowledge-layer/templates/conventions.draft.yaml` với 7 sections:
+Ghi ra `.knowledge-layer/long-term/conventions.draft.yaml` với 7 sections:
 Naming Conventions, Package Structure, Design Patterns, Upstream Constraints,
 Test Conventions, Exceptions & Inconsistencies, Needs Review.
 

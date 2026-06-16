@@ -46,5 +46,5 @@ Confirmed hypothesis → `hard_principles` / `style_preferences` / `creative_ove
 
 | File | Vị trí |
 |------|--------|
-| `author-dna.draft.yaml` | `.knowledge-layer/templates/author-dna.draft.yaml` |
-| `author-dna.yaml` (sau `/approve-dna`) | `.knowledge-layer/templates/author-dna.yaml` |
+| `author-dna.draft.yaml` | `.knowledge-layer/long-term/author-dna.draft.yaml` |
+| `author-dna.yaml` (sau `/approve-dna`) | `.knowledge-layer/long-term/author-dna.yaml` |
