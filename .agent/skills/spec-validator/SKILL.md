@@ -191,6 +191,11 @@ Ghi sau mỗi lần chạy:
 
 > **Mục tiêu**: Thay thế Reviewer Agent riêng bằng cách mở rộng spec-validator — cùng chức năng verification, 1/10 effort.
 > Chạy **sau** `post_apply_verify` (§3.3), **trước** POST-PHASE SELF-CHECK Pha 3.
+>
+> **SP1b split:** Rule cơ học (nesting, no-else, max-lines, naming, javadoc) đã chuyển
+> sang **mechanical gate deterministic** (SP1a) chạy trong micro-loop — KHÔNG check lại ở
+> đây. §6 giờ chỉ giữ phần **semantic** (HP-1/2/3/5/8/9 — pattern judgment), chạy per-task
+> trên DIFF của 1 task (surface nhỏ), không phải cuối cả đợt apply.
 
 ```
 INPUT:
