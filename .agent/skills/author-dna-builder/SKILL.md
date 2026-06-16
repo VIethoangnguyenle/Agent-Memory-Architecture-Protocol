@@ -173,6 +173,19 @@ META:
   - principles_author_added (số principle author bổ sung ngoài code)
 ```
 
+### Check 4 — Emit check_spec cho principle mechanizable (SP1a producer contract)
+
+Khi encode mỗi principle (hard_principles / style_preferences), tham chiếu
+[references/check-spec-mapping.md](references/check-spec-mapping.md) để xác định
+principle có map được sang `ir_rule` không:
+- Nếu CÓ → emit `mechanically_checkable: true` + `check_spec` (theo bảng mapping).
+- Nếu KHÔNG (CoR, Template Method, Strategy, Factory boundary, SOLID, config-driven,
+  extraction) → set `mechanically_checkable: false`. Principle này ở dạng semantic,
+  do SP1b (subagent) enforce, không phải linter.
+
+Sau khi DNA được approve (/approve-dna), regenerate ruleset qua rule-projector
+(SP1a §3.2) — xem cuối check-spec-mapping.md để biết câu lệnh đầy đủ.
+
 **Sau khi sinh draft:**
 
 ```
