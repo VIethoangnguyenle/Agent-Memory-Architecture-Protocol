@@ -78,3 +78,21 @@ def apply_result(queue, task_id, gate_status, max_retries=2):
         t["retries"] += 1
         t["status"] = "in_progress"
     return queue
+
+
+def run_loop(queue, dispatch_fn, gate_fn, max_retries=2):
+    """Drive the micro-loop. dispatch_fn(task)->changed_files; gate_fn(changed_files)->'PASS'|'FAIL'.
+
+    Pure protocol: no knowledge of tiers or the real gate — both injected. This is
+    what makes the loop platform-agnostic and unit-testable (portability gate).
+    """
+    while True:
+        t = next_task(queue)
+        if t is None:
+            return queue
+        t["status"] = "in_progress"  # resumable marker before dispatch
+        changed_files = dispatch_fn(t)
+        gate_status = gate_fn(changed_files)
+        apply_result(queue, t["id"], gate_status, max_retries=max_retries)
+        if t["status"] == "blocked":
+            return queue
