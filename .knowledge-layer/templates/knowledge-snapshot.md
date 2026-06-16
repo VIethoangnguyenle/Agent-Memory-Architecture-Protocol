@@ -124,6 +124,7 @@ BaseInitFinancialTransReqHandler.process()
 | BR-LIM-002 | Race condition chống bằng 3 lớp: Redis Lock (DistributedLockService) → Virtual Limit (increaseVirtualLimit) → Oracle Trigger | `source:brainstorm-daily-trans-req-limit` `seen:2026-06` `verified:2026-06` `status:active` |
 | BR-LIM-003 | Khi BO thay đổi gói DN → Kafka event → cleanup HM tùy chỉnh (delete `OMNI_DAILY_TRANS_REQ_LIMIT` records) | `source:brainstorm-daily-trans-req-limit` `seen:2026-06` `verified:2026-06` `status:active` |
 | BR-NF-001 | Cài đặt HM lập lệnh = lệnh phi tài chính, đi qua luồng Nonfinancial Maker-Checker trên auth-service | `source:brainstorm-daily-trans-req-limit` `seen:2026-06` `verified:2026-06` `status:active` |
+| BR-AUTH-001 | Maker-Checker Separation: Phase Init tuyệt đối KHÔNG mutate state (vd đổi status User). Giữ state ban đầu để không gián đoạn dịch vụ. Chỉ mutate state ở phase ConfirmExecutor. | `source:USER-STATUS-REFACTOR` `seen:2026-06` `verified:2026-06` `status:active` |
 
 ---
 
@@ -171,6 +172,7 @@ BaseInitFinancialTransReqHandler.process()
 | `incident-limitadjustment-2026-06-08` | 2026-06-09 | Corrective action: thêm DailyTransReqLimitFactory gold standard, transaction module gold standard, factory base class decision tree | 4 | 0 |
 | `teaching-moment-hp1-2026-06-11` | 2026-06-11 | HP-1 clarification: need-driven. Removed SP-6/7/8/9 duplicates (→ CP-03/04/05/10). Thêm Base Transaction Framework fact | 1 | 4 (cross-refs + HP-1) |
 | `knowledge-store-cleanup` | 2026-06-15 | Tách đúng vai trò: xóa 10 entries quy tắc/triết lý khỏi snapshot (Factory rules → conventions, HP-1 ref → DNA, DB naming → conventions). Thêm `database_naming` vào conventions.yaml | 0 | 10 (xóa/chuyển) |
+| `USER-STATUS-REFACTOR` | 2026-06-16 | Corrective action: Loại bỏ state mutation ở Validation, cập nhật Maker-Checker boundaries. | 1 | 0 |
 
 ---
 
@@ -194,15 +196,16 @@ BaseInitFinancialTransReqHandler.process()
 
 | Pattern | Rule bị vi phạm | Lần xảy ra | Task đầu tiên | Task gần nhất | Severity |
 |---------|----------------|-----------|--------------|--------------|----------|
-| <!-- Ví dụ: Skip confirm step trước /opsx:apply --> | R-Apply-1 | 0 | - | - | MEDIUM |
+| LLM Default Bias: Bỏ qua tiện ích framework (getModelOrNull, StringUtils), tự viết try/catch rườm rà. | `conventions.yaml` / `author-dna.yaml` | 2 | USER-STATUS-REFACTOR | USER-STATUS-REFACTOR | MEDIUM |
+| LLM Default Bias: Tự động sinh Javadoc cho private method, import FQN. | `author-dna.yaml` (Zero-waste) | 2 | USER-STATUS-REFACTOR | USER-STATUS-REFACTOR | MEDIUM |
 
 **Severity levels**: LOW (cosmetic), MEDIUM (workflow issue), HIGH (data integrity risk), CRITICAL (security/data loss)
 
 ### Violation Trend
 
-- Tổng số violation đã ghi nhận: 0
-- Violation phổ biến nhất: N/A
-- Cần xem xét cải thiện rule: N/A
+- Tổng số violation đã ghi nhận: 2
+- Violation phổ biến nhất: Bỏ qua Author DNA / LLM Default Bias
+- Cần xem xét cải thiện rule: Thêm bước "DNA Filtering" bắt buộc trước mọi lệnh output code.
 
 ### Quy tắc cập nhật
 

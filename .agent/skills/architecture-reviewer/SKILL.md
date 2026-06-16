@@ -1,6 +1,11 @@
 ---
 name: architecture-reviewer
-description: Đối chiếu REQUIREMENT với kiến trúc + codebase thực tế (DB + code), phát hiện xung đột và rủi ro.
+version: '1.1'
+description: >
+  Đối chiếu REQUIREMENT với kiến trúc + codebase thực tế (DB + code), phát hiện xung đột và rủi ro.
+  Dùng khi cần đánh giá impact kiến trúc, phát hiện breaking changes, hoặc review contract design.
+  KHÔNG dùng cho: chuẩn hoá yêu cầu (→ requirement-analyst),
+  khám phá code chi tiết (→ codebase-explorer), validate spec đã sinh (→ spec-validator).
 pre_conditions:
   - file: .knowledge-layer/active/REQUIREMENT.md
     condition: not_skeleton
@@ -392,3 +397,12 @@ GHI VÀO AGENT_TRANSPARENCY:
 M5 và M6 chạy **độc lập**, không phụ thuộc nhau:
 - M5: đánh giá tác động hạ tầng → đề xuất TDD.
 - M6: đánh giá contract completeness → nhắc bổ sung trước spec.
+
+---
+
+## Gotchas
+
+- **[G1] knowledge-snapshot stale**: Luôn check tag `<!-- verified: YYYY-MM-DD -->` trong `knowledge-snapshot.md`. Nếu >30 ngày → coi snapshot là reference chứ không phải source of truth. Cross-verify với UA graph.
+- **[G2] conventions.yaml vs conventions.draft.yaml**: Chỉ dùng `conventions.yaml` (approved). File `.draft.yaml` chưa được user xác nhận — KHÔNG dùng làm căn cứ đánh giá.
+- **[G3] M6 contract check cần REQUIREMENT**: M6 (Check contract completeness) chỉ trigger khi `REQUIREMENT.md` có nội dung thực. Nếu REQUIREMENT trống/skeleton → M6 skip, không báo lỗi.
+- **[G4] Upstream library boundary**: Khi đánh giá design, KHÔNG đề xuất thay đổi interface/base class từ upstream library. Chỉ WARN nếu downstream implementation lệch so với upstream contract.

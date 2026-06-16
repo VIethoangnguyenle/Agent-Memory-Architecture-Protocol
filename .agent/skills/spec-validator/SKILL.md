@@ -1,6 +1,11 @@
 ---
 name: spec-validator
-description: Kiểm tra spec (OpenSpec artifacts) trước và sau khi apply — pre-apply gate, AC coverage check, post-apply verify.
+version: '1.1'
+description: >
+  Kiểm tra spec (OpenSpec artifacts) trước và sau khi apply — pre-apply gate, AC coverage check, post-apply verify.
+  Dùng khi cần validate spec trước apply hoặc verify kết quả sau apply.
+  KHÔNG dùng cho: sinh spec mới (→ openspec-propose),
+  review kiến trúc (→ architecture-reviewer), chuẩn hoá yêu cầu (→ requirement-analyst).
 pre_conditions:
   - file: .knowledge-layer/active/REQUIREMENT.md
     condition: not_skeleton
@@ -170,3 +175,94 @@ Ghi sau mỗi lần chạy:
 - `[x] spec-validator: ac_coverage — {n}/{n} covered`
 - `[x] spec-validator: contract_alignment — {n}/{n} interfaces covered` (nếu C6 chạy)
 - `[x] spec-validator: post_apply_verify — {OK|issues}`
+
+---
+
+## Gotchas
+
+- **[G1] OpenSpec artifact path versioning**: OpenSpec artifact path (`changes/{id}/`) có thể thay đổi giữa versions. Luôn dùng relative path từ project root và verify file tồn tại trước khi đọc.
+- **[G2] C6 gate cần design contract**: C6 (Contract Alignment check) chỉ chạy khi REQUIREMENT.md có section "Design Contract" hoặc "Interface Specification". Nếu không có → C6 skip silently, ghi note trong output.
+- **[G3] Pre-apply vs Post-apply output format**: Pre-apply gate trả `PASS | BLOCK` (binary). Post-apply verify trả `OK | issues list`. Không nhầm 2 format khi parse kết quả.
+- **[G4] AC coverage false positive**: Nếu Acceptance Criteria quá generic (e.g. "Hệ thống hoạt động đúng"), coverage check sẽ trả 100% nhưng thực tế chưa verify gì. Agent phải WARN khi phát hiện AC quá mơ hồ.
+
+---
+
+## 6. Post-Apply DNA Compliance Check (`post_apply_dna_check`)
+
+> **Mục tiêu**: Thay thế Reviewer Agent riêng bằng cách mở rộng spec-validator — cùng chức năng verification, 1/10 effort.
+> Chạy **sau** `post_apply_verify` (§3.3), **trước** POST-PHASE SELF-CHECK Pha 3.
+
+```
+INPUT:
+  changed_files — danh sách file đã thay đổi (từ apply output)
+
+PRE-CONDITION:
+  DNA-RELOAD (bước 2a trong task.md) đã chạy
+  → author-dna.yaml đã trong context
+
+STEPS:
+
+1. Load rule sources (GENERIC — đọc từ file, KHÔNG hardcode):
+
+   a. Đọc author-dna.yaml → extract:
+      - hard_principles[]     → mỗi item có id, severity mặc định = BLOCK
+      - soft_preferences[]    → severity mặc định = WARN
+      - complexity_thresholds → mỗi threshold là 1 check, severity = WARN
+      - style_preferences[]   → severity = WARN
+
+   b. Đọc conventions.yaml (nếu tồn tại, status=approved) → extract:
+      - naming_patterns[]     → severity = WARN
+      - package_structure[]   → severity = WARN
+      Nếu chỉ có conventions.draft.yaml → SKIP (chưa approved)
+
+2. Build checklist động từ sources ở bước 1:
+
+   checklist = []
+   FOR EACH hp IN hard_principles:
+     checklist.add({
+       id:       hp.id,           # e.g. "HP-6"
+       describe: hp.description,  # e.g. "Zero nesting"
+       source:   "author-dna.yaml/hard_principles",
+       severity: BLOCK
+     })
+   FOR EACH sp IN soft_preferences:
+     checklist.add({ id: sp.id, ..., severity: WARN })
+   FOR EACH threshold IN complexity_thresholds:
+     checklist.add({ id: threshold.key, ..., severity: WARN })
+   FOR EACH convention IN naming_patterns + package_structure:
+     checklist.add({ id: convention.pattern, ..., severity: WARN })
+
+3. Verify — với MỖI file trong changed_files:
+
+   FOR EACH check IN checklist:
+     Đánh giá file có vi phạm check.describe không
+     → Nếu vi phạm: ghi { file, check.id, check.severity, line_hint, suggestion }
+
+RESULT:
+  counts = { BLOCK: n, WARN: m }
+
+  IF counts.BLOCK > 0:
+    → "DNA COMPLIANCE: BLOCK — {n} hard principle violations"
+    → List tất cả violations kèm fix suggestion
+    → Agent PHẢI fix trước khi hoàn thành POST-PHASE SELF-CHECK
+
+  IF counts.BLOCK == 0 AND counts.WARN > 0:
+    → "DNA COMPLIANCE: PASS with {m} warnings"
+    → List warnings — user tự quyết định có fix không
+
+  IF counts.BLOCK == 0 AND counts.WARN == 0:
+    → "DNA COMPLIANCE: CLEAN — no violations detected"
+
+  Ghi vào AGENT_TRANSPARENCY:
+    "[DNA-CHECK] post_apply_dna_check: {BLOCK|PASS|CLEAN} — {summary}"
+
+  Ghi vào Violation Log (trong AGENT_TRANSPARENCY):
+    Mỗi violation 1 dòng: | Pha | Loại | Rule ID | Severity | Đã fix? | Ghi chú |
+```
+
+### Gotchas cho DNA Check
+
+- **[G5] DNA-RELOAD phải chạy trước**: `post_apply_dna_check` giả định DNA đã trong context (bước 2a). Nếu DNA-RELOAD chưa chạy → kết quả check không đáng tin.
+- **[G6] Checklist là dynamic**: Skill KHÔNG hardcode rule cụ thể (HP-6, HP-7…). Rule nào có trong `author-dna.yaml` thì check, không có thì skip. Nếu project đổi DNA → checklist tự đổi theo.
+- **[G7] Conventions draft bị skip**: Chỉ load `conventions.yaml` khi `status: approved`. Draft conventions KHÔNG được enforce — đây là by-design.
+- **[G8] False negative**: Check dựa trên agent judgment + pattern matching, không phải AST analysis. Violations phức tạp (e.g. nesting qua method extraction) có thể miss.

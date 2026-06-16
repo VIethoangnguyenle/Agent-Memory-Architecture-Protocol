@@ -1,6 +1,11 @@
 ---
 name: db-explorer
-description: Khám phá logic tầng database (SQL + NoSQL) bằng MCP db-remote để cập nhật EXPLORE_CONTEXT.
+version: '1.0'
+description: >
+  Khám phá logic tầng database (SQL + NoSQL) bằng MCP db-remote để cập nhật EXPLORE_CONTEXT.
+  Dùng khi cần hiểu schema, constraint, data flow ở tầng DB cho task hiện tại.
+  KHÔNG dùng cho: khám phá code/module (→ codebase-explorer),
+  review kiến trúc tổng thể (→ architecture-reviewer), viết tài liệu (→ document-writer).
 pre_conditions:
   - file: .knowledge-layer/active/REQUIREMENT.md
     condition: not_skeleton
@@ -289,3 +294,11 @@ Trong `.knowledge-layer/active/AGENT_TRANSPARENCY.md`:
 - Không hard-code bất kỳ tên bảng/collection/domain cụ thể nào trong SKILL; mọi ví dụ nên ở dạng khái quát (`<entity>`, `<status>`, `<amount>`...).[web:120][web:170]
 - Không sinh, không chạy lệnh DDL/DML thay đổi dữ liệu/schema trong scope skill này.
 - Luôn ưu tiên **metadata và pattern** hơn raw data, để tránh rủi ro bảo mật và PII.
+---
+
+## Gotchas
+
+- **[G1] Oracle schema prefix bắt buộc**: Mọi query Oracle PHẢI có schema prefix (`SCHEMA.TABLE`). Query không prefix sẽ bị MCP db-remote block hoặc trả kết quả sai schema.
+- **[G2] MongoDB collection names case-sensitive**: `userProfiles` ≠ `UserProfiles`. Luôn dùng `mongo_list_collections` trước khi query để lấy tên chính xác.
+- **[G3] Timeout cho query nặng**: Query `sql_read` có timeout mặc định ngắn. Nếu scan bảng lớn (>100k rows), dùng `FETCH FIRST {n} ROWS ONLY` hoặc `WHERE ROWNUM <= {n}`.
+- **[G4] Không thể write**: MCP db-remote chỉ hỗ trợ SELECT/find. Mọi INSERT/UPDATE/DELETE/DDL sẽ bị block. Không cần thử — chỉ ghi nhận schema/data pattern.

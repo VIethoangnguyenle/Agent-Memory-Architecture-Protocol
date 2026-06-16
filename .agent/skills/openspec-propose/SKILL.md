@@ -1,6 +1,11 @@
 ---
 name: openspec-propose
-description: Propose a new change with all artifacts generated in one step. Use when the user wants to quickly describe what they want to build and get a complete proposal with design, specs, and tasks ready for implementation.
+version: '1.0'
+description: >
+  Propose a new change with all artifacts generated in one step.
+  Use when the user wants to quickly describe what they want to build and get a complete proposal with design, specs, and tasks ready for implementation.
+  NOT for: exploring ideas/brainstorming (→ openspec-explore),
+  validating existing specs (→ spec-validator), writing TDD documents (→ infra-tdd).
 license: MIT
 compatibility: Requires openspec CLI.
 metadata:

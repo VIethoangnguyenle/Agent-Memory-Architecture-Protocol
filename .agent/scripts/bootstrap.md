@@ -18,7 +18,7 @@ READ: .agent/rules/rules-exec.md         ← data/arch/cost/obs
 READ: .agent/rules/rules-knowledge.md    ← knowledge lifecycle + path
 READ: .agent/rules/rules-guard.md        ← pre-invoke guards (đọc SAU cùng)
 ```
-
+Logou
 ### PHASE 0.5 — External KI Conflict Check
 
 > Ngăn "false sense of completeness" khi agent runtime có hệ thống KI external (Antigravity, Cursor rules, GitHub Copilot instructions, etc.)
@@ -53,16 +53,25 @@ IF external KI NOT detected:
 (không version-controlled, không có DNA judgment layer) thay vì `.knowledge-layer/templates/conventions.yaml`.
 External KI tạo ảo giác "đã đủ context" trong khi thiếu hoàn toàn judgment layer.
 
+**Periodic re-scan**: Ngoài bootstrap, cũng chạy scan này khi:
+- `knowledge-curator` chạy `archive_active_context` (kiểm tra xem có KI mới xuất hiện).
+- Phát hiện KI file có `last_modified` mới hơn lần scan cuối → WARN ngay.
+
 ---
 
 ## PHASE 1 — Skill Discovery
 
 ```
 SCAN .agent/skills/*/SKILL.md
-  EXTRACT name, description, trigger_conditions (section "Khi nào dùng")
-  REGISTER vào skill-registry (in-memory)
+  EXTRACT: chỉ YAML frontmatter (name, description) + section "Khi nào dùng" (trigger_conditions)
+  KHÔNG ĐỌC: full instruction body — defer đến khi trigger condition match
+  REGISTER vào skill-registry (in-memory): {name, description, triggers}
   ON ERROR (file corrupt): SKIP + WARN
 ```
+
+> **Lý do lazy-load**: Full SKILL.md = 100-475 dòng/file × 14 skills ≈ 2,000-6,000 dòng.
+> Chỉ cần frontmatter + triggers (≈ 10-20 dòng/skill) để biết khi nào invoke.
+> Full instructions được đọc khi skill thực sự được gọi.
 
 ---
 
@@ -146,12 +155,15 @@ IF REQUIREMENT.status == "active":
 
 ## PHASE 5 — Bootstrap Report + Write Transparency
 
-Xuất ra câu đầu tiên bắt buộc chứa trigger phrase, theo format:
+Xuất ra câu đầu tiên bắt buộc chứa trigger phrase từ `persona.yaml` (field: `greeting`).
+Nếu `persona.yaml` không tồn tại → dùng `"Ready"`.
+
+Format:
 
 ```
-chồng yêu — Em đã load xong:
+{greeting} — Em đã load xong:
 ✅ Core: AGENTS.md v{version} + RULES (manifest + 5 modules: flow, tool, exec, knowledge, guard)
-✅ Skills ({n}): requirement-analyst | spec-extract | db-explorer | codebase-explorer | architecture-reviewer | knowledge-curator
+✅ Skills ({n}): [list all discovered skill names]
 ✅ Workflows: /task (3 pha) | /idea-to-task | /index-source
 📋 Active: REQUIREMENT={active/empty} | EXPLORE_CONTEXT={active/empty} | Ideation={n} file
 🗺️ Snapshot: {loaded — n entries / MISSING ⛔}

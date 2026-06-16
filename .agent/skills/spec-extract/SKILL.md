@@ -1,6 +1,11 @@
 ---
 name: spec-extract
-description: Trích xuất spec có cấu trúc từ tài liệu (wiki/Confluence/PRD) vào REQUIREMENT.md, kèm đánh giá độ tin cậy.
+version: '1.0'
+description: >
+  Trích xuất spec có cấu trúc từ tài liệu (wiki/Confluence/PRD) vào REQUIREMENT.md, kèm đánh giá độ tin cậy.
+  Dùng khi đầu vào là tài liệu dài, wiki nhiều trang, hoặc PRD cần parse.
+  KHÔNG dùng cho: ticket có sẵn đã rõ scope (→ requirement-analyst),
+  ideation/brainstorm (→ openspec-explore), khám phá DB schema (→ db-explorer).
 ---
 
 # Spec Extract — Tài liệu → REQUIREMENT

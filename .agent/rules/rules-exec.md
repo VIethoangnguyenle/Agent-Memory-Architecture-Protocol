@@ -57,11 +57,21 @@
 - Nếu một pipeline kéo dài quá lâu:
   - Agent cần tóm tắt trạng thái và đề nghị chia nhỏ thành phiên mới.
 
-### R-Exec-3: Tool call budget per phase
+### R-Exec-3: Tool call budget per phase (complexity-scaled)
 
-- **Pha 1** (`/task <input>`): tối đa **20 KG calls** + **5 UA calls** + **10 Socraticode calls**.
-- **Pha 2** (`/task spec`): tối đa **5 opsx calls** (explore, propose, refine).
-- **Pha 3** (`/task apply`): tối đa **10 apply ops** (patch / file writes).
+Budget được điều chỉnh theo complexity tier — xác định ở đầu mỗi pha dựa trên scope:
+
+| Tier | Điều kiện | Pha 1 KG/UA/Socraticode | Pha 2 opsx | Pha 3 apply |
+|------|-----------|------------------------|------------|-------------|
+| **simple** | scope ≤ 1 module, không chạm DB schema | 10 / 3 / 5 | 3 | 5 |
+| **standard** | scope 1-2 modules HOẶC có DB read | 20 / 5 / 10 | 5 | 10 |
+| **complex** | scope ≥ 3 modules HOẶC DB schema change + integration | 30 / 10 / 15 | 8 | 15 |
+
+Cách xác định tier:
+- Đọc REQUIREMENT.md scope (In-scope items) → đếm modules/services liên quan.
+- Nếu chưa có REQUIREMENT → dùng **standard** làm mặc định.
+- Ghi tier đã chọn vào AGENT_TRANSPARENCY: `[BUDGET] Tier: {tier} — lý do: {reason}`.
+
 - **Memory budget** — áp dụng cho `memory_smart_search` + `memory_recall`:
   - **Pha 1** (`/task <input>`): tối đa **5 memory calls**.
   - **Pha 2** (`/task spec`): tối đa **3 memory calls**.

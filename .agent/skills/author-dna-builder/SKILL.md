@@ -1,10 +1,13 @@
 ---
 name: author-dna-builder
+version: '1.0'
 description: >
   Phân tích codebase để infer coding philosophy và style của tác giả,
   sau đó interview để confirm/bổ sung, encode thành author-dna.yaml.
-  Skill này tạo ra "judgment layer" — lens mà agent dùng khi evaluate
-  design và propose solution ở mọi pha.
+  Skill này tạo ra "judgment layer" — lens mà agent dùng khi evaluate design và propose solution.
+  Dùng khi onboard project hoặc cần cập nhật coding DNA sau kiến trúc thay đổi lớn.
+  KHÔNG dùng cho: scan convention (→ convention-intelligence-builder),
+  tra cứu DNA đã có (→ đọc trực tiếp author-dna.yaml), review kiến trúc (→ architecture-reviewer).
 trigger: /dna-scan
 approve_trigger: /approve-dna
 ---
@@ -46,178 +49,18 @@ Không dùng khi:
 
 ### GIAI ĐOẠN 1: Code Evidence Scan
 
-Mục tiêu: Thu thập evidence thực tế từ codebase, không infer intent.
-
-#### 1A. Complexity Profile
-
-```
-CALL: get_graph_stats()
-  → Lấy tổng số class, method, package
-
-QUERY UA: query_nodes(type="method", limit=500)
-  → Lấy tất cả method
-  FOR EACH method:
-    GET: get_node_source(node_id)  [chỉ lấy method body, không full class]
-    ANALYZE:
-      - Đếm số if/else/switch/ternary trong body
-      - Đếm độ sâu lồng nhau (nesting depth)
-      - Đếm số early return
-      - Đếm số dòng
-    CLASSIFY:
-      complexity_score = if_count + (nesting_depth * 2) + switch_count
-      complexity_label = HIGH (>10) | MEDIUM (4-10) | LOW (0-3)
-
-AGGREGATE:
-  - Distribution: % method LOW / MEDIUM / HIGH complexity
-  - Top 5 method complexity cao nhất (có thể là legacy)
-  - Top 5 method clean nhất (exemplar của style)
-  - Average nesting depth toàn codebase
-  - Early return frequency: tổng early return / tổng method
-```
-
-#### 1B. Design Pattern Detection
-
-```
-QUERY UA: query_nodes(type="class", filter="name matches pattern")
-  Patterns cần tìm:
-  - Chain of Responsibility: *Processor, *Handler với field "next" hoặc list<>
-  - Strategy: I*Strategy, *Strategy implements I*
-  - Factory: I*Factory, *Factory với method create/build/make
-  - Specification: *Specification, *Spec với method isSatisfiedBy
-  - Builder: *Builder với method chain (return this)
-  - Decorator: *Decorator wraps *
-  - Template Method: abstract class với protected method
-  - Observer: *Listener, *Observer, *EventHandler
-  - Command: *Command với execute() method
-
-  FOR EACH pattern found:
-    GET: get_relationships(node_id) để verify structure đúng pattern
-    RECORD:
-      - pattern_name
-      - occurrence_count
-      - exemplar_node_id (class đơn giản nhất, dễ đọc nhất)
-      - exemplar_file_path
-```
-
-#### 1C. If/Else vs Pattern Substitution Detection
-
-```
-Mục tiêu: Tìm bằng chứng TÁC GIẢ ĐÃ CHỦ Ý thay thế if/else bằng pattern.
-
-STRATEGY: So sánh "nơi nên có if/else nhưng không có" với "pattern được dùng thay thế"
-
-QUERY UA: query_nodes(type="class", filter="implements *Factory OR *Strategy")
-  FOR EACH factory/strategy:
-    GET: get_node_source()
-    ANALYZE: Method create/execute có if/else không?
-      → Nếu KHÔNG có if/else nhưng xử lý nhiều case: đây là substitution evidence
-
-QUERY Socraticode: codebase_search("switch", limit=50)
-  → Tìm tất cả switch statement
-  → Nếu count rất thấp so với số case xử lý: strong evidence dùng pattern thay switch
-
-QUERY Socraticode: codebase_search("instanceof", limit=50)
-  → instanceof nhiều = ad-hoc type checking = KHÔNG phải style này
-  → instanceof ít = polymorphism được dùng đúng
-
-RECORD:
-  - switch_count_total
-  - instanceof_count_total
-  - factory_without_switch: số Factory không dùng switch
-  - strategy_without_if: số Strategy không dùng if để dispatch
-```
-
-#### 1D. Layer Boundary Discipline
-
-```
-Mục tiêu: Xem tác giả có "creative override" layer boundary không,
-và nếu có thì theo pattern nào.
-
-QUERY UA: get_domain_overview()
-  → Liệt kê tất cả layer
-
-FOR EACH layer pair (A calls B):
-  CALL: get_relationships(layer_A_nodes) filtered to layer_B
-  ANALYZE:
-    - Có layer nào gọi "ngược chiều" (controller → domain trực tiếp bỏ qua service)?
-    - Có class nào bridge 2 layer theo cách không conventional?
-    - Có abstract layer nào được inject vào layer không expected?
-
-  Nếu phát hiện "override":
-    GET: get_node_source(bridge_class)
-    NOTE: "Đây là creative override hay anti-pattern?" → để nguyên, không kết luận
-```
-
-#### 1E. Code Duplication vs Abstraction Tendency
-
-```
-QUERY Socraticode: codebase_context_search("common logic abstraction helper util")
-  → Xem tác giả có xu hướng extract common logic không
-
-QUERY UA: query_nodes(type="class", filter="name contains 'Helper' OR 'Util' OR 'Common'")
-  → Đếm helper/util class
-  → Nếu ít: tác giả prefer đặt common logic ở chỗ khác (Base class? Interface default? Composition?)
-
-QUERY UA: query_nodes(type="class", filter="extends Base*")
-  → Base class abstraction có nhiều không?
-  → Inheritance depth trung bình
-```
-
----
+Thu thập evidence từ codebase qua UA + Socraticode. Bao gồm 5 dimension:
+- **1A** Complexity Profile (nesting depth, early return frequency)
+- **1B** Design Pattern Detection (CoR, Strategy, Factory, Spec, Builder...)
+- **1C** If/Else vs Pattern Substitution (switch/instanceof count)
+- **1D** Layer Boundary Discipline (creative overrides)
+- **1E** Duplication vs Abstraction Tendency (Helper/Util/Base class usage)
 
 ### GIAI ĐOẠN 2: Hypothesis Generation
 
-Từ evidence Giai đoạn 1, agent tạo **danh sách hypothesis có cấu trúc**.
+Từ evidence, tạo danh sách hypothesis có cấu trúc (id, claim, confidence, evidence, exemplar, counter_evidence, question_for_author).
 
-**Mỗi hypothesis phải có:**
-- `id`: HP-{n}
-- `claim`: Phát biểu cụ thể về style/philosophy
-- `confidence`: HIGH | MEDIUM | LOW (dựa trên số lượng và tính nhất quán của evidence)
-- `evidence_summary`: 2-3 dòng data cụ thể từ code
-- `exemplar`: Node_id hoặc file path của ví dụ rõ nhất
-- `counter_evidence`: Những nơi KHÔNG follow pattern này (nếu có)
-- `question_for_author`: Câu hỏi cụ thể để confirm
-
-**Ví dụ hypothesis output:**
-
-```
-HP-1 [HIGH confidence]
-Claim: "Tác giả áp dụng nguyên tắc zero-nested-if nhất quán"
-Evidence:
-  - 87% method trong codebase có nesting depth = 0
-  - Average nesting depth: 0.3 (rất thấp)
-  - 23 method có early return pattern
-  - Chỉ 3 method có if lồng — đều trong legacy package
-Exemplar: <ClassNameProcessor>.validate() [node_id: xxx]
-Counter-evidence: <LegacyService>.processRequest() — legacy, chưa refactor
-Question: "Em thấy hầu hết code không có if lồng, và những nơi có thì đều trong
-           legacy package. Đây có phải nguyên tắc anh áp dụng nhất quán không?
-           Hay có ngoại lệ nào không phải legacy mà vẫn OK?"
-
-HP-2 [HIGH confidence]
-Claim: "Tác giả ưu tiên Chain of Responsibility thay vì if/else dispatch"
-Evidence:
-  - {n} Processor class implement cùng interface, không có if dispatch
-  - 0 switch statement trong service layer
-  - Factory classes: {n}/{n} không dùng if/switch để chọn implementation
-Exemplar: <ExemplarProcessor> [node_id: yyy]
-Counter-evidence: (không có)
-Question: "Đây có phải pattern anh intentionally chọn cho mọi dispatch logic,
-           hay chỉ áp dụng cho validation flow?"
-
-HP-3 [MEDIUM confidence]
-Claim: "Tác giả prefer composition over inheritance"
-Evidence:
-  - Inheritance depth average: 1.2 (chủ yếu chỉ extend BaseEntity/BaseRepository)
-  - 0 class extend business class (chỉ extend infra base class)
-  - Nhiều interface injection hơn abstract class
-Counter-evidence: <AbstractXxxProcessor> (1 case)
-Question: "Em thấy hầu hết không dùng inheritance cho business logic.
-           <AbstractXxxProcessor> là exception hay có pattern riêng?"
-```
-
-> **Lưu ý**: Các placeholder `<ClassName>` sẽ được thay bằng tên thực tế
-> từ kết quả scan ở Giai đoạn 1. Agent KHÔNG được bịa tên class.
+> **Chi tiết đầy đủ (scan queries + hypothesis format)**: Xem [references/code-evidence-scan.md](references/code-evidence-scan.md)
 
 ---
 
@@ -379,99 +222,19 @@ Khi sẵn sàng: /approve-dna để commit chính thức."
 
 ## 5. Cách Agent Dùng author-dna.yaml
 
-### 5A. Pha 2 — Sinh spec
-
-```
-TRƯỚC khi propose bất kỳ solution nào:
-  READ: author-dna.yaml → hard_principles
-  FOR EACH hard_principle:
-    IF solution_draft vi phạm principle:
-      → KHÔNG đưa ra solution đó
-      → Tự refactor sang approach align với DNA
-      → Ghi note trong spec: "Approach X được chọn thay Y vì HP-{id}"
-
-  READ: creative_overrides
-  IF task input (Confluence/wiki) mô tả if/else flow:
-    → FLAG: "Tài liệu mô tả if/else, em propose structure-based alternative"
-    → Show cả 2: original if/else approach + DNA-aligned approach
-    → Để author quyết định
-```
-
-### 5B. Pha 3 — Apply/Review
-
-```
-Khi review code change (từ /opsx:apply hoặc PR review):
-  SCAN change diff cho:
-    - Nested if depth > max_nesting_depth: FLAG HP-{id}
-    - Switch statement mới: FLAG HP-{id} nếu có pattern alternative
-    - instanceof check mới: FLAG — suggest polymorphism
-    - Method complexity > threshold: FLAG HP-{id}
-
-  FORMAT flag:
-    "⚠️ DNA-ALERT [HP-{id}]: Đoạn này dùng if/else dispatch cho {n} case.
-     Theo style của anh, đây là ứng viên tốt cho Strategy/Factory pattern.
-     Muốn em propose refactor không?"
-```
-
-### 5C. Architecture Review
-
-```
-Khi architecture-reviewer đánh giá design:
-  READ: author-dna.yaml → hard_principles + creative_overrides
-  FOR EACH proposed component/layer:
-    CHECK: Design này có align với DNA không?
-    IF không align:
-      → WARN trong EXPLORE_CONTEXT: "Design X có thể không align với HP-{id}"
-      → Suggest DNA-aligned alternative
-      → Không BLOCK (chỉ WARN) vì architecture decision phức tạp hơn code-level
-```
-
-### 5D. Khi không có author-dna.yaml
-
-```
-IF author-dna.yaml không tồn tại HOẶC status != approved:
-  → Agent dùng conventions.yaml (naming only)
-  → Không có judgment layer cho code style
-  → WARN trong bootstrap report: "author-dna.yaml chưa có. Agent dùng generic
-    code style. Chạy /dna-scan để tạo coding DNA."
-```
-
----
+Agent áp dụng DNA trong 4 context: Pha 2 (sinh spec), Pha 3 (apply/review),
+Architecture Review, và fallback khi không có DNA.
 
 ## 6. Re-scan & Update Protocol
 
-### Khi cần update DNA
+3 mode: [A] Add principle, [U] Update existing, [R] Full rescan.
+Rejected hypothesis log ngăn agent re-infer cùng sai lầm.
 
-```
-Trigger: User cảm thấy agent đang flag sai, hoặc có principle mới
+## [L5] Periodic Re-Validation Trigger
 
-Mode:
-  [A] Add principle: Thêm principle mới, không re-scan toàn bộ
-      → Agent hỏi: principle gì, có exemplar trong code không?
-      → Append vào author-dna.yaml trực tiếp
-      → Không cần /approve-dna lại (chỉ cần user confirm trong chat)
+Tự động gợi ý re-validation khi DNA stale (>90 ngày hoặc 2+ refactor tasks).
 
-  [U] Update existing: Sửa principle đã có (thêm ngoại lệ, làm rõ scope)
-      → Edit trực tiếp trong file
-      → Chạy /approve-dna để validate lại
-
-  [R] Full rescan: Sau kiến trúc thay đổi lớn
-      → Chạy lại toàn bộ /dna-scan
-      → Previous DNA được archive, không xoá
-```
-
-### Rejected hypothesis log
-
-```
-Trong author-dna.yaml, section rejected_hypotheses giúp agent
-KHÔNG re-infer lại cùng sai lầm trong tương lai:
-
-rejected_hypotheses:
-  - id: HP-{n}-rejected
-    original_claim: "<claim bị tác giả bác bỏ>"
-    rejection_reason: "<lý do từ tác giả>"
-    logged_at: "<timestamp>"
-```
+> **Chi tiết đầy đủ (usage, rescan, L5)**: Xem [references/dna-usage-guide.md](references/dna-usage-guide.md)
 
 ---
 
@@ -486,57 +249,3 @@ rejected_hypotheses:
   - Giai đoạn 4 (encode): author-dna.draft.yaml generated
   - Status: awaiting /approve-dna
 ```
-
----
-
-## [L5] Periodic Re-Validation Trigger
-
-### Mục đích
-
-`author-dna.yaml` có thể bị stale khi codebase thay đổi lớn (refactor, kiến trúc mới).
-L5 định nghĩa điều kiện để **tự động gợi ý** re-validation với tác giả.
-
-### Điều kiện trigger re-validation
-
-```
-FUNCTION should_revalidate_dna():
-  Đọc author-dna.yaml metadata: last_validated_at, last_scan_commit
-
-  TRIGGER nếu BẤT KỲ điều kiện sau đúng:
-  1. Thời gian: today - last_validated_at > 90 ngày
-  2. Scope thay đổi: có ít nhất 2 task loại refactor hoàn thành kể từ last_validated_at
-     (kiểm tra archive/ ARCHIVE_META: status=completed, task_type=refactor)
-  3. Manual: user chạy `/dna-scan` trực tiếp
-
-  KHÔNG trigger nếu:
-  - author-dna.yaml có status: draft (chưa approved lần đầu)
-  - Đang ở giữa Pha 2 hoặc Pha 3 của task
-```
-
-### Re-validation Workflow
-
-```
-FUNCTION trigger_dna_revalidation():
-  1. Ghi vào AGENT_TRANSPARENCY:
-     "[L5-DNA-REVALIDATE] author-dna.yaml có thể stale.
-      Lý do: {time/refactor/manual}. Last validated: {last_validated_at}."
-  2. Thông báo user (non-blocking):
-     "author-dna.yaml chưa được validate {n} ngày/sau {n} refactor.
-      Muốn chạy lại /dna-scan để cập nhật? (Không bắt buộc)"
-  3. Nếu user đồng ý: chạy author-dna-builder với mode "re-validate"
-  4. Nếu user từ chối: đánh dấu author-dna.yaml với note:
-     re_validation_declined_at: {today}
-     → Không hỏi lại trong 30 ngày
-
-RE-VALIDATE mode:
-  - Scan codebase để tìm pattern thay đổi (tương tự hybrid mode hiện tại).
-  - Không xoá entries đã confirmed: true — chỉ hỏi về entries có thể đã thay đổi.
-  - So sánh code patterns mới vs confirmed entries → highlight gaps.
-  - Interview lại tác giả chỉ về những gap này (không phỏng vấn lại từ đầu).
-```
-
-### Ghi vào knowledge-curator
-
-Khi bootstrap phát hiện trigger condition:
-- knowledge-curator PHẢI gợi ý re-validation trong lúc `archive_active_context` (sau task refactor hoàn thành).
-- Ghi vào ARCHIVE_META.md: `dna_revalidation_suggested: true`

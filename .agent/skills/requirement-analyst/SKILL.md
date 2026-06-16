@@ -1,6 +1,12 @@
 ---
 name: requirement-analyst
-description: Phân tích ticket/tài liệu thành REQUIREMENT.md chuẩn hoá, rõ scope và Acceptance Criteria.
+version: '1.1'
+description: >
+  Phân tích ticket/tài liệu thành REQUIREMENT.md chuẩn hoá, rõ scope và Acceptance Criteria.
+  Dùng khi có ticket link hoặc tài liệu PRD rõ ràng cần chuẩn hoá.
+  KHÔNG dùng cho: ideation thô chưa thành ticket (→ openspec-explore),
+  extract từ wiki/Confluence dài nhiều trang (→ spec-extract),
+  review kiến trúc hoặc đánh giá rủi ro (→ architecture-reviewer).
 pre_conditions:
   - file: .knowledge-layer/active/AGENT_TRANSPARENCY.md
     condition: exists
@@ -281,3 +287,11 @@ Trong `.knowledge-layer/active/AGENT_TRANSPARENCY.md`:
 - Đánh giá độ tin cậy chung cho REQUIREMENT hiện tại:
   - CAO / TRUNG BÌNH / THẤP, kèm 1–2 câu giải thích.
   
+---
+
+## Gotchas
+
+- **[G1] CRLF/LF line endings**: REQUIREMENT.md được tạo trên Windows có thể dùng CRLF. Agent phải normalize khi parse — regex pattern `\r\n` sẽ fail nếu chỉ match `\n`.
+- **[G2] Template skeleton detection**: Regex kiểm tra "file trống hay template" có thể miss custom skeleton nếu user đã sửa header. Luôn check cả `## Acceptance Criteria` section — nếu section đó trống thì coi như chưa có REQUIREMENT thực.
+- **[G3] Confluence markdown conversion**: Khi extract từ Confluence, macro `{panel}`, `{expand}`, `{status}` sẽ bị mất hoặc biến thành text rác. Luôn đọc raw content trước, clean markup sau.
+- **[G4] Multi-ticket REQUIREMENT**: Nếu user paste nhiều ticket vào 1 phiên, agent PHẢI tạo REQUIREMENT riêng cho mỗi ticket hoặc hỏi user chọn 1. Không gộp.

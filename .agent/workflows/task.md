@@ -208,6 +208,15 @@ Sau khi nhận diện:
    - `[ ]` architecture-reviewer đã chạy và ghi độ tin cậy.
    Nếu bất kỳ ô nào chưa tick: hoàn thành trước khi tiếp tục.
 
+10. **[SESSION-BOUNDARY — Pha 1]** Sau khi POST-PHASE SELF-CHECK pass:
+    - Thông báo user:
+      > "Pha 1 hoàn thành. **Vui lòng mở session mới** để chạy `/task spec`.
+      > Context đã lưu đầy đủ vào `.knowledge-layer/active/`.
+      > Session mới sẽ Bootstrap fresh — rule/DNA ở top-of-mind, tránh Context Dilution."
+    - Nếu user tiếp tục trong cùng session (gọi `/task spec` ngay):
+      - Ghi WARN vào AGENT_TRANSPARENCY: `[SESSION-BOUNDARY] Tiếp tục cùng session sau Pha 1 — rủi ro Context Dilution.`
+      - **Không block** — vẫn cho phép tiếp tục, nhưng ghi vào Violation Log.
+
 
 ---
 
@@ -272,6 +281,15 @@ Mục tiêu: dùng OpenSpec để sinh **spec kỹ thuật** dựa trên REQUIRE
    - `[ ]` TOKEN_LOG.md đã ghi checkpoint Pha 2.
    Nếu bất kỳ ô nào chưa tick: hoàn thành trước khi tiếp tục.
 
+10. **[SESSION-BOUNDARY — Pha 2]** Sau khi POST-PHASE SELF-CHECK pass:
+    - Thông báo user:
+      > "Pha 2 hoàn thành. **Vui lòng mở session mới** để chạy `/task apply`.
+      > Spec đã lưu tại `openspec/changes/<change-id>/`.
+      > Session mới sẽ Bootstrap fresh — DNA/conventions ở top-of-mind khi code."
+    - Nếu user tiếp tục trong cùng session:
+      - Ghi WARN vào AGENT_TRANSPARENCY: `[SESSION-BOUNDARY] Tiếp tục cùng session sau Pha 2 — rủi ro Context Dilution khi code.`
+      - **Không block** — nhưng **BẮT BUỘC** chạy DNA-RELOAD (bước 2a trong Pha 3).
+
 ---
 
 ## 3. `/task apply <ticket-id>` — Pha 3: Apply spec vào code
@@ -286,6 +304,25 @@ Mục tiêu: dùng OpenSpec để áp dụng spec đã được chấp thuận v
 2. Tóm tắt cho user:
    - “Spec này dự kiến sẽ chạm vào: …”
    - “Các loại thay đổi chính: …”
+
+2a. **[DNA-RELOAD — BẮT BUỘC]** Trước khi sinh bất kỳ đoạn code nào:
+    > Gate này chống Mode Switching — kéo DNA/conventions về recency window ngay trước khi code.
+    > Kết hợp với Session Boundary (Lớp 1) tạo "sandwich defense": rule ở đầu (bootstrap) + cuối (re-read) context.
+    - **READ**: `.knowledge-layer/templates/author-dna.yaml`
+      - Focus: `hard_principles` (HP-1..HP-11) + `complexity_thresholds` + `style_preferences` liên quan
+    - **READ**: `.knowledge-layer/templates/conventions.yaml` (nếu tồn tại, `status: approved`)
+    - Ghi checkpoint vào AGENT_TRANSPARENCY:
+      ```
+      [DNA-RELOAD] Re-read DNA + conventions trước Pha 3.
+      HP loaded: HP-1 (Chain of Responsibility), HP-2 (Template Method), HP-5 (Factory boundary),
+                 HP-6 (Zero nesting), HP-7 (No else), HP-8 (SOLID), HP-9 (Config-driven),
+                 HP-10 (Post-impl review), HP-11 (Bản chất nghiệp vụ)
+      Thresholds: max_nesting=1, max_method_branches=3, max_lines=30, early_return=required
+      Conventions: <loaded|not_found|draft_skipped>
+      ```
+    - **Nếu DNA-RELOAD chưa ghi** → R-Guard-2 checkpoint (đã có) sẽ reject từng artifact.
+      DNA-RELOAD là gate cho **TOÀN BỘ pha**, R-Guard-2 là gate cho **từng artifact**.
+
 3. **[M1 — Spec Validation]** Chạy `spec-validator` trước khi apply:
    - Gọi `spec-validator.pre_apply_gate(spec_path, requirement_path)`:
      - Nếu **BLOCK**: dừng apply, hiển thị issues, hỏi user fix spec rồi chạy lại `/task spec`.
@@ -322,11 +359,19 @@ Mục tiêu: dùng OpenSpec để áp dụng spec đã được chấp thuận v
    - Tham chiếu protocol đầy đủ: `.agent/scripts/token-tracking.md`.
 
 8. **[POST-PHASE SELF-CHECK — Pha 3]** Trước khi gọi knowledge-curator archive:
+   - `[ ]` DNA-RELOAD checkpoint đã ghi vào AGENT_TRANSPARENCY (bước 2a).
    - `[ ]` Code changes / diff / PR đã được tóm tắt cho user.
    - `[ ]` AGENT_TRANSPARENCY.md có `phase_state: applying` → đã cập nhật thành `completed`.
    - `[ ]` TOKEN_LOG.md đã ghi TỔNG TASK.
    - `[ ]` Không có BLOCKER chưa resolve trong AGENT_TRANSPARENCY.md.
+   - `[ ]` spec-validator.post_apply_dna_check đã chạy (xem spec-validator §3.4).
    Nếu bất kỳ ô nào chưa tick: hoàn thành trước khi gọi knowledge-curator.
+
+9. **[SESSION-BOUNDARY — Pha 3]** Sau khi archive hoàn thành:
+    - Thông báo user:
+      > "Task hoàn thành và đã archive. **Vui lòng mở session mới** cho task tiếp theo.
+      > Session mới sẽ Bootstrap fresh với knowledge-snapshot đã cập nhật."
+    - Đây là kết thúc tự nhiên của task — session mới là best practice, không chỉ là gợi ý.
 
 ---
 

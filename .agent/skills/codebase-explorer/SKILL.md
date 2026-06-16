@@ -1,6 +1,11 @@
 ---
 name: codebase-explorer
-description: Khám phá codebase bằng Socraticode + Understand-Anything để map REQUIREMENT → module/service/file liên quan.
+version: '1.0'
+description: >
+  Khám phá codebase bằng Socraticode + Understand-Anything để map REQUIREMENT → module/service/file liên quan.
+  Dùng khi cần tìm module, file, dependency liên quan đến requirement hiện tại.
+  KHÔNG dùng cho: khám phá DB schema (→ db-explorer),
+  review kiến trúc/rủi ro (→ architecture-reviewer), sinh spec (→ openspec-propose).
 pre_conditions:
   - file: .knowledge-layer/active/REQUIREMENT.md
     condition: not_skeleton
@@ -305,3 +310,11 @@ Trong `.knowledge-layer/active/AGENT_TRANSPARENCY.md`:
 - Ưu tiên `get_node_source` để đọc code thay vì mở file thủ công — giúp giữ context gọn và có node ID tracking.
 - Skill này chỉ khám phá và ghi nhận codebase cho requirement hiện tại.
 - Mọi đề xuất thay đổi kiến trúc hay implement chi tiết thuộc về `architecture-reviewer` và OpenSpec.
+---
+
+## Gotchas
+
+- **[G1] Socraticode phải index trước**: `codebase_search` chỉ hoạt động sau khi `codebase_index` chạy xong 100%. Kiểm tra bằng `codebase_status` — nếu chưa indexed, gợi ý user chạy `/index-source`.
+- **[G2] UA project name phải match chính xác**: `list_projects()` trả về project name — dùng tên đó cho mọi UA query. Đoán tên sẽ gây "project not found" error.
+- **[G3] File watcher lag**: Nếu user vừa edit file, Socraticode file watcher có thể chưa bắt kịp (<5s delay). Khi search trả kết quả cũ cho file mới sửa, dùng `codebase_update` để force re-index file đó.
+- **[G4] Symbol graph vs File graph**: UA có 2 loại graph — symbol-level (function/class) và file-level. Khi trace call chain, dùng symbol graph (`trace_call_chain`). Khi xem dependency, dùng file graph (`get_relationships`).

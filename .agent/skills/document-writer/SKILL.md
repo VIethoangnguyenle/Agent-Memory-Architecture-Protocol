@@ -1,10 +1,12 @@
 ---
 name: document-writer
+version: '1.0'
 description: >
   Khung chuẩn để tạo mới hoặc cập nhật tài liệu kỹ thuật cho nhiều loại tài liệu:
   README, overview, architecture/design doc, how-to, runbook, ADR, và tài liệu module hạ tầng.
-  Tập trung vào tính đúng đắn, tính hữu ích, giải thích bối cảnh và quyết định thiết kế khi phù hợp,
-  đồng thời tránh suy diễn không có bằng chứng.
+  Tập trung vào tính đúng đắn, tính hữu ích, giải thích bối cảnh và quyết định thiết kế.
+  KHÔNG dùng cho: viết TDD 5 tầng (→ infra-tdd), sinh spec OpenSpec (→ openspec-propose),
+  chuẩn hoá requirement (→ requirement-analyst).
 ---
 
 # Document Writer — Khung Viết Tài liệu Kỹ thuật

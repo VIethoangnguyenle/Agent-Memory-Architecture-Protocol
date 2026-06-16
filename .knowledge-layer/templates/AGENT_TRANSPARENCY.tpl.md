@@ -101,6 +101,29 @@ phase_state: bootstrapped
 
 ---
 
+## DNA-RELOAD Checkpoint
+
+<!-- Ghi bởi agent khi chạy bước 2a trong Pha 3 (/task apply).
+     Nếu section này trống khi phase_state = phase-3-in-progress → DNA-RELOAD chưa chạy. -->
+
+```
+[DNA-RELOAD] <!-- Chưa chạy -->
+```
+
+---
+
+## Violation Log
+
+<!-- Ghi mỗi violation 1 dòng. Dùng để tracking data thực tế sau mỗi task.
+     Escalation criteria: sau 5 tasks, nếu ≥2 tasks có DNA BLOCK violation → chuyển Multi-Agent. -->
+
+| Pha | Loại | Rule | Severity | Đã fix? | Ghi chú |
+|-----|------|------|----------|---------|---------|
+<!-- | Pha 3 | DNA | HP-6 | BLOCK | ✅ | nested if trong XxxExecutor | -->
+<!-- | Pha 1 | SESSION | SESSION-BOUNDARY | WARN | — | User tiếp tục cùng session | -->
+
+---
+
 ## Đánh giá Độ tin cậy tổng thể
 
 **<!-- CAO / TRUNG BÌNH / THẤP -->** — <!-- 1-2 câu lý do -->

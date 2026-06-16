@@ -1,6 +1,11 @@
 ---
 name: knowledge-curator
-description: Quản lý vòng đời knowledge — archive context hoàn thành, reset active/, cập nhật knowledge-snapshot sau mỗi task.
+version: '1.1'
+description: >
+  Quản lý vòng đời knowledge — archive context hoàn thành, reset active/, cập nhật knowledge-snapshot sau mỗi task.
+  Dùng khi task hoàn thành cần archive, hoặc cần reset/rotate context.
+  KHÔNG dùng cho: review kiến trúc (→ architecture-reviewer),
+  sinh/validate spec (→ openspec-propose, spec-validator), viết tài liệu (→ document-writer).
 ---
 
 # Knowledge Curator — Quản lý Vòng đời Knowledge
@@ -160,21 +165,37 @@ Mỗi discovery rơi vào đúng một trong các bucket:
 | Sample data 5 dòng từ bảng user | DISCARD | PII potential, không có giá trị kiến trúc |
 | Logic validate giống hệt entry cũ đã có trong snapshot | DISCARD | Dư thừa |
 
-#### Quy trình xử lý Entry Cũ Stale
+#### Quy trình xử lý Entry Cũ Stale + Confidence Decay
 
 Mỗi lần chạy `update_knowledge_snapshot`, ngoài việc thêm mới, còn kiểm tra:
 
 ```
 FOR EACH entry trong snapshot có status:active:
   IF verified < (today - 90 days):
-    IF task hiện tại “đụng” vào entry này (mention trong EXPLORE_CONTEXT):
-      → cập nhật verified:{today} (confirm còn đúng)
+    IF task hiện tại "đụng" vào entry này (mention trong EXPLORE_CONTEXT):
+      → cập nhật verified:{today}, confidence:high (confirm còn đúng)
     ELSE:
-      → GIỮ NGuyÊN, không tự chuyển sang outdated
-         (chỉ agent có evidence mới mới được thay đổi status)
+      → Hạ confidence:low (KHÔNG thay đổi status)
+         Ghi metadata: <!-- confidence:low reason:stale-90d -->
+
+  IF verified < (today - 180 days) VÀ confidence đã là low:
+    → Thêm marker: <!-- needs-reverify -->
+    → Agent VẪN sử dụng entry nhưng phải ghi rõ trong output:
+       "[STALE] Entry '{name}' chưa verify > 180 ngày — cần xác nhận lại"
 ```
 
-**Lý do**: Không tự đánh dấu `outdated` chỉ vì lâu không verify. `verified` cũ không có nghĩa là sai — chỉ có evidence mâu thuẫn mới thực sự làm entry stale.
+**Metadata format cho snapshot entries** (backward-compatible với Markdown):
+
+```markdown
+### Module: Transaction Framework
+<!-- verified: 2026-06 | confidence: high | source: ticket-123 -->
+
+- Mọi transaction đi qua BaseTransReqHandler...
+```
+
+> Agent đọc HTML comment để biết confidence, nhưng content vẫn là Markdown readable.
+
+**Lý do**: `confidence:low` là signal nhẹ — agent vẫn dùng entry nhưng biết cần cẩn thận. Chỉ evidence mâu thuẫn mới thay đổi `status`.
 
 ### 3.4 `restore_from_archive(ticket_id)`
 
@@ -237,102 +258,12 @@ Agent sẵn sàng nhận task mới
 
 ## 8. [M7] Hook đẩy Agent Memory sau task
 
-### Trigger
+Gọi SAU `update_knowledge_snapshot`, TRƯỚC `reset_active_context`. Chỉ khi `status == "completed"`.
 
-Gọi SAU `update_knowledge_snapshot` và TRƯỚC `reset_active_context`.
-Chỉ khi `status == "completed"` (không push cho stashed/cancelled).
+Bao gồm 3 tầng lọc chất lượng (Gate → Dedup → Quota), `memory_save` call, kind selection guide,
+triển khai theo giai đoạn (R-Tool-6), và graduation trigger.
 
-### 3 tầng lọc chất lượng
-
-Trước khi gọi `memory_save`, curator PHẢI đi qua 3 tầng:
-
-#### Tầng 1 — Gate (CÓ nên lưu không?)
-
-| Câu hỏi | Nếu KHÔNG → hành động |
-|---------|----------------------|
-| Kiến thức đã verified bằng evidence (code merged, test pass, production ok)? | ❌ **KHÔNG LƯU** — chỉ là suy đoán |
-| Có value cho task tương lai không? Có khả năng tái sử dụng? | ❌ **KHÔNG LƯU** — chỉ đúng cho task này |
-| Có PII, credential, hoặc sensitive data không? | ❌ **KHÔNG LƯU** — vi phạm R-Data-1 |
-
-Nếu cả 3 điều kiện đều đạt → tiếp sang Tầng 2.
-Nếu bất kỳ điều kiện nào KHÔNG đạt → bỏ qua memory push, ghi vào AGENT_TRANSPARENCY: `[M7-SKIP] Lý do: {reason}`
-
-#### Tầng 2 — Dedup (đã có record cùng topic chưa?)
-
-```
-CALL: memory_smart_search(topic_summary, project_id=<project>, limit=3)
-
-NẾU kết quả trả về có record cùng topic (similarity cao):
-  → Đây là CẬP NHẬT, không phải thêm mới
-  → Dùng ticket_id của record CŨ để upsert đè lên
-  → Ghi rõ trong content: "Thay thế {old_ticket_id}: {lý do cập nhật}"
-
-NẾU không có record tương tự:
-  → Tiếp tục với ticket_id hiện tại
-```
-
-> Lưu ý: Bước search này KHÔNG tính vào memory budget Pha 3 (nó là một phần của curator hook, không phải reasoning).
-
-#### Tầng 3 — Quota
-
-- Tối đa **1 `memory_save` call** per task (R-Exec-3).
-- Nếu task có nhiều bài học → chọn **1 cái quan trọng nhất**, tổng hợp các cái khác vào `content`.
-
-### Gọi `memory_save` (native — không cần mapping)
-
-```
-memory_save(
-  ticket_id   = "<ticket-id>",
-  project_id  = "<project identifier from REQUIREMENT.md>",
-  author      = "<from persona.yaml user_info.name hoặc git config user.name>",
-  kind        = "<chọn từ kind selection guide bên dưới>",
-  topic       = "<1-line summary of key learning — ngắn gọn, searchable>",
-  content     = "<concise knowledge distilled from task — verified facts only>",
-  confidence  = "<high|medium|low>"
-)
-```
-
-### Hướng dẫn chọn kind
-
-| kind | Khi nào dùng |
-|------|-------------|
-| `bug_fix` | Task sửa bug — root cause + giải pháp đã xác nhận |
-| `architecture_decision` | Quyết định kiến trúc/kỹ thuật quan trọng đã áp dụng |
-| `pattern` | Pattern tái sử dụng đã phát hiện hoặc áp dụng |
-| `convention` | Quy ước đặt tên/code mới được thiết lập |
-| `gotcha` | Bẫy không rõ ràng, pitfall đã gặp và giải quyết |
-| `investigation` | Kết quả nghiên cứu **đã xác nhận** (không phải suy đoán) |
-| `requirement` | Nhận thức nghiệp vụ quan trọng đã xác thực |
-| `deployment` | Bài học vận hành/deploy đã xác nhận |
-| `other` | Bất kỳ kiến thức nào đáng nhớ không thuộc các loại trên |
-
-### Tính lũy đẳng (Idempotency)
-
-- `ticket_id` sinh UUID5 xác định → Qdrant point ID.
-- Gọi `memory_save` 2 lần cùng `ticket_id` → **cập nhật**, không tạo bản trùng.
-- Không cần tìm kiếm trước để kiểm tra trùng lặp.
-
-### Triển khai theo giai đoạn (R-Tool-6)
-
-| Giai đoạn | Hành vi |
-|-----------|--------|
-| Tuần 1 | **Bỏ qua push hoàn toàn** — chỉ đọc, quan sát |
-| Tuần 2 | Push có xác nhận — curator tóm tắt record sẽ lưu, **hỏi user trước khi gọi `memory_save`** |
-| Tuần 3+ | Push tự động — user giữ quyền từ chối theo phiên |
-
-### Ghi AGENT_TRANSPARENCY
-
-Sau khi push (hoặc bỏ qua), ghi vào AGENT_TRANSPARENCY.md:
-
-```
-[M7-MEMORY] Đẩy Agent Memory:
-  - Hành động: <đã_đẩy | bỏ_qua | cập_nhật_bản_cũ>
-  - ticket_id: <ticket-id>
-  - kind: <kind>
-  - topic: <topic>
-  - Kiểm tra chất lượng: <ĐẠT | BỎ_QUA lý_do>
-  - Kiểm tra trùng lặp: <không_trùng | thay_thế {old_ticket_id}>
-```
+> **Chi tiết đầy đủ**: Xem [references/m7-memory-push.md](references/m7-memory-push.md)
 
 ---
 
@@ -350,125 +281,84 @@ Trong `.knowledge-layer/active/AGENT_TRANSPARENCY.md`:
 
 ## 6. [M6] TOKEN_LOG Calibration
 
-### Mục tiêu
+So sánh token estimate vs actual usage để cải thiện độ chính xác TOKEN_LOG theo thời gian.
+Bao gồm calibration workflow, estimate guidelines, và archive update logic.
 
-Cải thiện độ chính xác của TOKEN_LOG.md theo thời gian bằng cách so sánh estimate với actual usage (nếu biết).
-
-### Calibration Workflow
-
-```
-FUNCTION calibrate_token_estimates(ticket_id):
-  INPUT: ticket_id — ticket vừa hoàn thành
-
-  1. Đọc archive/{ticket_id}/TOKEN_LOG.md:
-     - Lấy các estimate: Pha 1, Pha 2, Pha 3, TỔNG
-
-  2. Nếu model API trả về actual token count (vd: Claude usage metadata):
-     - So sánh: estimate vs actual cho từng pha
-     - Tính ratio: actual / estimate
-
-  3. Cập nhật calibration note vào .knowledge-layer/templates/TOKEN_LOG.tpl.md:
-     - Section "Calibration History":
-       | ticket_id | pha | estimate | actual | ratio | note |
-     - Ghi average ratio sau 3+ tickets
-
-  4. Nếu average ratio > 1.5 (estimate thấp hơn actual 50%+):
-     → WARN: "TOKEN estimate đang thấp hơn thực tế. Cân nhắc nhân hệ số 1.5x."
-     → Ghi vào AGENT_TRANSPARENCY: "[M6-CALIBRATE] Hệ số calibration: {ratio}x"
-
-  5. Nếu không có actual data:
-     → Bỏ qua calibration lần này, ghi note "no-actual-data"
-```
-
-### Token Estimate Guidelines (Calibrated)
-
-Dùng khi không có actual data:
-
-| Activity | Estimate (tokens) |
-|----------|-------------------|
-| Đọc REQUIREMENT.md (đầy đủ) | ~1,500–3,000 |
-| Đọc EXPLORE_CONTEXT.md (đầy đủ) | ~2,000–5,000 |
-| Đọc knowledge-snapshot.md (filtered) | ~1,000–4,000 |
-| 1 KG tool call (query + result) | ~500–1,500 |
-| 1 UA call | ~2,000–5,000 |
-| Ghi REQUIREMENT.md | ~1,000–2,000 |
-| Ghi EXPLORE_CONTEXT.md | ~1,500–3,000 |
-| Sinh spec (openspec-propose) | ~3,000–8,000 |
-| 1 file apply (small) | ~500–2,000 |
-| 1 file apply (medium/large) | ~2,000–8,000 |
-
-**Quy tắc estimate tổng**:
-- Cộng tất cả activities trong pha.
-- Thêm 20% overhead cho system prompt + tool call boilerplate.
-- Nếu calibration ratio > 1.0: nhân thêm ratio đó.
-
-### Cập nhật TOKEN_LOG trong Archive
-
-Khi `archive_active_context()` chạy:
-- Copy TOKEN_LOG.md vào archive (đã có trong STEPS).
-- Sau khi calibrate (nếu có actual data): cập nhật bản archive với actual numbers.
-- Ghi `calibration_status: done | no-data | pending` vào ARCHIVE_META.md.
+> **Chi tiết đầy đủ**: Xem [references/token-calibration.md](references/token-calibration.md)
 
 ---
 
 ## 7. [M3] Violation Pattern Tracking
 
-### Mục đích
+Tích lũy pattern vi phạm rule/workflow qua các task để nhận diện vấn đề hệ thống.
+Bao gồm `track_violation_patterns()`, tích hợp vào archive flow, và privacy rules.
 
-Tích lũy pattern vi phạm rule/workflow qua các task để nhận diện vấn đề hệ thống (không phải lỗi ngẫu nhiên).
+> **Chi tiết đầy đủ**: Xem [references/violation-tracking.md](references/violation-tracking.md)
 
-### `track_violation_patterns(ticket_id)`
+---
 
-```
-INPUT: ticket_id — ticket vừa archive
+## 9. [NEW] Transparency Log Rotation
 
-STEPS:
-1. Đọc archive/{ticket_id}/AGENT_TRANSPARENCY.md
-   → Tìm tất cả entry có format:
-     - "[VIOLATION]", "[RULE-VIOLATION]", "[WORKFLOW-VIOLATION]"
-     - Rule ID bị vi phạm (vd: R-Flow-3, R-Apply-1)
-     - Mô tả pattern hành vi
+### Mục tiêu
 
-2. Với mỗi violation tìm thấy:
-   a. Đọc violation_pattern từ description (normalize về dạng slug)
-      Ví dụ: "skip confirm step" → pattern_id = "skip-confirm-step"
-   b. Kiểm tra .knowledge-layer/templates/knowledge-snapshot.md
-      section "[M3] Violation Pattern Tracking":
-      - Nếu pattern_id đã tồn tại:
-        → Tăng "Lần xảy ra" += 1
-        → Cập nhật "Task gần nhất" = ticket_id
-      - Nếu pattern_id chưa tồn tại VÀ đây là lần xảy ra ≥ 2:
-        → Thêm row mới vào bảng vi phạm
+Ngăn `AGENT_TRANSPARENCY.md` phình to sau nhiều phiên resume liên tiếp (mỗi phiên thêm bootstrap entries).
 
-3. Cập nhật "Violation Trend" section:
-   - Tổng số patterns
-   - Pattern phổ biến nhất (max "Lần xảy ra")
-
-4. Nếu bất kỳ pattern có "Lần xảy ra" ≥ 5:
-   → WARN vào AGENT_TRANSPARENCY:
-     "[M3-ALERT] Pattern '{pattern_id}' đã xảy ra {n} lần.
-      Cân nhắc bổ sung rule mới vào RULES.md để ngăn lặp lại."
-
-5. Ghi vào ARCHIVE_META.md:
-   violations_tracked: {n_violations_found}
-   new_patterns_added: {n_new}
-```
-
-### Tích hợp vào archive_active_context
-
-Gọi `track_violation_patterns` như một bước trong `archive_active_context`:
+### Logic rotation
 
 ```
-archive_active_context(ticket_id):
-  ... (các steps hiện tại) ...
-  IF status == "completed":
-    → update_knowledge_snapshot(discoveries)
-    → track_violation_patterns(ticket_id)   ← M3: thêm bước này
-  → reset_active_context()
+FUNCTION rotate_transparency_log():
+  Chạy khi: archive_active_context(ticket_id) được gọi
+
+  1. Đọc AGENT_TRANSPARENCY.md trong active/
+  2. Đếm số bootstrap entries (tìm pattern "✅ Core:" hoặc "[Bootstrap]")
+  3. IF bootstrap_entries > 5:
+     → Giữ lại entry đầu tiên (original bootstrap) + 2 entry cuối cùng (recent)
+     → Thay các entry giữa bằng:
+        "<!-- [ROTATED] {n} bootstrap entries archived — see archive/{ticket-id} -->"
+  4. Full log luôn được preserve trong archive/{ticket-id}/AGENT_TRANSPARENCY.md
+
+  IF task chưa hoàn thành (stashed/resumed nhiều lần):
+    → Chỉ giữ 3 bootstrap entries gần nhất trong active
+    → Compact các entry cũ bằng summary line
 ```
 
-### Bảo mật / Privacy
+> **Lý do**: Task kéo dài nhiều phiên có thể tích lũy 10+ bootstrap reports. Agent đọc lại toàn bộ → tốn token vô ích.
 
-- Không lưu tên user, IP, hay thông tin định danh.
-- Chỉ lưu pattern hành vi (what happened, not who did it).
-- Violation data dùng để cải thiện rules, không để blame.
+---
+
+## 10. [NEW] Cross-Repo Snapshot Consideration
+
+### Mục tiêu
+
+Cho phép agent reference knowledge-snapshot từ repo phụ thuộc (nếu có) mà không duplicate dữ liệu.
+
+### Cách hoạt động
+
+```
+Trong knowledge-snapshot.md, thêm section (nếu cần):
+
+### Cross-Repo References
+<!-- Chỉ thêm khi hệ thống có nhiều repo liên kết -->
+
+| Repo | Snapshot path | Verified | Quan hệ |
+|------|--------------|----------|---------|
+| (ví dụ: shared-lib) | (ví dụ: ../shared-lib/.knowledge-layer/templates/knowledge-snapshot.md) | (YYYY-MM) | (upstream dependency) |
+```
+
+**Quy tắc:**
+
+- KHÔNG copy nội dung snapshot của repo khác vào repo hiện tại.
+- Chỉ ghi **pointer** (relative path) + verified date.
+- Agent khi cần context từ cross-repo → đọc trực tiếp file snapshot đó.
+- Nếu cross-repo snapshot không tồn tại → WARN và ghi vào AGENT_TRANSPARENCY.
+
+> **Khi nào dùng**: Khi project có monorepo hoặc multi-repo setup. Không bắt buộc cho single-repo.
+
+---
+
+## Gotchas
+
+- **[G1] Archive folder name sanitization**: Ticket ID dùng làm tên folder phải được sanitize — loại bỏ `/`, spaces, special chars. Dùng pattern `{TICKET-ID}` trực tiếp (e.g. `SME-123`), không dùng full ticket title.
+- **[G2] Bootstrap entries regex**: Regex parse bootstrap report phải match cả format mới và cũ (v2 vs v3). Nếu format thay đổi mà regex không update → context loader sẽ miss active entries.
+- **[G3] Cross-repo pointers dùng relative path**: Khi ghi pointer tới cross-repo snapshot, luôn dùng relative path từ project root. Absolute path sẽ break trên máy khác.
+- **[G4] Reset active/ không xóa ideation/**: Khi `archive_active_context` reset `active/`, thư mục `active/ideation/` phải được giữ nguyên nếu có ideation đang draft chưa thành ticket.

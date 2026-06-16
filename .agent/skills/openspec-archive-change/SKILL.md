@@ -1,6 +1,10 @@
 ---
 name: openspec-archive-change
-description: Archive a completed change in the experimental workflow. Use when the user wants to finalize and archive a change after implementation is complete.
+version: '1.0'
+description: >
+  Archive a completed change in the experimental workflow. Use when the user wants to finalize and archive a change after implementation is complete.
+  NOT for: archiving knowledge-layer context (→ knowledge-curator),
+  post-apply review/validation (→ spec-validator).
 license: MIT
 compatibility: Requires openspec CLI.
 metadata:

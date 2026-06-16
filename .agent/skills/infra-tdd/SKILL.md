@@ -1,6 +1,12 @@
 ---
 name: infra-tdd
-description: "Xây dựng Technical Design Document (TDD) chuẩn hoá theo 5 tầng hybrid: Bối cảnh Nghiệp vụ (ý tưởng, flow, business rules bằng ngôn ngữ tự nhiên cho non-tech), Chiến lược (vấn đề, mục tiêu, stakeholder), Kiến trúc (sơ đồ component, data flow), Quyết định (alternatives + ADR), và Vận hành (SLO, monitoring metrics, configuration reference). Đối tượng đọc chính: Trưởng phòng, Tech Leads, Architect. Format hybrid cho phép cả BA/PM/Stakeholder (đọc T0) và Dev/Architect (đọc T1-T4) đều hiểu được cùng một tài liệu. BẮT BUỘC sử dụng toàn bộ knowledge tools (UA Knowledge Graph, Socraticode, db-explorer, codebase-explorer) để viết document dựa trên evidence thực tế từ codebase. Format cấu trúc chuẩn hoá (attribution header, navigation footer, hub+sub-doc, design patterns table)."
+version: '1.0'
+description: >
+  Xây dựng Technical Design Document (TDD) chuẩn hoá theo 5 tầng hybrid:
+  Bối cảnh Nghiệp vụ, Chiến lược, Kiến trúc, Quyết định, và Vận hành.
+  Đối tượng: Trưởng phòng, Tech Leads, Architect. BẮT BUỘC dùng knowledge tools để viết dựa trên evidence.
+  KHÔNG dùng cho: README/how-to/runbook (→ document-writer),
+  spec OpenSpec (→ openspec-propose), review kiến trúc (→ architecture-reviewer).
 license: MIT
 metadata:
   author: vietbank-sme-team
