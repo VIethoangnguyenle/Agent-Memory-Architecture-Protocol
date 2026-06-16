@@ -17,33 +17,37 @@ project-root/
 │
 ├── AGENTS.md                          ← Meta-prompt chính (file này) — đọc đầu tiên
 │
-├── .knowledge-layer/                  ← Working Memory Layer
-│   ├── active/                        ← Runtime context cho task đang xử lý
+├── .knowledge-layer/                  ← Memory Hierarchy (bộ nhớ phân tầng)
+│   ├── active/                        ← Working memory — context cho task đang xử lý
 │   │   ├── REQUIREMENT.md             ← Yêu cầu chuẩn hoá (ghi bởi requirement-analyst)
 │   │   ├── EXPLORE_CONTEXT.md         ← Bối cảnh DB + code (ghi bởi db/codebase-explorer)
 │   │   ├── AGENT_TRANSPARENCY.md      ← Observability log (mọi skill đều ghi)
 │   │   ├── TOKEN_LOG.md               ← Token usage tracking theo pha (ghi bởi mọi pha)
 │   │   └── ideation/                  ← Ý tưởng thô chưa thành ticket
 │   │       └── ideation-*.md
-│   ├── archive/                       ← Context đã hoàn thành (archived theo ticket-id)
+│   ├── long-term/                     ← Long-term memory — judgment sống + bản đồ kiến trúc (source-of-truth)
+│   │   ├── knowledge-snapshot.md      ← Snapshot kiến trúc toàn hệ thống (tích luỹ qua mỗi task)
+│   │   ├── conventions.yaml           ← Convention codebase (approved, P3 context)
+│   │   ├── author-dna.yaml            ← Coding philosophy tác giả (approved, P3 judgment layer)
+│   │   ├── author-dna.draft.yaml      ← DNA đang review (KHÔNG load vào context)
+│   │   ├── persona.yaml               ← Phong cách tương tác (local, gitignored)
+│   │   └── persona.template.yaml      ← Template persona (committed)
+│   ├── archive/                       ← Episodic memory — context task đã hoàn thành (theo ticket-id)
 │   │   └── {ticket-id}/
 │   │       ├── REQUIREMENT.md
 │   │       ├── EXPLORE_CONTEXT.md
 │   │       └── AGENT_TRANSPARENCY.md
-│   └── templates/                     ← Template tĩnh để clone khi bootstrap
-│       ├── knowledge-snapshot.md      ← Snapshot kiến trúc toàn hệ thống
-│       ├── conventions.yaml           ← Convention codebase (approved, P3 context)
-│       ├── conventions.draft.yaml     ← Convention đang review (KHÔNG load vào context)
-│       ├── author-dna.yaml            ← Coding philosophy tác giả (approved, P3 judgment layer)
-│       ├── author-dna.draft.yaml      ← DNA đang review (KHÔNG load vào context)
+│   └── templates/                     ← Skeleton tĩnh để clone khi bootstrap (CHỈ template, không chứa knowledge sống)
 │       ├── REQUIREMENT.tpl.md
 │       ├── EXPLORE_CONTEXT.tpl.md
 │       ├── AGENT_TRANSPARENCY.tpl.md
-│       ├── feature.md
-│       ├── fixbug.md
-│       ├── changerequest.md
-│       ├── refactor.md
-│       └── ideation.md
+│       ├── TOKEN_LOG.tpl.md
+│       ├── ARCHIVE_META.tpl.md
+│       ├── feature.tpl.md
+│       ├── fixbug.tpl.md
+│       ├── changerequest.tpl.md
+│       ├── refactor.tpl.md
+│       └── ideation.tpl.md
 │
 ├── .agent/                           ← Agent Infrastructure Layer
 │   ├── rules/
@@ -74,16 +78,17 @@ project-root/
 │   │   ├── task.md                   ← Workflow chính (3 pha)
 │   │   ├── idea-to-task.md           ← Ideation → Draft ticket
 │   │   └── index-source.md           ← Lập chỉ mục Socraticode
-│   └── scripts/                      ← Bootstrap scripts
-│       ├── bootstrap.md              ← Script tự động nhận diện & nạp context
-│       ├── context-loader.md         ← Logic định vị file theo priority
-│       └── token-tracking.md         ← Protocol tracking token usage theo pha
-│
-├── workflows/                        ← User-facing workflow shortcuts (alias)
-│   └── README.md
-│
-└── templates/                        ← User-facing templates (copy từ .knowledge-layer/templates)
-    └── README.md
+│   ├── procedures/                   ← Bootstrap & context procedures
+│   │   ├── bootstrap.md              ← Procedure tự động nhận diện & nạp context
+│   │   ├── context-loader.md         ← Logic định vị file theo priority
+│   │   ├── context-compressor.md     ← Nén context khi vượt budget
+│   │   └── token-tracking.md         ← Protocol tracking token usage theo pha
+│   ├── tools/                        ← Reserved cho SP1 (custom tool definitions)
+│   │   └── README.md
+│   ├── adapters/                     ← Reserved cho SP3 (adapter layer)
+│   │   └── README.md
+│   └── profiles/                     ← Reserved cho SP4 (agent profiles)
+│       └── README.md
 ```
 
 ---

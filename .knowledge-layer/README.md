@@ -8,11 +8,18 @@
 
 ## Mục đích
 
-`.knowledge-layer` là **bộ nhớ làm việc** của agent trong flow:
+`.knowledge-layer` là **bộ nhớ phân tầng (memory hierarchy)** của agent trong flow:
 
 > **Ideation → Requirement → Architecture → Spec → Apply**
 
 Mọi skill và workflow trong `.agent/` đọc/ghi context thông qua thư mục này.
+
+Bộ nhớ được chia làm 4 tầng:
+
+- **`active/`** — *working memory*: context cho task đang xử lý (reset mỗi task).
+- **`long-term/`** — *long-term memory*: judgment sống + bản đồ kiến trúc, **source-of-truth** (tích luỹ, không reset).
+- **`archive/`** — *episodic memory*: snapshot các task đã hoàn thành theo ticket-id.
+- **`templates/`** — *skeleton tĩnh*: chỉ chứa template để clone khi bootstrap, **không chứa knowledge sống**.
 
 ---
 
@@ -21,18 +28,31 @@ Mọi skill và workflow trong `.agent/` đọc/ghi context thông qua thư mụ
 ```
 .knowledge-layer/
 ├── README.md                 ← File này
-├── templates/                ← Template cố định + knowledge tích luỹ
-│   ├── knowledge-snapshot.md ← Tích luỹ qua nhiều task (không reset)
-│   ├── ideation.md           ← Template cho file ideation
-│   ├── feature.md            ← Checklist cho task feature
-│   ├── fixbug.md             ← Checklist cho task fixbug
-│   ├── refactor.md           ← Checklist cho task refactor
-│   └── changerequest.md      ← Checklist cho change request
-└── active/                   ← Context ĐANG DÙNG cho task hiện tại
-    ├── REQUIREMENT.md         ← Yêu cầu chuẩn hoá
-    ├── EXPLORE_CONTEXT.md     ← Kết quả khám phá DB + code + kiến trúc
-    ├── AGENT_TRANSPARENCY.md  ← Audit: nguồn đã đọc, tool đã gọi, cảnh báo
-    └── ideation/              ← File ideation cho ý tưởng thô
+├── active/                   ← Working memory — context ĐANG DÙNG cho task hiện tại
+│   ├── REQUIREMENT.md         ← Yêu cầu chuẩn hoá
+│   ├── EXPLORE_CONTEXT.md     ← Kết quả khám phá DB + code + kiến trúc
+│   ├── AGENT_TRANSPARENCY.md  ← Audit: nguồn đã đọc, tool đã gọi, cảnh báo
+│   ├── TOKEN_LOG.md           ← Theo dõi token theo từng pha
+│   └── ideation/              ← File ideation cho ý tưởng thô
+├── long-term/                ← Long-term memory — judgment sống + source-of-truth (không reset)
+│   ├── knowledge-snapshot.md  ← Bản đồ kiến trúc hệ thống (tích luỹ qua nhiều task)
+│   ├── conventions.yaml       ← Convention đặt tên + design pattern (approved)
+│   ├── author-dna.yaml        ← Triết lý code của tác giả (judgment layer)
+│   ├── persona.yaml           ← Phong cách tương tác (local, gitignored)
+│   └── persona.template.yaml  ← Template persona (committed)
+├── archive/                  ← Episodic memory — context task đã hoàn thành (theo ticket-id)
+│   └── {ticket-id}/
+└── templates/                ← Skeleton tĩnh để clone khi bootstrap (CHỈ template)
+    ├── REQUIREMENT.tpl.md     ← Skeleton cho REQUIREMENT
+    ├── EXPLORE_CONTEXT.tpl.md ← Skeleton cho EXPLORE_CONTEXT
+    ├── AGENT_TRANSPARENCY.tpl.md
+    ├── TOKEN_LOG.tpl.md
+    ├── ARCHIVE_META.tpl.md
+    ├── ideation.tpl.md        ← Template cho file ideation
+    ├── feature.tpl.md         ← Checklist cho task feature
+    ├── fixbug.tpl.md          ← Checklist cho task fixbug
+    ├── refactor.tpl.md        ← Checklist cho task refactor
+    └── changerequest.tpl.md   ← Checklist cho change request
 ```
 
 ---
@@ -63,5 +83,7 @@ Tóm tắt nhanh:
 
 ## Git strategy
 
-- `templates/` + `README.md`: **COMMIT** vào git (cấu trúc cố định).
+- `templates/` + `README.md`: **COMMIT** vào git (skeleton cố định).
+- `long-term/`: **COMMIT** (source-of-truth chung của team) — riêng `persona.yaml` được **GITIGNORE** (config per-user).
+- `archive/`: **COMMIT** (lịch sử episodic theo ticket).
 - `active/`: **GITIGNORE** (context tạm, per-session, không nên commit).

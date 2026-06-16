@@ -45,19 +45,23 @@ project-root/
 │
 ├── AGENTS.md                          ← Meta-prompt chính (agent đọc file này đầu tiên)
 │
-├── .knowledge-layer/                  ← Tầng Bộ nhớ Làm việc
-│   ├── active/                        ← Context runtime cho task đang xử lý
+├── .knowledge-layer/                  ← Bộ nhớ Phân tầng (Memory Hierarchy)
+│   ├── active/                        ← Working memory — context cho task đang xử lý
 │   │   ├── REQUIREMENT.md             ← Yêu cầu đã chuẩn hoá
 │   │   ├── EXPLORE_CONTEXT.md         ← Kết quả khám phá DB + code
 │   │   ├── AGENT_TRANSPARENCY.md      ← Log minh bạch (audit trail)
 │   │   ├── TOKEN_LOG.md               ← Theo dõi token theo từng pha
 │   │   └── ideation/                  ← Ý tưởng thô chưa thành ticket
-│   ├── archive/                       ← Context đã hoàn thành (theo ticket-id)
-│   └── templates/                     ← Template cố định + tri thức tích luỹ
-│       ├── knowledge-snapshot.md      ← Bản đồ kiến trúc hệ thống (tích luỹ qua mỗi task)
-│       ├── conventions.yaml           ← Convention đặt tên + design pattern của dự án
-│       ├── author-dna.yaml            ← Triết lý code của tác giả (judgment layer)
-│       └── persona.yaml               ← Phong cách tương tác của agent (tuỳ chỉnh per-user)
+│   ├── long-term/                     ← Long-term memory — judgment sống + bản đồ kiến trúc (source-of-truth)
+│   │   ├── knowledge-snapshot.md      ← Bản đồ kiến trúc hệ thống (tích luỹ qua mỗi task)
+│   │   ├── conventions.yaml           ← Convention đặt tên + design pattern của dự án
+│   │   ├── author-dna.yaml            ← Triết lý code của tác giả (judgment layer)
+│   │   └── persona.yaml               ← Phong cách tương tác của agent (tuỳ chỉnh per-user)
+│   ├── archive/                       ← Episodic memory — context task đã hoàn thành (theo ticket-id)
+│   └── templates/                     ← Skeleton tĩnh để clone khi bootstrap (chỉ template)
+│       ├── REQUIREMENT.tpl.md
+│       ├── EXPLORE_CONTEXT.tpl.md
+│       └── *.tpl.md                   ← Checklist feature/fixbug/refactor/changerequest/ideation
 │
 ├── .agent/                            ← Tầng Hạ tầng Agent
 │   ├── rules/                         ← Rào chắn (flow, tool, data, kiến trúc)
@@ -69,10 +73,10 @@ project-root/
 │   │   └── rules-guard.md             ← Guard trước khi gọi skill & teaching moments
 │   ├── skills/                        ← Các module skill tái sử dụng (12 skills)
 │   ├── workflows/                     ← Logic điều phối
-│   └── scripts/                       ← Script bootstrap & tiện ích
-│
-├── workflows/                         ← Shortcut workflow cho người dùng
-└── templates/                         ← Shortcut template cho người dùng
+│   ├── procedures/                    ← Procedure bootstrap, context-loader & token-tracking
+│   ├── tools/                         ← Reserved cho SP1 (custom tool definitions)
+│   ├── adapters/                      ← Reserved cho SP3 (adapter layer)
+│   └── profiles/                      ← Reserved cho SP4 (agent profiles)
 ```
 
 ---
