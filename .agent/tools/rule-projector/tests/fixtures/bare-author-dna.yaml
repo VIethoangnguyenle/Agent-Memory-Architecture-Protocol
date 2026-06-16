@@ -1,0 +1,9 @@
+meta:
+  status: approved
+complexity_thresholds:
+  max_nesting_depth: 1
+  max_lines_per_method: 30
+hard_principles:
+  - id: HP-1
+    name: "Some semantic principle"
+    agent_action: FLAG_AND_WARN
