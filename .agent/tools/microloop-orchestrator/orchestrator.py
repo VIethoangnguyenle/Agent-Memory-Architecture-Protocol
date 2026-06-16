@@ -50,3 +50,31 @@ def build_handoff(task, dna, spec_slice, snapshot_slice, written_files, boundary
         "boundary": boundary,
         "feedback": feedback,
     }
+
+
+def next_task(queue):
+    """Resume in_progress first; else first pending whose deps are all done."""
+    tasks = queue["tasks"]
+    done = {t["id"] for t in tasks if t["status"] == "done"}
+    for t in tasks:
+        if t["status"] == "in_progress":
+            return t
+    for t in tasks:
+        if t["status"] == "pending" and all(d in done for d in t.get("depends_on", [])):
+            return t
+    return None
+
+
+def apply_result(queue, task_id, gate_status, max_retries=2):
+    """Mutate queue per gate outcome. PASS->done; FAIL->retry; FAIL over budget->blocked."""
+    t = next(t for t in queue["tasks"] if t["id"] == task_id)
+    if gate_status == "PASS":
+        t["status"] = "done"
+        return queue
+    # FAIL
+    if t["retries"] >= max_retries:
+        t["status"] = "blocked"
+    else:
+        t["retries"] += 1
+        t["status"] = "in_progress"
+    return queue
