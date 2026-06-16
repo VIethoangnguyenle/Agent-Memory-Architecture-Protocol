@@ -86,6 +86,17 @@ def apply_result(queue, task_id, gate_status, max_retries=2):
     return queue
 
 
+def make_gate_fn(runner):
+    """Adapt a (changed_files)->(exit_code, output) runner into gate_fn->'PASS'|'FAIL'.
+
+    The real runner shells out to the SP1a mechanical gate (checkstyle on the generated
+    ruleset). Injected so the protocol is testable without Java."""
+    def gate_fn(changed_files):
+        exit_code, _output = runner(changed_files)
+        return "PASS" if exit_code == 0 else "FAIL"
+    return gate_fn
+
+
 def run_loop(queue, dispatch_fn, gate_fn, max_retries=2):
     """Drive the micro-loop. dispatch_fn(task)->changed_files; gate_fn(changed_files)->'PASS'|'FAIL'.
 

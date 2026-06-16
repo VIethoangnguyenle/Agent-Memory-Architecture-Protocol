@@ -73,3 +73,15 @@ def test_apply_result_unknown_task_raises():
          "tasks": [{"id": "T1", "desc": "d", "depends_on": [], "status": "pending", "retries": 0}]}
     with pytest.raises(ValueError, match="not in queue"):
         orchestrator.apply_result(q, "NOPE", "PASS")
+
+def test_make_gate_fn_maps_runner_output():
+    # runner returns (exit_code, output); 0 => PASS, nonzero => FAIL
+    def ok_runner(changed_files):
+        return (0, "")
+    def bad_runner(changed_files):
+        return (1, "NestedForDepth violation")
+    gate_ok = orchestrator.make_gate_fn(ok_runner)
+    gate_bad = orchestrator.make_gate_fn(bad_runner)
+    files = [{"path": "X.java"}]
+    assert gate_ok(files) == "PASS"
+    assert gate_bad(files) == "FAIL"
