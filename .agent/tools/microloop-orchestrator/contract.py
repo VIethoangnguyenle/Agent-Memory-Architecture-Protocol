@@ -37,3 +37,35 @@ def load_queue(path):
 def dump_queue(q, path):
     validate_queue(q)
     _dump(q, path)
+
+
+def validate_handoff(h):
+    for key in ("task", "dna_slice", "spec_slice", "snapshot_slice", "written_files", "boundary"):
+        if key not in h:
+            raise ValueError(f"handoff missing key: {key}")
+    return h
+
+
+def load_handoff(path):
+    return validate_handoff(_load(path))
+
+
+def dump_handoff(h, path):
+    validate_handoff(h)
+    _dump(h, path)
+
+
+def validate_result(r):
+    for key in ("task_id", "changed_files", "gate_status"):
+        if key not in r:
+            raise ValueError(f"result missing key: {key}")
+    return r
+
+
+def load_result(path):
+    return validate_result(_load(path))
+
+
+def dump_result(r, path):
+    validate_result(r)
+    _dump(r, path)
