@@ -351,7 +351,7 @@ FUNCTION load_snapshot_filtered(requirement_md):
 
 ## [C1] Tích hợp Context Compressor
 
-context-loader tích hợp với `.agent/scripts/context-compressor.md` tại 2 điểm:
+context-loader tích hợp với `.agent/procedures/context-compressor.md` tại 2 điểm:
 
 ### Điểm 1 — Sau khi tính tổng token
 

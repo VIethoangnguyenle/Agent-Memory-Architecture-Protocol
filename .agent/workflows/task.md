@@ -189,7 +189,7 @@ Sau khi nhận diện:
    - Liệt kê tool calls đáng chú ý (get_node_source nhiều lần, tài liệu dài...).
    - Cập nhật dòng "Pha 1" trong bảng Tóm tắt.
    - Nếu tổng Pha 1 > 50,000 tokens estimate: ghi cảnh báo vào section "Cảnh báo".
-   - Tham chiếu protocol đầy đủ: `.agent/scripts/token-tracking.md`.
+   - Tham chiếu protocol đầy đủ: `.agent/procedures/token-tracking.md`.
 
 8. **Đánh dấu Pha 1 hoàn thành** vào `.knowledge-layer/active/AGENT_TRANSPARENCY.md`:
    - Thêm dòng vào section "Lịch sử pha": `Pha 1 DONE | <timestamp> | REQUIREMENT + EXPLORE_CONTEXT đã ghi`
@@ -272,7 +272,7 @@ Mục tiêu: dùng OpenSpec để sinh **spec kỹ thuật** dựa trên REQUIRE
    - Điền timestamp kết thúc Pha 2.
    - Estimate token Pha 2: input (REQUIREMENT + EXPLORE_CONTEXT + OpenSpec instructions) + output (spec file).
    - Cập nhật dòng "Pha 2" trong bảng Tóm tắt.
-   - Tham chiếu protocol đầy đủ: `.agent/scripts/token-tracking.md`.
+   - Tham chiếu protocol đầy đủ: `.agent/procedures/token-tracking.md`.
 
 9. **[POST-PHASE SELF-CHECK — Pha 2]** Trước khi báo "Pha 2 xong" với user:
    - `[ ]` spec file tồn tại trong `openspec/changes/<change-id>/`.
@@ -356,7 +356,7 @@ Mục tiêu: dùng OpenSpec để áp dụng spec đã được chấp thuận v
    - Estimate token Pha 3: input (spec + codebase context) + output (code changes).
    - Cập nhật dòng "Pha 3" và dòng **TỔNG TASK** trong bảng Tóm tắt.
    - Đây là lần ghi cuối trước khi `knowledge-curator` archive TOKEN_LOG.md.
-   - Tham chiếu protocol đầy đủ: `.agent/scripts/token-tracking.md`.
+   - Tham chiếu protocol đầy đủ: `.agent/procedures/token-tracking.md`.
 
 8. **[POST-PHASE SELF-CHECK — Pha 3]** Trước khi gọi knowledge-curator archive:
    - `[ ]` DNA-RELOAD checkpoint đã ghi vào AGENT_TRANSPARENCY (bước 2a).

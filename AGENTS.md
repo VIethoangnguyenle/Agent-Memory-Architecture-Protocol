@@ -117,7 +117,7 @@ LOAD: Tất cả skill metadata (name, description, trigger conditions)
 READ: .agent/workflows/task.md
 READ: .agent/workflows/idea-to-task.md
 READ: .agent/workflows/index-source.md (nếu cần Socraticode)
-READ: .agent/scripts/token-tracking.md
+READ: .agent/procedures/token-tracking.md
 ```
 
 ### Bước 4 — Chạy Context Loader

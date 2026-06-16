@@ -2,7 +2,7 @@
 
 > **Setup note**: Sau khi unzip, chạy lệnh sau để đảm bảo 2 file mới được track bởi git:
 > ```bash
-> git add .knowledge-layer/templates/TOKEN_LOG.tpl.md .agent/scripts/token-tracking.md
+> git add .knowledge-layer/templates/TOKEN_LOG.tpl.md .agent/procedures/token-tracking.md
 > ```
 
 
