@@ -716,8 +716,10 @@ ROOT = HERE.parent
 sys.path.insert(0, str(ROOT))
 import extraction  # noqa: E402
 
-A = "public class Xa {\n  validate();\n  enrich();\n  persist();\n  audit();\n}"
-B = "public class Xb {\n  validate();\n  enrich();\n  persist();\n  notify();\n}"
+# A and B share 6 method lines, differ only in the last; the class-declaration line
+# also differs. Jaccard = 6 / 10 = 0.6 — comfortably above the 0.5 cluster threshold.
+A = "public class Xa {\n  validate();\n  enrich();\n  transform();\n  route();\n  persist();\n  log();\n  audit();\n}"
+B = "public class Xb {\n  validate();\n  enrich();\n  transform();\n  route();\n  persist();\n  log();\n  notify();\n}"
 C = "public class Zz {\n  totallyDifferent();\n  unrelated();\n}"
 
 def test_similarity_high_for_near_duplicates():
@@ -816,9 +818,9 @@ Expected: PASS (4 passed)
 ticket_id: "ABC-1"
 new_files:
   - path: "XaHandler.java"
-    content: "public class Xa { validate(); enrich(); persist(); audit(); }"
+    content: "public class Xa { validate(); enrich(); transform(); route(); persist(); log(); audit(); }"
   - path: "XbHandler.java"
-    content: "public class Xb { validate(); enrich(); persist(); notify(); }"
+    content: "public class Xb { validate(); enrich(); transform(); route(); persist(); log(); notify(); }"
   - path: "ZzService.java"
     content: "public class Zz { totallyDifferent(); unrelated(); }"
 ```
