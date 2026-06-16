@@ -1,0 +1,15 @@
+{
+  "version": "1.0",
+  "source_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+  "sources": ["sample-author-dna.yaml", "sample-conventions.yaml"],
+  "rules": [
+    {"id": "HP-6.max_for_nesting", "ir_rule": "max_for_nesting", "severity": "error", "params": {"max": 0}, "source_ref": "author-dna.yaml#HP-6"},
+    {"id": "HP-7.forbid_else", "ir_rule": "forbid_else", "severity": "warning", "params": {"severity_override": "warning"}, "source_ref": "author-dna.yaml#HP-7"},
+    {"id": "SP-5.require_javadoc_tag", "ir_rule": "require_javadoc_tag", "severity": "warning", "params": {"tags": ["@author", "@since"], "scope": ["public", "protected"]}, "source_ref": "author-dna.yaml#SP-5"},
+    {"id": "threshold.max_if_nesting", "ir_rule": "max_if_nesting", "severity": "error", "params": {"max": 1}, "source_ref": "author-dna.yaml#complexity_thresholds"},
+    {"id": "threshold.max_cyclomatic", "ir_rule": "max_cyclomatic", "severity": "warning", "params": {"max": 3}, "source_ref": "author-dna.yaml#complexity_thresholds"},
+    {"id": "threshold.max_method_lines", "ir_rule": "max_method_lines", "severity": "warning", "params": {"max": 30}, "source_ref": "author-dna.yaml#complexity_thresholds"},
+    {"id": "naming.TypeName", "ir_rule": "naming_regex", "severity": "warning", "params": {"target": "TypeName", "pattern": "^[A-Z][a-zA-Z0-9]*$"}, "source_ref": "conventions.yaml#naming_patterns"},
+    {"id": "naming.MethodName", "ir_rule": "naming_regex", "severity": "warning", "params": {"target": "MethodName", "pattern": "^[a-z][a-zA-Z0-9]*$"}, "source_ref": "conventions.yaml#naming_patterns"}
+  ]
+}
