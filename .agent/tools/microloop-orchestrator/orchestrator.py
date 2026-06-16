@@ -9,6 +9,10 @@ no Java, no real subagent.
 def topo_sort(tasks):
     """Kahn's algorithm. Returns tasks ordered so deps come first. Raises on cycle."""
     by_id = {t["id"]: t for t in tasks}
+    for t in tasks:
+        for dep_id in t.get("depends_on", []):
+            if dep_id not in by_id:
+                raise ValueError(f"task {t['id']} depends on non-existent task {dep_id}")
     indeg = {t["id"]: 0 for t in tasks}
     for t in tasks:
         for _ in t.get("depends_on", []):
@@ -67,7 +71,9 @@ def next_task(queue):
 
 def apply_result(queue, task_id, gate_status, max_retries=2):
     """Mutate queue per gate outcome. PASS->done; FAIL->retry; FAIL over budget->blocked."""
-    t = next(t for t in queue["tasks"] if t["id"] == task_id)
+    t = next((t for t in queue["tasks"] if t["id"] == task_id), None)
+    if t is None:
+        raise ValueError(f"task {task_id} not in queue")
     if gate_status == "PASS":
         t["status"] = "done"
         return queue

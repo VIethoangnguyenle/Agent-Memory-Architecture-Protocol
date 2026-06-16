@@ -1,5 +1,5 @@
 from pathlib import Path
-import sys
+import sys, pytest
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 sys.path.insert(0, str(ROOT))
@@ -67,3 +67,9 @@ def test_run_loop_stops_on_blocked():
     final = orchestrator.run_loop(q, dispatch_fn, gate_fn, max_retries=2)
     t1 = final["tasks"][0]
     assert t1["status"] == "blocked" and t1["retries"] == 2
+
+def test_apply_result_unknown_task_raises():
+    q = {"ticket_id": "X", "spec_path": "p", "execution_mode": "inline-reload",
+         "tasks": [{"id": "T1", "desc": "d", "depends_on": [], "status": "pending", "retries": 0}]}
+    with pytest.raises(ValueError, match="not in queue"):
+        orchestrator.apply_result(q, "NOPE", "PASS")

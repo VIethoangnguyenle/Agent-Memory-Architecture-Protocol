@@ -22,3 +22,10 @@ def test_cycle_raises():
     ]
     with pytest.raises(ValueError, match="cycle"):
         orchestrator.topo_sort(tasks)
+
+def test_dangling_dependency_raises_distinct_error():
+    tasks = [
+        {"id": "T1", "depends_on": ["T99"]},  # T99 does not exist
+    ]
+    with pytest.raises(ValueError, match="non-existent"):
+        orchestrator.topo_sort(tasks)
