@@ -1,0 +1,2 @@
+.agent/tools/rule-projector/generated/*
+!.agent/tools/rule-projector/generated/.gitkeep
