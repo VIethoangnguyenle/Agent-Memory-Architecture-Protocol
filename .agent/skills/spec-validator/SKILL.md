@@ -153,6 +153,36 @@ RESULT:
 
 ---
 
+### 3.4 `post_apply_contract_dag_check(contract_dag_path, changed_files)`
+
+```
+INPUT:
+  contract_dag_path — .knowledge-layer/active/microloop/CONTRACT_DAG.md
+  changed_files     — danh sách file đã thay đổi
+
+STEPS:
+1. Đọc CONTRACT_DAG.md.
+2. Fail nếu còn node status `pending`, `in_progress`, `blocked`, hoặc `stale`.
+3. Với mỗi node:
+   - Kiểm tra changed_files của node nằm trong `writes`.
+   - Nếu node type = `leaf`, kiểm tra node không ghi file thuộc contract/base.
+   - Nếu node có `contract_ref`, kiểm tra version bằng contract node hiện tại.
+4. Đọc các request artifact nếu tồn tại:
+   - CONTEXT_REQUEST.*.md
+   - CONTRACT_CHANGE_REQUEST.*.md
+   - INTEGRATION_REQUEST.*.md
+5. Fail nếu request chưa được resolved hoặc chưa được ghi rõ trong AGENT_TRANSPARENCY.
+
+RESULT:
+  → PASS: DAG hoàn tất, không stale, không boundary violation.
+  → BLOCK: có node chưa xong, stale, contract_version mismatch, hoặc unresolved request.
+
+Ghi vào AGENT_TRANSPARENCY:
+  "[CONTRACT-DAG-CHECK] {PASS|BLOCK} — {issues}"
+```
+
+---
+
 ## 4. Tích hợp với `/task apply` (task.md)
 
 `spec-validator` được gọi tự động trong Pha 3:
@@ -164,7 +194,9 @@ spec-validator.pre_apply_gate()     ← nếu BLOCK: dừng, hỏi user
   ↓
 spec-validator.check_ac_coverage()  ← nếu WARN: hiển thị, hỏi user có muốn tiếp không
   ↓
-[user confirm] → micro-loop orchestration (SP1b: per-task executor + mechanical gate)
+[user confirm] → Hybrid Contract DAG micro-loop
+  ↓
+spec-validator.post_apply_contract_dag_check()
   ↓
 spec-validator.post_apply_verify()  ← sau apply
 ```
@@ -201,6 +233,7 @@ Ghi sau mỗi lần chạy:
 - **Kết quả pre-apply gate**: `PASS` hoặc `BLOCK` — quyết định có được apply hay không.
 - **Báo cáo AC coverage**: `{n_covered}/{n_total}` AC được cover.
 - **Kết quả post-apply verify**: `OK` hoặc danh sách mismatch.
+- **Kết quả Contract DAG check**: `PASS` hoặc `BLOCK` — xác nhận không còn stale node, contract mismatch, hoặc unresolved request.
 - **Cập nhật**: `.knowledge-layer/active/AGENT_TRANSPARENCY.md` — ghi lại kết quả mỗi lần chạy.
 
 ---
