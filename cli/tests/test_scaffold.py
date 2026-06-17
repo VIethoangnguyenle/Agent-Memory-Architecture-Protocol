@@ -124,3 +124,15 @@ def test_verify_no_unresolved_flags_offending_py_file(tmp_path):
     offenders = verify_no_unresolved(tmp_path)
 
     assert offending in offenders
+
+
+def test_verify_no_unresolved_flags_suffixless_entry_point(tmp_path):
+    # .cursorrules has an empty suffix and would escape a suffix-only
+    # scan — but it is a real platform entry point and must be checked.
+    offending = tmp_path / ".cursorrules"
+    offending.write_text("rules {{ platform.config_entry_point }}\n", encoding="utf-8")
+
+    offenders = verify_no_unresolved(tmp_path)
+
+    assert offending in offenders
+

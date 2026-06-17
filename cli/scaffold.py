@@ -180,13 +180,19 @@ def verify_no_unresolved(root: Path) -> List[Path]:
     """Return text files under root that still contain an unresolved '{{ ' marker.
 
     Scans every extension the renderer actually renders (cli.renderer's
-    _TEXT_EXTENSIONS), not just the narrower single-file auto-render set,
-    so the safety gate can't miss a leftover marker in a rendered file type
-    (e.g. .py/.json/.sh) that copy_and_render_directory touched.
+    _TEXT_EXTENSIONS), plus every known platform entry-point filename
+    regardless of suffix — `.cursorrules` has an empty suffix and would
+    otherwise escape the suffix-only filter, leaving the riskiest file
+    (the one this scaffold renames dynamically) unchecked.
     """
+    from cli.platforms import PLATFORMS, get_platform
+
+    entry_points = {get_platform(k).config_entry_point for k in PLATFORMS}
     offenders = []
     for path in root.rglob("*"):
-        if not path.is_file() or path.suffix.lower() not in _RENDERED_SUFFIXES:
+        if not path.is_file():
+            continue
+        if path.suffix.lower() not in _RENDERED_SUFFIXES and path.name not in entry_points:
             continue
         try:
             if "{{ " in path.read_text(encoding="utf-8"):
