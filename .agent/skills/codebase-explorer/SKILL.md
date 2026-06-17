@@ -258,9 +258,9 @@ Chỉ đọc phần cần thiết, không đọc toàn bộ codebase.
 
 > [!IMPORTANT]
 > Khi Bước 4–5 phát hiện code **chạm tới config tables, transaction metadata, hoặc state management** — nhận diện qua các pattern sau:
-> - **Factory / Repository / DAO** đọc từ bảng config (`AD_*`, `CF_*`, `SYS_*`…)
+> - **Factory / Repository / DAO** đọc từ bảng config (`CONFIG_*`, `SYS_*`, `PARAM_*`…)
 > - **Entity / Model** map sang bảng transaction hoặc metadata
-> - **Enum / Definition** resolve từ giá trị trong DB (ví dụ: `ServiceDefinition.fromServiceCode()`)
+> - **Enum / Definition** resolve từ giá trị trong DB (ví dụ: `TypeDefinition.fromCode()`)
 > - **Adapter / Client** gọi external service dựa trên config DB
 >
 > → Agent **PHẢI** gọi `db-explorer` hoặc dùng MCP `db-remote` trực tiếp để **verify data thực tế** trước khi ghi kết luận gap vào EXPLORE_CONTEXT.

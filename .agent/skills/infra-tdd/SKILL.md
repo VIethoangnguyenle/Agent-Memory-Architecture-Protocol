@@ -9,7 +9,7 @@ description: >
   spec OpenSpec (→ openspec-propose), review kiến trúc (→ architecture-reviewer).
 license: MIT
 metadata:
-  author: vietbank-sme-team
+  author: project-team
   version: '2.5'
   language: vi
   based-on: infra-tdd-template by perplexity-computer

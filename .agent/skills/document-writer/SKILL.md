@@ -182,15 +182,16 @@ Trước khi hoàn tất, agent PHẢI kiểm tra:
 - **File tài liệu**: Vị trí tuỳ loại (`README.md`, `docs/`, `docs/tdd/`, v.v.).
 - **Định dạng**: Markdown, tiếng Việt, theo cấu trúc chuẩn của loại tài liệu tương ứng.
 - **Chất lượng**: Đã qua validation 5 điểm (Giai đoạn 8) trước khi hoàn tất.
-## Gold Standard Reference
+## Tài liệu tham khảo — Nguyên tắc viết tài liệu kỹ thuật
 
-> Bộ tài liệu `dvnh-common/docs/vi` (9 chương) được coi là **gold standard** cho format tài liệu kỹ thuật.
-> Khi viết tài liệu mới, tham khảo format và cấu trúc từ dvnh-common.
+> Khi project có bộ tài liệu mẫu (gold standard), agent nên tham khảo format và cấu trúc từ đó.
+> Nếu chưa có, áp dụng các nguyên tắc chung dưới đây.
 
-### Quy tắc rút ra từ dvnh-common
+### Nguyên tắc chung
 
-- **Attribution Header**: Mỗi tài liệu nên có credit (kiến trúc sư, quản lý, thời gian cập nhật).
+- **Attribution Header**: Mỗi tài liệu nên có credit (tác giả, reviewer, thời gian cập nhật).
 - **Hub + Sub-doc**: Khi tài liệu > 500 dòng, tách thành file hub (mục lục) + sub-docs chi tiết.
 - **Navigation**: Mỗi file nên có link `← Trước` / `Tiếp theo →` / `Mục lục`.
 - **Code Examples**: Ưu tiên format NÊN/KHÔNG NÊN để rõ best practices vs anti-patterns.
-- **Troubleshooting**: Dùng format "Triệu chứng → Nguyên nhân → Xử lý" (dvnh-common Ch8 §8.6).
+- **Troubleshooting**: Dùng format "Triệu chứng → Nguyên nhân → Xử lý".
+

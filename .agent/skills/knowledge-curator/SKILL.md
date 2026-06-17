@@ -323,7 +323,7 @@ Bao gồm `track_violation_patterns()`, tích hợp vào archive flow, và priva
 
 ---
 
-## 9. [NEW] Transparency Log Rotation
+## 9. Transparency Log Rotation
 
 ### Mục tiêu
 
@@ -352,7 +352,7 @@ FUNCTION rotate_transparency_log():
 
 ---
 
-## 10. [NEW] Cross-Repo Snapshot Consideration
+## 10. Cross-Repo Snapshot Consideration
 
 ### Mục tiêu
 
