@@ -320,6 +320,7 @@ plugins:
     template: false
     output: .knowledge-layer/active/
     copy_dir: true
+    ownership: user
 
   - name: knowledge-long-term
     type: template
@@ -327,3 +328,4 @@ plugins:
     template: false
     output: .knowledge-layer/long-term/
     copy_dir: true
+    ownership: user

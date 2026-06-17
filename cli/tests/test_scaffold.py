@@ -61,3 +61,12 @@ def test_scaffold_plugin_malformed_template_raises_not_swallowed(
 
     with pytest.raises(TemplateSyntaxError):
         scaffold_plugin(plugin, source_path, target_path, claude_context, jinja_env)
+
+
+def test_knowledge_dirs_are_user_owned(amap_root):
+    manifest = load_manifest(amap_root)
+    by_name = {p["name"]: p for p in manifest["plugins"]}
+    assert get_ownership(by_name["knowledge-active-skeleton"]) == "user"
+    assert get_ownership(by_name["knowledge-long-term"]) == "user"
+    # Templates remain framework-managed.
+    assert get_ownership(by_name["knowledge-templates"]) == "framework"
