@@ -190,7 +190,9 @@ Ghi sau mỗi lần chạy:
 ## 6. Post-Apply DNA Compliance Check (`post_apply_dna_check`)
 
 > **Mục tiêu**: Thay thế Reviewer Agent riêng bằng cách mở rộng spec-validator — cùng chức năng verification, 1/10 effort.
-> Chạy **sau** `post_apply_verify` (§3.3), **trước** POST-PHASE SELF-CHECK Pha 3.
+> **Thời điểm chạy (SP1b):** phần semantic chạy **per-task trong micro-loop** (bước 4c của Pha 3
+> trong task.md), **trước** `post_apply_verify`. (Trước SP1b: chạy 1 lần sau `post_apply_verify` —
+> nay đã chuyển vào loop để check trên surface nhỏ của từng task.)
 >
 > **SP1b split:** Rule cơ học (nesting, no-else, max-lines, naming, javadoc) đã chuyển
 > sang **mechanical gate deterministic** (SP1a) chạy trong micro-loop — KHÔNG check lại ở
