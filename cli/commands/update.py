@@ -10,7 +10,7 @@ import tempfile
 from pathlib import Path
 from typing import Optional
 
-from cli.platforms import get_platform
+from cli.platforms import PLATFORMS, get_platform
 from cli.renderer import create_renderer
 from cli.scaffold import (
     load_manifest,
@@ -69,5 +69,14 @@ def run_update(target_dir: str, amap_root: Optional[str] = None, reconfigure: bo
 
     if reconfigure:
         generate_resolved_config(target, platform_key, selected_mcps, language)
+        # Remove stale entry-point files left by the previous platform.
+        current_entry = platform.config_entry_point
+        for key in PLATFORMS:
+            other_entry = get_platform(key).config_entry_point
+            if other_entry != current_entry:
+                stale = target / other_entry
+                if stale.exists():
+                    stale.unlink()
+                    print(f"  🗑️  Removed stale entry point: {other_entry}")
 
     print(f"\n  ✅ Updated {count} framework files. User files preserved.\n")

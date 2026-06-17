@@ -67,3 +67,18 @@ def test_reconfigure_switches_platform_keeps_user_files(tmp_path, amap_root, mon
     # resolved-config now records antigravity.
     cfg = (target / ".agent" / "resolved-config.yaml").read_text(encoding="utf-8")
     assert "antigravity" in cfg
+
+
+def test_reconfigure_removes_old_entry_point(tmp_path, amap_root, monkeypatch):
+    target = tmp_path / "proj"
+    _init_claude(target, amap_root, monkeypatch)
+    assert (target / "CLAUDE.md").exists()
+
+    # Reconfigure to antigravity (platform=1).
+    answers = iter(["1", "1,2,3", "3"])
+    monkeypatch.setattr("builtins.input", lambda *a, **k: next(answers))
+    run_update(target_dir=str(target), amap_root=str(amap_root), reconfigure=True)
+
+    assert (target / "AGENTS.md").exists()
+    assert not (target / "CLAUDE.md").exists()
+
