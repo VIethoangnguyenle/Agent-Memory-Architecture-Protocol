@@ -106,8 +106,8 @@ Lý do: ADR là historical record. Sửa đổi = xóa lịch sử.
 
 ## Bối cảnh
 
-Hệ thống SME Omni xử lý giao dịch tài chính cần đảm bảo **tại một thời điểm chỉ có 1 action**
-trên cùng một TransReq (approval request). Race condition ở đây = chuyển tiền 2 lần.
+Hệ thống ngân hàng xử lý giao dịch tài chính cần đảm bảo **tại một thời điểm chỉ có 1 action**
+trên cùng một ApprovalRequest (yêu cầu phê duyệt). Race condition ở đây = chuyển tiền 2 lần.
 
 Forces:
 - Hệ thống multi-instance (3 pods) → DB lock không đủ
@@ -118,7 +118,7 @@ Forces:
 ## Quyết định
 
 **Sử dụng Redis `SET NX PX` qua Spring Integration `ExpirableLockRegistry`**,
-với lock key pattern `ACTIVE_TRANS_REQ_ACTION_LOCK_{transReqId}` và TTL 60 giây.
+với lock key pattern `ACTIVE_APPROVAL_REQUEST_LOCK_{requestId}` và TTL 60 giây.
 
 ## Alternatives đã xem xét
 
@@ -161,7 +161,7 @@ với lock key pattern `ACTIVE_TRANS_REQ_ACTION_LOCK_{transReqId}` và TTL 60 gi
 
 ## Bằng chứng
 - Production data: 3 tầng lock (Redis + Cache + DB) chặn 99.99% race conditions
-- Codebase: `BaseTransReqActionProcessor` — 10 processors đều dùng cùng pattern
+- Codebase: `BaseApprovalRequestProcessor` — 10 processors đều dùng cùng pattern
 ```
 
 ---

@@ -159,7 +159,7 @@ Mỗi discovery rơi vào đúng một trong các bucket:
 **Quy tắc mức trừu tượng khi REDIRECT:**
 
 - `conventions.yaml` và `author-dna.yaml` phải viết **generic** — mô tả quy tắc/triết lý ở mức pattern, không gắn vào tên bảng/class/ticket cụ thể.
-- Tên cụ thể (vd: `OMNI_DAILY_TRANS_REQ_LIMIT`) chỉ xuất hiện trong `evidence` (minh chứng), không phải trong `description` (mô tả quy tắc).
+- Tên cụ thể (vd: `ORDERS_DAILY_LIMIT`) chỉ xuất hiện trong `evidence` (minh chứng), không phải trong `description` (mô tả quy tắc).
 - Nếu quy tắc chỉ đúng cho 1 bảng/1 class cụ thể → đó là **sự thật**, thuộc snapshot, không phải convention.
 
 **Regenerate ruleset sau khi DNA thay đổi (SP1a producer contract):**
@@ -173,9 +173,9 @@ Mỗi discovery rơi vào đúng một trong các bucket:
 
 | Phát hiện | Bucket | Lý do |
 |-----------|--------|-------|
-| Bảng `OMNI_DAILY_TRANS_REQ_LIMIT` có column `AMOUNT`, `COMPANY_ID` | PROMOTE | DB schema thực tế, tái sử dụng cao |
-| `ValidateTransactionLimitProcessor` chưa check bảng `OMNI_DAILY_TRANS_REQ_LIMIT` | PROMOTE | Code gap có evidence, relevant cho nhiều task |
-| "Table prefix phải dùng `OMNI_` cho bảng project-native" | REDIRECT → conventions | Đây là **quy tắc**, không phải sự thật. Thuộc conventions.yaml |
+| Bảng `ORDERS_DAILY_LIMIT` có column `AMOUNT`, `COMPANY_ID` | PROMOTE | DB schema thực tế, tái sử dụng cao |
+| `ValidateOrderLimitProcessor` chưa check bảng `ORDERS_DAILY_LIMIT` | PROMOTE | Code gap có evidence, relevant cho nhiều task |
+| "Table prefix phải dùng `APP_` cho bảng project-native" | REDIRECT → conventions | Đây là **quy tắc**, không phải sự thật. Thuộc conventions.yaml |
 | "Dùng Chain of Responsibility vì need-driven, không ép buộc" | REDIRECT → author-dna | Đây là **triết lý**, không phải sự thật. Thuộc author-dna.yaml |
 | "Chiến lược cần thêm cột X" (chưa confirm) | ARCHIVE | Còn đang propose, chưa xác nhận |
 | Kafka topic tên `omni.transaction.created` (suy luận từ naming convention) | ARCHIVE | Chưa có evidence trực tiếp |
