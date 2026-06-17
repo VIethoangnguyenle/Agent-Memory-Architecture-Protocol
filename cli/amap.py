@@ -3,12 +3,14 @@
 
 Usage:
     amap init [--target DIR] [--source DIR]
+    amap update [--target DIR] [--source DIR] [--reconfigure]
     amap status [--target DIR]
     amap --version
     amap --help
 
 Commands:
     init      Scaffold AMAP framework into a target project
+    update    Re-render framework files, preserving user-owned files
     status    Show current AMAP configuration in a project
 """
 
@@ -64,11 +66,32 @@ def main():
         help="Project directory to check (default: current directory)",
     )
 
+    # ─── update ───
+    update_parser = subparsers.add_parser(
+        "update",
+        help="Re-render framework files in an existing AMAP project",
+    )
+    update_parser.add_argument(
+        "--target", default=".",
+        help="Project directory to update (default: current directory)",
+    )
+    update_parser.add_argument(
+        "--source", default=None,
+        help="AMAP repo root (default: auto-detect from CLI location)",
+    )
+    update_parser.add_argument(
+        "--reconfigure", action="store_true",
+        help="Re-prompt platform/MCP/language before re-rendering",
+    )
+
     args = parser.parse_args()
 
     if args.command == "init":
         from cli.commands.init import run_init
         run_init(target_dir=args.target, amap_root=args.source)
+    elif args.command == "update":
+        from cli.commands.update import run_update
+        run_update(target_dir=args.target, amap_root=args.source, reconfigure=args.reconfigure)
     elif args.command == "status":
         from cli.commands.status import run_status
         run_status(target_dir=args.target)
