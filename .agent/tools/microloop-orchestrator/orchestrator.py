@@ -175,8 +175,17 @@ def find_write_conflicts(nodes):
 
 
 def plan_parallel_batches(nodes):
-    """Plan deterministic batches where no nodes in the same batch write the same file."""
-    pending = topo_sort_nodes(nodes)
+    """Plan deterministic batches where no nodes in the same batch write the same file.
+
+    Dependencies pointing outside the provided node set are treated as already
+    satisfied: the Implementation Lane only receives nodes whose dependencies are
+    already done, and those done nodes are not part of the batch-candidate set.
+    """
+    ids = {node["id"] for node in nodes}
+    by_id = {node["id"]: node for node in nodes}
+    scoped = [dict(node, depends_on=[dep for dep in node.get("depends_on", []) if dep in ids])
+              for node in nodes]
+    pending = [by_id[node["id"]] for node in topo_sort_nodes(scoped)]
     batches = []
     while pending:
         batch = []
