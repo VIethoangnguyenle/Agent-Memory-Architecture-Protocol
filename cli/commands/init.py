@@ -1,5 +1,7 @@
 """amap init — Scaffold AMAP framework into a target project."""
 
+import shutil
+import tempfile
 from pathlib import Path
 from typing import List, Optional, Tuple
 
@@ -9,6 +11,8 @@ from cli.scaffold import (
     load_manifest,
     scaffold_plugins,
     generate_resolved_config,
+    verify_no_unresolved,
+    sync_tree,
 )
 
 
@@ -95,10 +99,24 @@ def run_init(target_dir: str, amap_root: Optional[str] = None) -> None:
     context = platform.build_render_context(selected_mcps, language)
     jinja_env = create_renderer(str(amap))
     print("\nScaffolding AMAP framework...\n")
-    stats = scaffold_plugins(
-        manifest.get("plugins", []), amap, target, context, jinja_env,
-        manifest.get("mcp_capabilities", {}), selected_mcps,
-    )
+
+    staging = Path(tempfile.mkdtemp(prefix="amap-init-"))
+    try:
+        stats = scaffold_plugins(
+            manifest.get("plugins", []), amap, staging, context, jinja_env,
+            manifest.get("mcp_capabilities", {}), selected_mcps,
+        )
+        offenders = verify_no_unresolved(staging)
+        if offenders:
+            print("\n  ❌ Init aborted — unresolved template markers in:")
+            for p in offenders:
+                print(f"     • {p.relative_to(staging)}")
+            print("  Target was NOT modified.")
+            return
+        sync_tree(staging, target)
+    finally:
+        shutil.rmtree(staging, ignore_errors=True)
+
     generate_resolved_config(target, platform_key, selected_mcps, language)
 
     total = stats["rendered"] + stats["copied"] + stats["dirs"]
