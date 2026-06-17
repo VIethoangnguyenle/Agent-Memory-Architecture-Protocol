@@ -60,7 +60,7 @@ project-root/
 │
 ├── AGENTS.md                          ← Meta-prompt chính (agent đọc file này đầu tiên)
 │
-├── .knowledge-layer/                  ← Bộ nhớ Phân tầng (Memory Hierarchy)
+├── .amap/knowledge/                  ← Bộ nhớ Phân tầng (Memory Hierarchy)
 │   ├── active/                        ← Working memory — context cho task đang xử lý
 │   │   ├── REQUIREMENT.md             ← Yêu cầu đã chuẩn hoá
 │   │   ├── EXPLORE_CONTEXT.md         ← Kết quả khám phá DB + code
@@ -78,7 +78,7 @@ project-root/
 │       ├── EXPLORE_CONTEXT.tpl.md
 │       └── *.tpl.md                   ← Checklist feature/fixbug/refactor/changerequest/ideation
 │
-├── .agent/                            ← Tầng Hạ tầng Agent
+├── .amap/                            ← Tầng Hạ tầng Agent
 │   ├── rules/                         ← Rào chắn (flow, tool, data, kiến trúc)
 │   │   ├── RULES.md                   ← Manifest quy tắc (entry point)
 │   │   ├── rules-flow.md              ← Ràng buộc luồng công việc
@@ -180,10 +180,10 @@ Rồi tự động copy/render toàn bộ framework với tool names đã resolv
 .venv/bin/python -m cli.amap update --target /path/to/your-project --reconfigure
 ```
 
-`install.sh` tự nhận diện dự án đã có AMAP (qua `.agent/resolved-config.yaml`)
+`install.sh` tự nhận diện dự án đã có AMAP (qua `.amap/resolved-config.yaml`)
 và route sang `update` thay vì `init` — chạy lại cùng một lệnh là an toàn.
 File framework (skills, workflows, rules) được re-render mỗi lần update; file
-của bạn trong `.knowledge-layer/long-term/` và `.knowledge-layer/active/`
+của bạn trong `.amap/knowledge/long-term/` và `.amap/knowledge/active/`
 không bao giờ bị ghi đè.
 
 > 📄 Quy tắc đầy đủ về sở hữu file (framework-owned / seeded-then-user-owned / per-dev /
@@ -193,7 +193,7 @@ không bao giờ bị ghi đè.
 
 ```bash
 cd your-project
-cp .knowledge-layer/long-term/persona.template.yaml .knowledge-layer/long-term/persona.yaml
+cp .amap/knowledge/long-term/persona.template.yaml .amap/knowledge/long-term/persona.yaml
 # Sửa persona.yaml theo phong cách tương tác mong muốn
 ```
 
@@ -323,7 +323,7 @@ Sẵn sàng nhận task!
 
 ### Có thể dùng cho dự án private/enterprise không?
 
-Có. AMAP là tầng protocol — không chứa code ứng dụng. Copy `.agent/` và `.knowledge-layer/` vào repo private của bạn rồi tuỳ chỉnh `knowledge-snapshot.md` theo kiến trúc hệ thống của bạn.
+Có. AMAP là tầng protocol — không chứa code ứng dụng. Copy `.amap/` và `.amap/knowledge/` vào repo private của bạn rồi tuỳ chỉnh `knowledge-snapshot.md` theo kiến trúc hệ thống của bạn.
 
 ### AMAP có thay thế AI tool hiện tại không?
 

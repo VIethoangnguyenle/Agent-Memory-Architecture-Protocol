@@ -125,6 +125,6 @@ def run_init(target_dir: str, amap_root: Optional[str] = None) -> None:
     print(f"  {total} plugins installed, {stats['skipped']} skipped")
     print(f"{'═' * 50}")
     print("\n  Next steps:")
-    print("  1. Customize .knowledge-layer/long-term/persona.yaml")
+    print("  1. Customize .amap/knowledge/long-term/persona.yaml")
     print("  2. Run /dna-scan to build author DNA")
     print("  3. Start your first task: /task <ticket-or-idea>\n")

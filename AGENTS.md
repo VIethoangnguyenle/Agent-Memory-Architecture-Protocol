@@ -17,7 +17,7 @@ project-root/
 │
 ├── {{ platform.config_entry_point }}                          ← Meta-prompt chính (file này) — đọc đầu tiên
 │
-├── .knowledge-layer/                  ← Memory Hierarchy (bộ nhớ phân tầng)
+├── .amap/knowledge/                  ← Memory Hierarchy (bộ nhớ phân tầng)
 │   ├── active/                        ← Working memory — context cho task đang xử lý
 │   │   ├── REQUIREMENT.md             ← Yêu cầu chuẩn hoá (ghi bởi requirement-analyst)
 │   │   ├── EXPLORE_CONTEXT.md         ← Bối cảnh DB + code (ghi bởi db/codebase-explorer)
@@ -49,7 +49,7 @@ project-root/
 │       ├── refactor.tpl.md
 │       └── ideation.tpl.md
 │
-├── .agent/                           ← Agent Infrastructure Layer
+├── .amap/                           ← Agent Infrastructure Layer
 │   ├── rules/
 │   │   ├── RULES.md                  ← Rules manifest + index (entry point)
 │   │   ├── rules-flow.md             ← Flow, Spec/Apply & Bootstrap rules
@@ -103,28 +103,28 @@ Khi bắt đầu **bất kỳ** cuộc trò chuyện nào trong project này, ag
 
 ```txt
 READ: {{ platform.config_entry_point }} (file này)
-READ: .agent/rules/RULES.md              ← manifest — chỉ dẫn load 5 sub-files
-READ: .agent/rules/rules-flow.md         ← flow constraints
-READ: .agent/rules/rules-tool.md         ← tool permissions
-READ: .agent/rules/rules-exec.md         ← data/arch/cost/obs
-READ: .agent/rules/rules-knowledge.md    ← knowledge lifecycle + path
-READ: .agent/rules/rules-guard.md        ← pre-invoke guards (đọc SAU cùng)
+READ: .amap/rules/RULES.md              ← manifest — chỉ dẫn load 5 sub-files
+READ: .amap/rules/rules-flow.md         ← flow constraints
+READ: .amap/rules/rules-tool.md         ← tool permissions
+READ: .amap/rules/rules-exec.md         ← data/arch/cost/obs
+READ: .amap/rules/rules-knowledge.md    ← knowledge lifecycle + path
+READ: .amap/rules/rules-guard.md        ← pre-invoke guards (đọc SAU cùng)
 ```
 
 ### Bước 2 — Scan & nạp skills
 
 ```txt
-SCAN: .agent/skills/*/SKILL.md
+SCAN: .amap/skills/*/SKILL.md
 LOAD: Tất cả skill metadata (name, description, trigger conditions)
 ```
 
 ### Bước 3 — Nạp workflows & scripts
 
 ```txt
-READ: .agent/workflows/task.md
-READ: .agent/workflows/idea-to-task.md
-READ: .agent/workflows/index-source.md (nếu cần Socraticode)
-READ: .agent/procedures/token-tracking.md
+READ: .amap/workflows/task.md
+READ: .amap/workflows/idea-to-task.md
+READ: .amap/workflows/index-source.md (nếu cần Socraticode)
+READ: .amap/procedures/token-tracking.md
 ```
 
 ### Bước 4 — Chạy Context Loader
@@ -132,16 +132,16 @@ READ: .agent/procedures/token-tracking.md
 Agent phải chạy logic định vị context theo thứ tự ưu tiên:
 
 ```txt
-PRIORITY 1: .knowledge-layer/active/REQUIREMENT.md
+PRIORITY 1: .amap/knowledge/active/REQUIREMENT.md
             → Task đang active (yêu cầu chuẩn hoá)
 
-PRIORITY 2: .knowledge-layer/active/EXPLORE_CONTEXT.md
+PRIORITY 2: .amap/knowledge/active/EXPLORE_CONTEXT.md
             → Bối cảnh DB + code đang active
 
-PRIORITY 3: .knowledge-layer/long-term/knowledge-snapshot.md
+PRIORITY 3: .amap/knowledge/long-term/knowledge-snapshot.md
             → Kiến trúc hệ thống tổng thể
 
-PRIORITY 4: .knowledge-layer/archive/{latest-ticket}/
+PRIORITY 4: .amap/knowledge/archive/{latest-ticket}/
             → Context gần nhất nếu active trống
 ```
 
@@ -199,15 +199,15 @@ ideation-*.md  REQUIREMENT  EXPLORE    /opsx    code
 Các bước tương ứng:
 
 1. **Ideation** — Biến ý tưởng thô thành phạm vi task sơ bộ  
-   - File: `.knowledge-layer/active/ideation/ideation-*.md`  
+   - File: `.amap/knowledge/active/ideation/ideation-*.md`  
    - Trigger: `/task <ý-tưởng>` → IDEA_ONLY branch  
 
 2. **Requirement** — Chuẩn hoá thành REQUIREMENT.md  
-   - File: `.knowledge-layer/active/REQUIREMENT.md`  
+   - File: `.amap/knowledge/active/REQUIREMENT.md`  
    - Trigger: `/task <ticket-link-or-id>` → HAS_TICKET branch  
 
 3. **Architecture** — Đánh giá kiến trúc + DB + codebase  
-   - File: `.knowledge-layer/active/EXPLORE_CONTEXT.md`  
+   - File: `.amap/knowledge/active/EXPLORE_CONTEXT.md`  
    - Trigger: Tự động trong `/task` Pha 1 khi requirement chạm tới kiến trúc/data/code  
 
 4. **Spec** — Viết spec kỹ thuật chi tiết  
@@ -285,7 +285,7 @@ Có **3 nhóm command** phân biệt — agent cần nhận diện đúng nhóm 
 
 - Chọn skill đúng vai trò, không gộp nhiều vai trò vào một skill.
 - Ưu tiên đi qua `/task` để orchestrate thay vì gọi skill rời rạc.
-- Mọi SKILL.md tuân theo **Hybrid Schema SP2** (§15 trong rules-knowledge.md) — validate bằng `python3 .agent/tools/skill-lint/validate_skills.py`.
+- Mọi SKILL.md tuân theo **Hybrid Schema SP2** (§15 trong rules-knowledge.md) — validate bằng `python3 .amap/tools/skill-lint/validate_skills.py`.
 
 ---
 
@@ -293,7 +293,7 @@ Có **3 nhóm command** phân biệt — agent cần nhận diện đúng nhóm 
 
 Sau mỗi pha quan trọng, agent phải cập nhật:
 
-> `.knowledge-layer/active/AGENT_TRANSPARENCY.md`
+> `.amap/knowledge/active/AGENT_TRANSPARENCY.md`
 
 Tối thiểu bao gồm:
 
@@ -309,12 +309,12 @@ Tối thiểu bao gồm:
 Khi một task hoàn thành (sau `/task apply` hoặc user đóng task):
 
 1. Skill `knowledge-curator` sẽ:
-   - Copy toàn bộ `.knowledge-layer/active/` → `.knowledge-layer/archive/{ticket-id}/`
-   - Reset `.knowledge-layer/active/` về template skeleton
-   - Cập nhật `.knowledge-layer/long-term/knowledge-snapshot.md` với phát hiện mới từ task
+   - Copy toàn bộ `.amap/knowledge/active/` → `.amap/knowledge/archive/{ticket-id}/`
+   - Reset `.amap/knowledge/active/` về template skeleton
+   - Cập nhật `.amap/knowledge/long-term/knowledge-snapshot.md` với phát hiện mới từ task
 
 2. Nếu user muốn tiếp task cũ:
-   - Restore từ `.knowledge-layer/archive/{ticket-id}/` → `.knowledge-layer/active/`
+   - Restore từ `.amap/knowledge/archive/{ticket-id}/` → `.amap/knowledge/active/`
 
 ---
 
@@ -337,14 +337,14 @@ Persona là **lớp tương tác** — điều chỉnh cách nói, không điề
 Persona được cấu hình tại:
 
 ```txt
-.knowledge-layer/long-term/persona.yaml          ← local (gitignored)
-.knowledge-layer/long-term/persona.template.yaml  ← template (committed)
+.amap/knowledge/long-term/persona.yaml          ← local (gitignored)
+.amap/knowledge/long-term/persona.template.yaml  ← template (committed)
 ```
 
 Mỗi user copy template và tùy chỉnh theo phong cách cá nhân:
 
 ```bash
-cp .knowledge-layer/long-term/persona.template.yaml .knowledge-layer/long-term/persona.yaml
+cp .amap/knowledge/long-term/persona.template.yaml .amap/knowledge/long-term/persona.yaml
 # Sửa persona.yaml theo sở thích
 ```
 

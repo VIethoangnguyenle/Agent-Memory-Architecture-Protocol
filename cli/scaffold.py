@@ -16,14 +16,14 @@ from cli.renderer import _TEXT_EXTENSIONS as _RENDERED_SUFFIXES
 
 # Maps plugin source prefixes to actual directories in the AMAP repo.
 SOURCE_MAP = {
-    "rules/":               ".agent/rules/",
-    "skills/":              ".agent/skills/",
-    "workflows/":           ".agent/workflows/",
-    "procedures/":          ".agent/procedures/",
-    "tools/":               ".agent/tools/",
-    "knowledge-templates/": ".knowledge-layer/templates/",
-    "knowledge-active/":    ".knowledge-layer/active/",
-    "knowledge-long-term/": ".knowledge-layer/long-term/",
+    "rules/":               ".amap/rules/",
+    "skills/":              ".amap/skills/",
+    "workflows/":           ".amap/workflows/",
+    "procedures/":          ".amap/procedures/",
+    "tools/":               ".amap/tools/",
+    "knowledge-templates/": ".amap/knowledge/templates/",
+    "knowledge-active/":    ".amap/knowledge/active/",
+    "knowledge-long-term/": ".amap/knowledge/long-term/",
     "AGENTS.md":            "AGENTS.md",
 }
 
@@ -61,8 +61,8 @@ def get_ownership(plugin: dict) -> str:
 def generate_resolved_config(
     target_dir: Path, platform_name: str, selected_mcps: List[str], language: str
 ) -> None:
-    """Write .agent/resolved-config.yaml recording the init/reconfigure choices."""
-    config_path = target_dir / ".agent" / "resolved-config.yaml"
+    """Write .amap/resolved-config.yaml recording the init/reconfigure choices."""
+    config_path = target_dir / ".amap" / "resolved-config.yaml"
     config_path.parent.mkdir(parents=True, exist_ok=True)
     with open(config_path, "w", encoding="utf-8") as f:
         f.write("# AMAP Resolved Configuration\n")
@@ -80,8 +80,8 @@ def generate_resolved_config(
 
 
 def load_resolved_config(target: Path) -> Optional[dict]:
-    """Load .agent/resolved-config.yaml's 'resolved' section, or None if missing/invalid."""
-    config_path = target / ".agent" / "resolved-config.yaml"
+    """Load .amap/resolved-config.yaml's 'resolved' section, or None if missing/invalid."""
+    config_path = target / ".amap" / "resolved-config.yaml"
     if not config_path.exists():
         return None
     try:

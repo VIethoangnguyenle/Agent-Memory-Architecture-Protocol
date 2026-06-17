@@ -78,9 +78,9 @@ def find_replaceable_files(root: Path) -> List[Path]:
     """Find .md files in skills/, workflows/, procedures/ that have tool refs."""
     targets = []
     search_dirs = [
-        root / ".agent" / "skills",
-        root / ".agent" / "workflows",
-        root / ".agent" / "procedures",
+        root / ".amap" / "skills",
+        root / ".amap" / "workflows",
+        root / ".amap" / "procedures",
     ]
 
     for search_dir in search_dirs:

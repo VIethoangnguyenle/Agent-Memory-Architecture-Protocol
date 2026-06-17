@@ -8,10 +8,10 @@
 
 | Nhóm | `init` | `update` | `migrate` | Gồm |
 |---|---|---|---|---|
-| **Framework-owned** | render/copy | **re-render/ghi đè** | bỏ qua | `.agent/{rules,skills,workflows,procedures,tools}`, `AGENTS.md`, entry-point file, `.knowledge-layer/templates/`, `docs/examples/` |
-| **Seeded-then-user-owned** | seed skeleton 1 lần | **giữ nguyên (không đụng)** | **backfill schema additive** | `.knowledge-layer/long-term/{author-dna.yaml, conventions.yaml, knowledge-snapshot.md}` |
-| **Per-dev (gitignored)** | seed từ `*.template` | giữ nguyên | bỏ qua | `.knowledge-layer/long-term/persona.yaml`, `.knowledge-layer/active/*` (runtime) |
-| **Generated (gitignored)** | tạo | tái sinh | bỏ qua | `.agent/tools/rule-projector/generated/*`, `__pycache__`, `.agent/resolved-config.yaml` |
+| **Framework-owned** | render/copy | **re-render/ghi đè** | bỏ qua | `.amap/{rules,skills,workflows,procedures,tools}`, `AGENTS.md`, entry-point file, `.amap/knowledge/templates/`, `docs/examples/` |
+| **Seeded-then-user-owned** | seed skeleton 1 lần | **giữ nguyên (không đụng)** | **backfill schema additive** | `.amap/knowledge/long-term/{author-dna.yaml, conventions.yaml, knowledge-snapshot.md}` |
+| **Per-dev (gitignored)** | seed từ `*.template` | giữ nguyên | bỏ qua | `.amap/knowledge/long-term/persona.yaml`, `.amap/knowledge/active/*` (runtime) |
+| **Generated (gitignored)** | tạo | tái sinh | bỏ qua | `.amap/tools/rule-projector/generated/*`, `__pycache__`, `.amap/resolved-config.yaml` |
 
 ## 2. Invariant cứng — Ba file sống
 
