@@ -16,6 +16,7 @@ if [ ! -d "$TARGET" ]; then
   echo "❌ Target directory does not exist: $TARGET"
   exit 1
 fi
+TARGET="$(cd "$TARGET" && pwd)"
 
 # Require python3 >= 3.8.
 if ! command -v python3 >/dev/null 2>&1; then
