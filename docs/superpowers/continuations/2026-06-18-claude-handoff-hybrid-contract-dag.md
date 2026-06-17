@@ -7,6 +7,46 @@
 
 ---
 
+## 0. STATUS: COMPLETE (2026-06-18)
+
+All plan tasks (1–9) are implemented, verified, and committed to local `main`. The
+sections below are preserved as the original handoff for history; treat them as
+context, not as remaining work.
+
+Final verification (all green):
+
+- `/usr/bin/python3 -m pytest .agent/tools/microloop-orchestrator/tests/ -q` → 59 passed
+- `/usr/bin/python3 .agent/tools/skill-lint/validate_skills.py` → 14/14 skills PASS
+- `git diff --check` → clean
+- All artifacts/rules (`KNOWLEDGE_PACK`, `CONTRACT_DAG`, `CONTRACT_SNAPSHOT`,
+  `CONTEXT_REQUEST`, `CONTRACT_CHANGE_REQUEST`, `INTEGRATION_REQUEST`, `R-Tool-8`,
+  `R-Exec-3b`) discoverable.
+
+Task commits (in addition to Task 1 `e4ff24f`/`e9f1280` and Task 2 `8c70a41`):
+
+```txt
+3aed684 test(microloop): cover hybrid contract dag fixture
+7e0d4d0 fix(microloop): plan_parallel_batches treats satisfied external deps as ready
+987ad11 docs(rules): add hybrid contract dag boundaries
+bd75543 docs(spec-validator): add contract dag post-apply checks
+c5a842f docs(workflow): upgrade apply phase to hybrid contract dag
+4c36d08 docs(procedures): define hybrid contract dag executor roles
+543319b feat(knowledge): add hybrid contract dag templates
+```
+
+Two notes for a future reader:
+
+- **Test runner**: use `/usr/bin/python3 -m pytest`. The repo `.venv` has PyYAML but
+  no pytest, and plain `python3` resolves to that venv.
+- **One deviation (bug fix)**: Task 8's fixture exposed that `plan_parallel_batches`
+  crashed on a subset of ready leaf nodes whose contract dependency was already done
+  and absent from the subset. Fixed `plan_parallel_batches` to treat out-of-subset
+  dependencies as satisfied (`7e0d4d0`); `topo_sort_nodes` keeps strict full-DAG
+  validation. R-Tool-8 was placed after the existing R-Tool-7 to preserve numbering.
+- **Not pushed**: commits live on local `main` only (user chose to keep local).
+
+---
+
 ## 1. Must-Read Context
 
 Read these files first, in order:
