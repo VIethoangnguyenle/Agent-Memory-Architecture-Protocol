@@ -323,20 +323,42 @@ Mục tiêu: dùng OpenSpec để áp dụng spec đã được chấp thuận v
 4. Hỏi **xác nhận cuối cùng**:
    - Nêu rõ đây là bước sẽ đề nghị thay đổi code theo spec.
    - Nếu user muốn, có thể giới hạn phạm vi (chỉ generate patch, không apply; hoặc chỉ apply một phần).
-5. Khi user đồng ý — **Orchestrate micro-loop (SP1b)** (`.agent/tools/microloop-orchestrator/`):
-   a. topo-sort task của spec `tasks.md` (base class trước) → `.knowledge-layer/active/microloop/TASK_QUEUE.md`.
-   b. Đọc tier từ `.agent/profiles/execution-mode.yaml` (`subagent` | `fresh-session` | `inline-reload`).
-   c. Loop mỗi task tuần tự (state bền vững trong TASK_QUEUE — resume được nếu session bị cắt):
-      - Lắp `TASK_HANDOFF` = `dna_slice` + spec slice + snapshot slice + 1 task + tóm tắt file đã ghi.
-      - dispatch executor (`.agent/procedures/executor.md`) → executor đọc file cũ TỪ DISK, sinh code
-        CHỈ task này, ghi `TASK_RESULT`.
-      - **Mechanical gate (SP1a)** chạy ruleset trên file vừa ghi: FAIL → feedback executor fix (≤2 vòng);
-        vẫn FAIL → task `blocked`, dừng loop, hỏi user.
-      - PASS → **semantic surface-check** (spec-validator §6 phần semantic, trên DIFF 1 task) → mark `[x]`
-        task trong `tasks.md` + `TASK_QUEUE` done → task kế.
-   d. Hết task → **extraction review** (`.agent/procedures/reviewer.md`) trên TẤT CẢ file mới →
-      `EXTRACTION_REPORT` (HP-10/11 = FLAG_AND_WARN) → trình user quyết định refactor/archive.
-   - Tuân thủ mode an toàn nếu có (dry-run, diff-only, PR-only…).
+5. Khi user đồng ý — **Orchestrate Hybrid Contract DAG micro-loop (SP1d)**:
+   a. Build `KNOWLEDGE_PACK.md` from REQUIREMENT, EXPLORE_CONTEXT, knowledge-snapshot,
+      conventions, author-dna, OpenSpec artifacts, UA/KG evidence, db-explorer evidence, and relevant archive/memory.
+      - If task complexity = `complex` and KG graph is unavailable/stale: BLOCK unless user explicitly overrides.
+      - If task touches DB and db-explorer evidence is missing: BLOCK and request db-explorer.
+      - Record confidence and overrides in AGENT_TRANSPARENCY.
+   b. Build `CONTRACT_DAG.md` from OpenSpec `tasks.md`:
+      - `contract` nodes: base/interface/abstract class/DTO/schema/public contract.
+      - `leaf` nodes: child classes/adapters/mappers/repository implementations.
+      - `integration` nodes: DI/wiring/registry/config/migration registration.
+      - `test` nodes: unit/integration/spec tests.
+      - `review` nodes: extraction/verification.
+   c. Run Contract Lane sequentially:
+      - Assemble `TASK_HANDOFF.<node-id>.md` with Knowledge Pack slice, DNA slice, convention slice,
+        architecture boundary, allowed/read-only files, and feedback if retrying.
+      - Dispatch executor by `.agent/profiles/execution-mode.yaml`.
+      - Run mechanical gate + semantic surface-check.
+      - On PASS, generate/freeze `CONTRACT_SNAPSHOT.<node-id>.md` with contract_version.
+      - On FAIL after max retries, mark node `blocked` and stop for user decision.
+   d. Run Implementation Lane in safe parallel batches:
+      - Only nodes with dependencies done and no write conflicts can share a batch.
+      - Leaf nodes receive `contract_snapshot` and `contract_version`.
+      - Leaf nodes cannot edit frozen contract/base files or shared wiring files.
+      - Missing context produces `CONTEXT_REQUEST.<node-id>.md`; orchestrator enriches Knowledge Pack and resumes.
+      - Missing contract hook produces `CONTRACT_CHANGE_REQUEST.<node-id>.md`; if accepted, rerun Contract Lane,
+        increment contract_version, and mark downstream nodes stale.
+      - Wiring needs produce `INTEGRATION_REQUEST.<node-id>.md`.
+   e. Run Integration Lane:
+      - Integration Agent is the only executor allowed to edit shared registry/config/wiring files.
+      - It consumes all `INTEGRATION_REQUEST.*.md` files and applies deterministic, grouped changes.
+   f. Run Verification Lane:
+      - Ensure no nodes remain `pending`, `in_progress`, `blocked`, or `stale`.
+      - Run compile/typecheck/tests when available.
+      - Run spec-validator post checks, including contract_version and allowed-file checks.
+      - Run extraction review against all changed files and present `EXTRACTION_REPORT.md` to user.
+   g. Persist state in `.knowledge-layer/active/microloop/` so Pha 3 can resume after session truncation.
 6. Sau khi micro-loop xong:
    - Chạy `spec-validator.post_apply_verify(spec_path, changed_files)` — ghi kết quả vào AGENT_TRANSPARENCY.
    - Nếu có diff/PR, thông báo lại link hoặc danh sách file thay đổi.
@@ -367,6 +389,10 @@ Mục tiêu: dùng OpenSpec để áp dụng spec đã được chấp thuận v
    - `[ ]` TOKEN_LOG.md đã ghi TỔNG TASK.
    - `[ ]` Không có BLOCKER chưa resolve trong AGENT_TRANSPARENCY.md.
    - `[ ]` spec-validator.post_apply_dna_check đã chạy (xem spec-validator §3.4).
+   - `[ ]` KNOWLEDGE_PACK.md exists and confidence/override status is recorded.
+   - `[ ]` CONTRACT_DAG.md has no `pending` / `in_progress` / `blocked` / `stale` nodes.
+   - `[ ]` Every leaf node with `contract_ref` uses the current `contract_version`.
+   - `[ ]` All `CONTEXT_REQUEST`, `CONTRACT_CHANGE_REQUEST`, and `INTEGRATION_REQUEST` files are resolved or explicitly documented.
    Nếu bất kỳ ô nào chưa tick: hoàn thành trước khi gọi knowledge-curator.
 
 9. **[SESSION-BOUNDARY — Pha 3]** Sau khi archive hoàn thành:
