@@ -139,3 +139,97 @@ def run_loop(queue, dispatch_fn, gate_fn, max_retries=2):
         apply_result(queue, t["id"], gate_result, max_retries=max_retries)
         if t["status"] == "blocked":
             return queue
+
+
+def topo_sort_nodes(nodes):
+    """Topo-sort Contract DAG nodes by depends_on, preserving deterministic id order."""
+    by_id = {node["id"]: node for node in nodes}
+    for node in nodes:
+        for dep_id in node.get("depends_on", []):
+            if dep_id not in by_id:
+                raise ValueError(f"node {node['id']} depends on non-existent node {dep_id}")
+    indeg = {node["id"]: len(node.get("depends_on", [])) for node in nodes}
+    ready = sorted([node_id for node_id, degree in indeg.items() if degree == 0])
+    ordered = []
+    while ready:
+        node_id = ready.pop(0)
+        ordered.append(by_id[node_id])
+        for node in nodes:
+            if node_id in node.get("depends_on", []):
+                indeg[node["id"]] -= 1
+                if indeg[node["id"]] == 0:
+                    ready.append(node["id"])
+        ready.sort()
+    if len(ordered) != len(nodes):
+        raise ValueError("dependency cycle detected in contract dag")
+    return ordered
+
+
+def find_write_conflicts(nodes):
+    """Return paths written by more than one node: {path: [node_id, ...]}."""
+    writers = {}
+    for node in nodes:
+        for path in node.get("writes", []):
+            writers.setdefault(path, []).append(node["id"])
+    return {path: ids for path, ids in writers.items() if len(ids) > 1}
+
+
+def plan_parallel_batches(nodes):
+    """Plan deterministic batches where no nodes in the same batch write the same file."""
+    pending = topo_sort_nodes(nodes)
+    batches = []
+    while pending:
+        batch = []
+        used_writes = set()
+        remaining = []
+        for node in pending:
+            writes = set(node.get("writes", []))
+            if used_writes.isdisjoint(writes):
+                batch.append(node)
+                used_writes.update(writes)
+            else:
+                remaining.append(node)
+        batches.append(batch)
+        pending = remaining
+    return batches
+
+
+def invalidate_contract_dependents(dag, contract_node_id, new_version):
+    """Mark downstream nodes stale when their contract_ref version is older than new_version."""
+    for node in dag.get("nodes", []):
+        ref = node.get("contract_ref")
+        if ref and ref.get("node_id") == contract_node_id and ref.get("version") != new_version:
+            node["status"] = "stale"
+    return dag
+
+
+def check_knowledge_gate(knowledge_pack, complexity="standard", user_override=False):
+    """Return PASS/BLOCK for Phase 3 knowledge readiness."""
+    issues = []
+    graph_status = knowledge_pack.get("ua_kg", {}).get("graph_status")
+    if complexity == "complex" and graph_status != "available":
+        issues.append("KG graph unavailable for complex task")
+    database = knowledge_pack.get("database", {})
+    if database.get("required") and not database.get("evidence"):
+        issues.append("DB evidence missing for data-touching task")
+    if issues and not user_override:
+        return {"status": "BLOCK", "issues": issues}
+    if issues:
+        return {"status": "WARN", "issues": issues}
+    return {"status": "PASS", "issues": []}
+
+
+def build_contract_handoff(task, knowledge_pack, spec_slice, snapshot_slice, contract_snapshot,
+                           written_files, boundary, feedback=None):
+    """Build role-aware TASK_HANDOFF content for Hybrid Contract DAG nodes."""
+    return {
+        "task": {"id": task["id"], "desc": task["desc"]},
+        "dna_slice": knowledge_pack.get("dna", {}),
+        "convention_slice": knowledge_pack.get("conventions", {}),
+        "spec_slice": spec_slice,
+        "snapshot_slice": snapshot_slice,
+        "contract_snapshot": contract_snapshot,
+        "written_files": written_files,
+        "boundary": boundary,
+        "feedback": feedback,
+    }

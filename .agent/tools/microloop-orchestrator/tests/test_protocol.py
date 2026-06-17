@@ -119,3 +119,77 @@ def test_apply_result_stores_gate_history():
     assert t1["gate_history"][1]["status"] == "PASS"
     assert t1["gate_history"][1]["violations"] == []
     assert t1["status"] == "done"
+
+
+def test_topo_sort_nodes_orders_contract_before_leaf():
+    nodes = [
+        {"id": "L1", "type": "leaf", "desc": "child", "depends_on": ["C1"], "reads": [], "writes": ["Child.java"], "status": "pending"},
+        {"id": "C1", "type": "contract", "desc": "base", "depends_on": [], "reads": [], "writes": ["Base.java"], "status": "pending"},
+    ]
+    ordered = orchestrator.topo_sort_nodes(nodes)
+    assert [node["id"] for node in ordered] == ["C1", "L1"]
+
+
+def test_find_write_conflicts_groups_by_path():
+    nodes = [
+        {"id": "L1", "type": "leaf", "writes": ["Registry.java"]},
+        {"id": "L2", "type": "leaf", "writes": ["Registry.java"]},
+        {"id": "L3", "type": "leaf", "writes": ["Other.java"]},
+    ]
+    assert orchestrator.find_write_conflicts(nodes) == {"Registry.java": ["L1", "L2"]}
+
+
+def test_plan_parallel_batches_keeps_conflicting_writes_separate():
+    nodes = [
+        {"id": "L1", "type": "leaf", "depends_on": [], "writes": ["Registry.java"], "status": "pending"},
+        {"id": "L2", "type": "leaf", "depends_on": [], "writes": ["Registry.java"], "status": "pending"},
+        {"id": "L3", "type": "leaf", "depends_on": [], "writes": ["Other.java"], "status": "pending"},
+    ]
+    batches = orchestrator.plan_parallel_batches(nodes)
+    flattened = [node["id"] for batch in batches for node in batch]
+    assert flattened == ["L1", "L3", "L2"]
+    assert [node["id"] for node in batches[0]] == ["L1", "L3"]
+    assert [node["id"] for node in batches[1]] == ["L2"]
+
+
+def test_invalidate_contract_dependents_marks_stale():
+    dag = {
+        "nodes": [
+            {"id": "C1", "type": "contract", "status": "done", "contract_version": "v2", "depends_on": [], "reads": [], "writes": []},
+            {"id": "L1", "type": "leaf", "status": "done", "depends_on": ["C1"], "reads": [], "writes": [], "contract_ref": {"node_id": "C1", "version": "v1"}},
+            {"id": "L2", "type": "leaf", "status": "done", "depends_on": ["C1"], "reads": [], "writes": [], "contract_ref": {"node_id": "C1", "version": "v2"}},
+        ]
+    }
+    updated = orchestrator.invalidate_contract_dependents(dag, "C1", "v2")
+    statuses = {node["id"]: node["status"] for node in updated["nodes"]}
+    assert statuses["L1"] == "stale"
+    assert statuses["L2"] == "done"
+
+
+def test_knowledge_gate_blocks_complex_without_graph():
+    kp = {
+        "confidence": {"overall": "CAO", "code_graph": "THAP", "database": "CAO", "memory": "CAO"},
+        "ua_kg": {"graph_status": "unavailable"},
+        "database": {"required": False, "evidence": []},
+    }
+    result = orchestrator.check_knowledge_gate(kp, complexity="complex", user_override=False)
+    assert result["status"] == "BLOCK"
+    assert "KG graph unavailable" in result["issues"][0]
+
+
+def test_build_contract_handoff_includes_dna_convention_and_snapshot():
+    task = {"id": "L1", "desc": "Create child", "contract_ref": {"node_id": "C1", "version": "v1"}}
+    handoff = orchestrator.build_contract_handoff(
+        task=task,
+        knowledge_pack={"dna": {"hard_principles": ["HP-1"]}, "conventions": {"relevant_sections": ["naming"]}},
+        spec_slice="Implement child",
+        snapshot_slice="Payment module",
+        contract_snapshot={"node_id": "C1", "contract_version": "v1"},
+        written_files=[],
+        boundary=["Do not edit BasePaymentProcessor"],
+        feedback=None,
+    )
+    assert handoff["task"]["id"] == "L1"
+    assert handoff["dna_slice"]["hard_principles"] == ["HP-1"]
+    assert handoff["convention_slice"]["relevant_sections"] == ["naming"]
+    assert handoff["contract_snapshot"]["contract_version"] == "v1"
