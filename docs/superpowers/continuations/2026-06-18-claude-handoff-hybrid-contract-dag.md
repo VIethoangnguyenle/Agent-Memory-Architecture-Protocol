@@ -65,8 +65,8 @@ git log --oneline -8
 python3 -m pytest .agent/tools/microloop-orchestrator/tests/ -v
 ```
 
-Expected before Codex spawned Task 2 worker: clean tree and 49 tests passing. At the moment this handoff was written,
-there is a partial Task 2 RED-state edit in `test_protocol.py`; see section 4.
+Expected before Codex spawned Task 2 worker: clean tree and 49 tests passing. At the moment this handoff was last
+updated, Task 2 has uncommitted GREEN-state edits; see section 4.
 
 ---
 
@@ -139,14 +139,27 @@ Codex spawned a worker for Plan Task 2 just before quota interruption:
   - `.agent/tools/microloop-orchestrator/orchestrator.py`
   - `.agent/tools/microloop-orchestrator/tests/test_protocol.py`
 
-The wait was interrupted after about 15 seconds. Some work landed in the working tree, but no Task 2 commit was observed.
+The wait was interrupted after about 15 seconds. The worker continued writing to the working tree, but no Task 2 commit
+was observed.
 
-Current partial Task 2 state:
+Current uncommitted Task 2 state:
 
 - Modified file: `.agent/tools/microloop-orchestrator/tests/test_protocol.py`
+- Modified file: `.agent/tools/microloop-orchestrator/orchestrator.py`
 - Change: the six Task 2 tests from the plan were appended.
-- No corresponding implementation in `orchestrator.py` has been confirmed.
-- This is a valid TDD RED state; continue by running the Task 2 test command and implementing the missing helpers.
+- Change: the six Task 2 helper functions were appended to `orchestrator.py`.
+- Observed test result:
+
+  ```bash
+  python3 -m pytest .agent/tools/microloop-orchestrator/tests/test_protocol.py -v
+  ```
+
+  ```txt
+  17 passed in 0.03s
+  ```
+
+No Task 2 spec review or code quality review has been completed yet. Treat this as uncommitted worker output that needs
+review before commit.
 
 Before continuing, check:
 
@@ -155,8 +168,8 @@ git status --short
 git log --oneline -8
 ```
 
-If no new Task 2 commit exists after `e9f1280`, continue from the partial RED tests already in
-`test_protocol.py`. If a Task 2 commit exists, review it against the plan before proceeding.
+If no new Task 2 commit exists after `e9f1280`, inspect the uncommitted Task 2 diff, run full tests, perform review,
+then either commit it or adjust it. If a Task 2 commit exists, review it against the plan before proceeding.
 
 ---
 
@@ -190,24 +203,28 @@ Task 2 required helpers:
 
 Task 2 required tests are fully written in the plan. Follow TDD:
 
-1. Confirm the failing tests are already appended to `test_protocol.py`. If they are missing, append them from the plan.
+1. Inspect the current uncommitted diff:
+
+   ```bash
+   git diff -- .agent/tools/microloop-orchestrator/orchestrator.py .agent/tools/microloop-orchestrator/tests/test_protocol.py
+   ```
+
 2. Run:
 
    ```bash
    python3 -m pytest .agent/tools/microloop-orchestrator/tests/test_protocol.py -v
    ```
 
-   Expected red: missing helper functions.
+   Expected current result: pass, because the worker appears to have implemented the helpers.
 
-3. Implement helpers in `orchestrator.py`.
-4. Run:
+3. Run full microloop tests:
 
    ```bash
    python3 -m pytest .agent/tools/microloop-orchestrator/tests/test_protocol.py -v
    python3 -m pytest .agent/tools/microloop-orchestrator/tests/ -v
    ```
 
-5. Commit:
+4. Review Task 2 against the plan. If acceptable, commit:
 
    ```bash
    git add .agent/tools/microloop-orchestrator/orchestrator.py .agent/tools/microloop-orchestrator/tests/test_protocol.py
