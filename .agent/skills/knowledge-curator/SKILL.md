@@ -152,6 +152,13 @@ Mỗi discovery rơi vào đúng một trong các bucket:
 - Tên cụ thể (vd: `OMNI_DAILY_TRANS_REQ_LIMIT`) chỉ xuất hiện trong `evidence` (minh chứng), không phải trong `description` (mô tả quy tắc).
 - Nếu quy tắc chỉ đúng cho 1 bảng/1 class cụ thể → đó là **sự thật**, thuộc snapshot, không phải convention.
 
+**Regenerate ruleset sau khi DNA thay đổi (SP1a producer contract):**
+
+- Sau bất kỳ thay đổi DNA nào được approve (REDIRECT → author-dna đã commit), gọi rule-projector
+  để regenerate ruleset:
+  `python3 .agent/tools/rule-projector/projector.py --dna <dna> --conventions <conv> --out generated/`
+- Git pre-commit sync-check là backstop — nếu quên regenerate, hook sẽ chặn commit khi ruleset out-of-sync.
+
 **Ví dụ áp dụng:**
 
 | Phát hiện | Bucket | Lý do |

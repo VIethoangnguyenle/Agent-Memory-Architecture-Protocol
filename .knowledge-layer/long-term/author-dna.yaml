@@ -94,6 +94,10 @@ hard_principles:
       Ví dụ SAI: for (a) { for (b) { ... } }
       Ví dụ OK:  for (a) { processItem(a); }  // processItem có thể chứa loop riêng
     agent_action: REJECT_AND_PROPOSE
+    mechanically_checkable: true
+    check_spec:
+      - ir_rule: max_for_nesting
+        params: { max: 0 }
     confirmed: true
     source: author-described
     author_note: "Cực kỳ ghét if lồng và for lồng. If lồng chỉ dùng để throw/return."
@@ -115,6 +119,10 @@ hard_principles:
       Ví dụ OK:  if (condition) { return handleSpecialCase(request); }
       Ví dụ SAI: if (a) { ...20 dòng logic... } else { ...15 dòng khác... }
     agent_action: REJECT_AND_PROPOSE
+    mechanically_checkable: true
+    check_spec:
+      - ir_rule: forbid_else
+        params: { severity_override: warning }
     confirmed: true
     source: author-described
     author_note: "Hạn chế else. If xong là return/throw/gọi 1 function. Không để nhiều logic trong if."
@@ -336,6 +344,10 @@ style_preferences:
       - Constructor @param: mỗi param có @param tag giải thích.
       Javadoc giúp developer hiểu ngữ cảnh sử dụng mà không cần đọc implementation.
     confirmed: true
+    mechanically_checkable: true
+    check_spec:
+      - ir_rule: require_javadoc_tag
+        params: { tags: ["@author", "@since"], scope: ["public", "protected"] }
     source: codebase-inferred + author-confirmed + author-described (2026-06-11)
     author_note: "Luôn có javadocs, mô tả mục đích chứ không lặp lại tên. @author lấy từ persona.yaml user, không hardcode."
     exemplar:

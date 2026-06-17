@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["version", "source_hash", "sources", "rules"],
+  "additionalProperties": true,
+  "properties": {
+    "version": {"const": "1.0"},
+    "generated_at": {"type": "string"},
+    "source_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "sources": {"type": "array", "items": {"type": "string"}},
+    "rules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "ir_rule", "severity", "params"],
+        "additionalProperties": true,
+        "properties": {
+          "id": {"type": "string"},
+          "ir_rule": {"enum": ["max_if_nesting","max_for_nesting","max_method_lines","max_cyclomatic","forbid_else","naming_regex","require_javadoc_tag"]},
+          "severity": {"enum": ["error","warning","info"]},
+          "params": {"type": "object"},
+          "source_ref": {"type": "string"}
+        }
+      }
+    }
+  }
+}

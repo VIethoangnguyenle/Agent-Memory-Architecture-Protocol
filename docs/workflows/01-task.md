@@ -57,14 +57,26 @@ Nếu architecture-reviewer phát hiện **BLOCKER**:
 
 ---
 
-## Pha 3 — Apply spec (`/task apply`)
+## Pha 3 — Apply spec (`/task apply`) — Micro-loop (SP1b)
 
-1. Đọc spec, tóm tắt files/modules sẽ bị chạm.
+1. Đọc spec `tasks.md`, tóm tắt files/modules sẽ chạm.
 2. **spec-validator** → pre_apply_gate + ac_coverage.
 3. Hỏi xác nhận cuối cùng.
-4. Gọi `/opsx:apply`.
-5. **spec-validator** → post_apply_verify.
-6. Gọi **knowledge-curator** → archive + update snapshot + reset.
+4. **Orchestrate micro-loop** (`.agent/tools/microloop-orchestrator/`):
+   a. topo-sort tasks (base trước) → `TASK_QUEUE.md`.
+   b. Đọc tier từ `.agent/profiles/execution-mode.yaml`.
+   c. Loop mỗi task: lắp `TASK_HANDOFF` (DNA slice + spec slice + snapshot slice +
+      written-files) → dispatch executor (`.agent/procedures/executor.md`) →
+      mechanical gate SP1a → semantic surface-check (spec-validator §6 phần semantic)
+      → mark `[x]` task + `TASK_QUEUE` done → task kế.
+      Gate FAIL → feedback executor (≤2 vòng) → vẫn FAIL: `blocked`, hỏi user.
+5. Hết task → **extraction review** (`.agent/procedures/reviewer.md`) trên TẤT CẢ file
+   mới → `EXTRACTION_REPORT` → trình user (HP-10/11 = WARN).
+6. **spec-validator** → post_apply_verify.
+7. Gọi **knowledge-curator** → archive + update snapshot + reset.
+
+> DNA-RELOAD (cũ, bước 2a) nghỉ hưu: DNA giờ vào context executor qua `dna_slice` trong
+> handoff (cấu trúc), không phải nghi thức reload.
 
 ---
 

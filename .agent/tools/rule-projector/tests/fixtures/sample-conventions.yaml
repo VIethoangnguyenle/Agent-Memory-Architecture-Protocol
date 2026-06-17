@@ -1,0 +1,7 @@
+meta:
+  status: approved
+naming_patterns:
+  - target: TypeName
+    pattern: "^[A-Z][a-zA-Z0-9]*$"
+  - target: MethodName
+    pattern: "^[a-z][a-zA-Z0-9]*$"
