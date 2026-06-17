@@ -179,6 +179,10 @@ cp .knowledge-layer/long-term/persona.template.yaml .knowledge-layer/long-term/p
 # Sửa persona.yaml theo phong cách tương tác mong muốn
 ```
 
+> 💡 Muốn xem một `author-dna.yaml` đã điền đầy trông thế nào? Tham khảo
+> [docs/examples/author-dna-cleancode.yaml](docs/examples/author-dna-cleancode.yaml)
+> — ví dụ mã hoá SOLID / Clean Code / Design Patterns (chỉ tham khảo, không copy vào dự án).
+
 ### 3. Quét convention và DNA (khuyến khích cho dự án có code sẵn)
 
 ```
