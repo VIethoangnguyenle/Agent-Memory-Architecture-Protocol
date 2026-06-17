@@ -6,6 +6,7 @@ language, and installed skills/workflows.
 
 from pathlib import Path
 
+from cli.platforms import get_platform
 from cli.scaffold import load_resolved_config
 
 
@@ -14,9 +15,18 @@ def run_status(target_dir: str) -> None:
     target = Path(target_dir).resolve()
 
     # ─── Check for AMAP installation ───
-    agents_md = target / "AGENTS.md"
+    # Resolve the entry-point file from the recorded platform; fall back to
+    # AGENTS.md for legacy installs predating resolved-config.yaml.
+    resolved = load_resolved_config(target)
+    if resolved is not None:
+        try:
+            entry = get_platform(resolved.get("platform", "generic")).config_entry_point
+        except ValueError:
+            entry = "AGENTS.md"
+    else:
+        entry = "AGENTS.md"
 
-    if not agents_md.exists():
+    if not (target / entry).exists():
         print(f"\n  ❌ No AMAP installation found in {target}")
         print(f"     Run: amap init --target {target}")
         return
