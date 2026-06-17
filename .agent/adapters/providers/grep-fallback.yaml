@@ -1,0 +1,58 @@
+# Provider: Grep + File Search (Built-in Fallback)
+# Priority: 3 (last resort — luôn available)
+# Yêu cầu: Không có — mọi agent đều có khả năng grep/view file
+
+provider: grep-fallback
+capability: code_exploration
+priority: 3
+
+detection:
+  method: "Luôn available — built-in capability"
+  fallback_signal: null
+
+requires: []
+
+mapping:
+  check_availability:
+    tool: null
+    notes: "Luôn available. Trả về status: available, confidence: THẤP."
+
+  search_code:
+    tool: grep_search
+    params:
+      query: "{query}"
+      search_path: "{project_root}"
+    notes: "Text/regex search. Không có semantic understanding."
+
+  get_source:
+    tool: view_file
+    params:
+      path: "{identifier}"
+    notes: "Đọc file trực tiếp."
+
+  get_dependencies:
+    tool: null
+    notes: >
+      KHÔNG CÓ — grep không thể xây dependency graph.
+      Agent phải ghi hạn chế vào AGENT_TRANSPARENCY:
+      "grep-fallback: dependency analysis không khả dụng, kết luận dựa trên text search."
+
+  trace_flow:
+    tool: null
+    notes: "KHÔNG CÓ — trace flow yêu cầu call graph."
+
+  find_blast_radius:
+    tool: null
+    notes: >
+      KHÔNG CÓ — blast radius yêu cầu dependency graph.
+      Agent phải hạ Độ tin cậy kiến trúc xuống THẤP.
+
+  get_detail:
+    tool: null
+    notes: "Giới hạn: chỉ xem file content, không có metadata."
+
+# Cảnh báo:
+# - Grep chỉ tìm text match, không hiểu semantic
+# - Không có dependency analysis → kết luận kiến trúc có risk
+# - Agent PHẢI ghi rõ trong AGENT_TRANSPARENCY khi dùng grep-fallback
+# - Hạ Độ tin cậy theo R-Arch-1

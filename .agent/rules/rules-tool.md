@@ -119,3 +119,38 @@ Gọi `memory_save` hoặc `memory_governance_delete` ngoài `knowledge-curator`
 Agent không được auto-save memory trong exploration, spec, hoặc apply phases.
 
 ---
+
+### R-Tool-7: Adapter Layer — Capability Abstraction (SP3)
+
+Skills **PHẢI** tham chiếu capabilities qua abstract operations thay vì hardcode tên tool cụ thể.
+
+#### R-Adapter-1: Không hardcode tool names trong skills
+
+- Skills **KHÔNG ĐƯỢC** gọi trực tiếp `get_node_source()`, `query_nodes()`, `codebase_search()`, v.v.
+- Thay vào đó, dùng abstract operations: `code_exploration.search_code()`, `code_exploration.get_source()`, v.v.
+- Agent resolve abstract operation → provider cụ thể thông qua `.agent/adapters/registry.yaml`.
+
+#### R-Adapter-2: Provider Detection Protocol
+
+- Khi lần đầu cần dùng capability trong phiên:
+  1. Đọc `registry.yaml` → lấy `active[capability]`
+  2. Nếu `auto`: thử từng provider trong `detection_order`, gọi `check_availability`
+  3. Provider đầu tiên trả về OK → chọn cho phiên này
+  4. Cache kết quả — không detect lại trừ khi có lỗi
+- Ghi provider đã chọn vào `AGENT_TRANSPARENCY`.
+
+#### R-Adapter-3: Confidence Level gắn liền Provider
+
+- Mỗi provider có confidence level (CAO / TRUNG BÌNH / THẤP).
+- Khi dùng provider có confidence THẤP (ví dụ: grep-fallback):
+  - Hạ Độ tin cậy section tương ứng trong EXPLORE_CONTEXT.
+  - Ghi rõ hạn chế vào AGENT_TRANSPARENCY.
+  - Các operation `null` (không support) phải được ghi nhận, không bịa kết quả.
+
+#### R-Adapter-4: Provider Config là source of truth
+
+- Mapping operation → tool call nằm trong `.agent/adapters/providers/*.yaml`.
+- Khi thêm MCP mới hoặc đổi tool: chỉ cần cập nhật provider config, **không sửa skills**.
+- Thêm provider mới: tạo file YAML + thêm vào `detection_order` trong registry.
+
+---

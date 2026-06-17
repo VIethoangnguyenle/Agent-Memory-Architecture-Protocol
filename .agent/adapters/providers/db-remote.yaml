@@ -1,0 +1,57 @@
+# Provider: DB Remote MCP
+# Priority: 1 (provider duy nhất cho db_access)
+# Yêu cầu: db-remote MCP server + kết nối database
+
+provider: db-remote
+capability: db_access
+priority: 1
+
+detection:
+  method: "Kiểm tra MCP db-remote có phản hồi — thử list schemas/tables"
+  fallback_signal: "MCP không tồn tại hoặc connection refused → DB unavailable"
+
+requires:
+  - "db-remote MCP server"
+  - "Database connection credentials"
+
+mapping:
+  check_availability:
+    tool: "db-remote: test connection"
+    notes: "Kiểm tra kết nối. Nếu thất bại → ghi vào AGENT_TRANSPARENCY, hạ Độ tin cậy DB."
+
+  list_tables:
+    tool: "db-remote: list tables"
+    params:
+      schema: "{schema}"
+    notes: "Liệt kê tất cả tables/views trong schema."
+
+  describe_table:
+    tool: "db-remote: describe table"
+    params:
+      table: "{table_name}"
+    notes: "Trả về columns, types, nullable, defaults, constraints."
+
+  query_sample:
+    tool: "db-remote: query"
+    params:
+      sql: "SELECT * FROM {table_name} LIMIT {limit}"
+    notes: >
+      Chỉ SELECT, không DML. Tuân thủ R-Tool-1 (read-only).
+      Không lấy cột PII (R-Data-1).
+
+  list_constraints:
+    tool: "db-remote: describe constraints"
+    params:
+      table: "{table_name}"
+    notes: "FK, unique, check, not-null constraints."
+
+  describe_procedures:
+    tool: "db-remote: list procedures"
+    params:
+      filter: "{filter}"
+    notes: "Stored procedures, triggers, functions liên quan."
+
+# Khi DB unavailable:
+# - Agent ghi rõ hạn chế vào AGENT_TRANSPARENCY
+# - Hạ Độ tin cậy section DB xuống THẤP
+# - Không kết luận gap dựa trên suy luận khi có thể verify bằng DB

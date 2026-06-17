@@ -163,9 +163,9 @@ Dựa vào `AGENT_TRANSPARENCY` + thực tế tool:
      - Service/module chính xử lý use case.
      - Integration (API, message, job nền…) liên quan.
      - Database/schema chính được dùng.
-2. Nếu `EXPLORE_CONTEXT` có ghi kèm `node_id` (quy ước mới):
-   - Dùng `get_node_source(node_id)` để đọc code thực tế của các component quan trọng.
-   - Dùng `get_relationships(node_id)` để verify dependency thực tế vs. tài liệu.
+2. Nếu `EXPLORE_CONTEXT` có ghi kèm `identifier` (node_id hoặc file path):
+   - Dùng `code_exploration.get_source(identifier)` để đọc code thực tế của các component quan trọng.
+   - Dùng `code_exploration.get_dependencies(identifier)` để verify dependency thực tế vs. tài liệu.
 3. Viết tóm tắt 3–7 bullet:
    - Đây là "bức tranh kiến trúc hiện tại cho yêu cầu này".
    - Dùng từ ngữ generic, không phán xét vội.
@@ -177,11 +177,11 @@ Dựa vào `AGENT_TRANSPARENCY` + thực tế tool:
 1. Dựa trên As-is / To-be trong `.knowledge-layer/active/REQUIREMENT.md`:
    - Flow hiện tại đang đi qua những component nào.
    - Flow To-be dự kiến đi thêm hoặc thay đổi component nào.
-2. Nếu có node IDs từ EXPLORE_CONTEXT:
-   - `find_impact(node_id)` → xem blast radius của component sẽ bị sửa.
-   - `get_node_source(node_id)` → đọc code thực tế để xác nhận logic.
-   - `trace_call_chain(node_id)` → trace flow để verify As-is.
-   - Sử dụng `get_node_source` để xác nhận logic thực tế đang chạy tại các điểm chạm quan trọng.
+2. Nếu có identifiers từ EXPLORE_CONTEXT:
+   - `code_exploration.find_blast_radius(identifier)` → xem blast radius của component sẽ bị sửa.
+   - `code_exploration.get_source(identifier)` → đọc code thực tế để xác nhận logic.
+   - `code_exploration.trace_flow(identifier)` → trace flow để verify As-is.
+   - Sử dụng `code_exploration.get_source` để xác nhận logic thực tế đang chạy tại các điểm chạm quan trọng.
 3. Đặt các câu hỏi:
    - Yêu cầu có reuse được entrypoint/flow hiện có không, hay tạo flow mới?
    - Có bỏ qua bước kiểm tra/validation quan trọng hiện đang được hệ thống thực thi không?
@@ -199,7 +199,7 @@ Dựa vào `AGENT_TRANSPARENCY` + thực tế tool:
 1. Boundary & ownership:
    - Yêu cầu có đẩy thêm trách nhiệm vào một module vốn không sở hữu domain đó không?
    - Có risk “trộn domain” vào cùng 1 module/service không?
-   - Nếu có node IDs: `get_relationships(node_id, direction='in')` → xem ai gọi vào module này.
+   - Nếu có identifiers: `code_exploration.get_dependencies(identifier, direction='in')` → xem ai gọi vào module này.
 2. Execution Context & Deployment Topology:
    - Yêu cầu này xử lý theo luồng Synchronous (API, Controller) hay Asynchronous (Kafka Consumer, Background Job, Scheduler)?
    - Cảnh báo BLOCKER nếu luồng Asynchronous (như Kafka Consumer) bị đặt nhầm vào các service thuần API, mà nên hướng về các service xử lý nền (ví dụ: `worker-service` hoặc module background tương đương).
@@ -208,7 +208,7 @@ Dựa vào `AGENT_TRANSPARENCY` + thực tế tool:
    - Ví dụ: Nếu `conventions.yaml` quy định API phải kế thừa `BaseWebController` và dùng `MessageBus`, phải bắt lỗi ngay nếu Requirement/Spec dự định inject trực tiếp Handler vào Controller. Không hardcode CQRS vào skill này, nhưng phải đọc và áp dụng từ file convention.
 4. Coupling:
    - Yêu cầu có thêm phụ thuộc mới giữa module/service vốn nên độc lập không?
-   - Nếu có node IDs: `find_impact(node_id)` → xem blast radius trước khi sửa.
+   - Nếu có identifiers: `code_exploration.find_blast_radius(identifier)` → xem blast radius trước khi sửa.
 
 Đánh dấu các vấn đề theo mức độ: LOW/MEDIUM/HIGH/BLOCKER.
 
@@ -276,14 +276,12 @@ Trong `.knowledge-layer/active/AGENT_TRANSPARENCY.md`:
 - Đánh dấu:
   - `[x] architecture-reviewer`
 - Ghi rõ:
-  - Trạng thái KG MCP Server:
-    - Đã dùng `get_graph_stats`, `find_impact`, `get_node_source`, `get_relationships` hay chưa.
-  - Trạng thái UA:
-    - Đã dùng `/understand-chat` hay chưa; graph có mới không.
+  - Provider `code_exploration` đã dùng:
+    - Operations đã gọi: `check_availability`, `find_blast_radius`, `get_source`, `get_dependencies`.
   - Trạng thái `db-explorer` và `codebase-explorer`.
 - Ghi **Độ tin cậy kiến trúc tổng thể**:
   - CAO / TRUNG BÌNH / THẤP.
-  - 1–3 câu giải thích (ví dụ: "KG graph + db-explorer đều OK nên độ tin cậy CAO.").
+  - 1–3 câu giải thích (ví dụ: "Provider CAO + db-explorer đều OK nên độ tin cậy CAO.").
 - Nếu có BLOCKER:
   - Ghi rõ cần action gì (workshop kiến trúc, làm rõ yêu cầu, bổ sung khám phá DB/code) trước khi tiếp tục pipeline.
 

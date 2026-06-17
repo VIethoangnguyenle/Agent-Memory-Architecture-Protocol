@@ -1,0 +1,59 @@
+# Adapter Registry — Cấu hình provider active cho từng capability
+#
+# Agent đọc file này trong Bootstrap (sau khi load AGENTS.md + RULES)
+# để biết dùng provider nào cho mỗi capability.
+#
+# Mode:
+#   "auto"  → Agent tự detect theo detection_order (thử từng provider, dùng cái đầu tiên available)
+#   "<name>" → Force dùng provider cụ thể (ví dụ: "socraticode")
+
+# ═══════════════════════════════════════════════════════
+# Active provider selection
+# ═══════════════════════════════════════════════════════
+active:
+  code_exploration: auto
+  db_access: auto
+  document_search: auto
+
+# ═══════════════════════════════════════════════════════
+# Detection order — thứ tự thử khi mode = auto
+# Provider đầu tiên trả về available = provider được chọn
+# ═══════════════════════════════════════════════════════
+detection_order:
+  code_exploration:
+    - provider: kg-mcp
+      config: providers/kg-mcp.yaml
+      confidence_level: CAO
+    - provider: socraticode
+      config: providers/socraticode.yaml
+      confidence_level: TRUNG BÌNH
+    - provider: grep-fallback
+      config: providers/grep-fallback.yaml
+      confidence_level: THẤP
+
+  db_access:
+    - provider: db-remote
+      config: providers/db-remote.yaml
+      confidence_level: CAO
+    # Không có fallback — nếu DB unavailable, agent ghi hạn chế
+
+  document_search:
+    - provider: confluence
+      config: providers/confluence.yaml
+      confidence_level: CAO
+    # Không có fallback — yêu cầu user paste nội dung trực tiếp
+
+# ═══════════════════════════════════════════════════════
+# Detection protocol
+# ═══════════════════════════════════════════════════════
+# Khi agent cần dùng capability lần đầu trong phiên:
+#
+# 1. Đọc active[capability]
+# 2. Nếu "auto": lặp qua detection_order, gọi check_availability() của từng provider
+# 3. Provider đầu tiên trả về OK → chọn provider đó cho phiên này
+# 4. Cache kết quả — không detect lại trừ khi có lỗi
+# 5. Ghi provider đã chọn vào AGENT_TRANSPARENCY
+#
+# Ví dụ log:
+#   "Adapter: code_exploration → kg-mcp (detected via get_graph_stats, 1247 nodes)"
+#   "Adapter: db_access → unavailable (db-remote connection refused)"

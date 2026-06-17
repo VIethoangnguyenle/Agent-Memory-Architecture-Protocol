@@ -45,25 +45,25 @@ Trigger skill này khi:
 
 ## 3. Nguồn dữ liệu
 
-| Nguồn | Tool | Ghi chú |
+| Nguồn | Abstract Operation | Ghi chú |
 |-------|------|---------|
-| UA Knowledge Graph (project) | `query_nodes`, `get_node_detail`, `get_node_source` | Nguồn chính cho naming pattern |
-| UA Knowledge Graph (upstream) | Cùng tool, filter theo `UPSTREAM_ROOTS` path | Tag `origin: upstream` |
-| Socraticode semantic search | `codebase_search`, `codebase_context_search` | Làm giàu pattern khi UA fuzzy |
-| Domain graph UA | `get_domain_overview`, `get_domain_detail` | Hiểu layer boundaries |
+| Code exploration (structured) | `code_exploration.search_code`, `code_exploration.get_detail`, `code_exploration.get_source` | Nguồn chính cho naming pattern |
+| Code exploration (upstream) | Cùng operations, filter theo `UPSTREAM_ROOTS` path | Tag `origin: upstream` |
+| Code exploration (semantic) | `code_exploration.search_code` (semantic mode) | Làm giàu pattern khi structured fuzzy |
+| Code exploration (domain) | `code_exploration.get_detail` | Hiểu layer boundaries |
 
 ---
 
 ## 4. Quy trình chi tiết
 
-### Bước 1 — Kiểm tra trạng thái UA graph
+### Bước 1 — Kiểm tra trạng thái công cụ
 
 ```
-CALL: get_graph_stats()
-  IF graph không tồn tại hoặc quá cũ:
-    → WARN: "UA graph chưa sẵn sàng. Chạy /understand trước."
+CALL: code_exploration.check_availability()
+  IF provider không tồn tại hoặc dữ liệu quá cũ:
+    → WARN: "Code exploration chưa sẵn sàng. Cần setup provider trước."
     → ABORT
-  IF graph OK:
+  IF provider OK:
     → Ghi nhận: project_root path, upstream_root path (nếu có upstream library)
     → Dùng path prefix để phân biệt origin sau này
 ```
@@ -72,15 +72,15 @@ CALL: get_graph_stats()
 
 ### Bước 2 — Structural Audit (5 chiều)
 
-Chạy song song 5 chiều scan qua UA + Socraticode:
+Chạy song song 5 chiều scan qua adapter operations:
 
-| Chiều | Nội dung | Tool chính |
+| Chiều | Nội dung | Operation chính |
 |-------|----------|------------|
-| **2A** | File & Class Naming Patterns (suffix grouping) | UA `query_nodes(type="class")` |
-| **2B** | Package / Layer Structure | UA `get_domain_overview()` |
-| **2C** | Architecture Core Patterns & Dispatch | UA `get_relationships()` |
-| **2D** | Upstream Conventions từ shared library | UA `query_nodes(upstream)` |
-| **2E** | Test & Config Conventions | Socraticode `codebase_search()` |
+| **2A** | File & Class Naming Patterns (suffix grouping) | `code_exploration.search_code(type="class")` |
+| **2B** | Package / Layer Structure | `code_exploration.get_detail()` |
+| **2C** | Architecture Core Patterns & Dispatch | `code_exploration.get_dependencies()` |
+| **2D** | Upstream Conventions từ shared library | `code_exploration.search_code(upstream)` |
+| **2E** | Test & Config Conventions | `code_exploration.search_code()` |
 
 > **Chi tiết đầy đủ (scan queries per dimension)**: Xem [references/structural-audit-scan.md](references/structural-audit-scan.md)
 

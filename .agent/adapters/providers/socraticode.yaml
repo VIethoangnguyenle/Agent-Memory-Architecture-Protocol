@@ -1,0 +1,66 @@
+# Provider: Socraticode MCP Server
+# Priority: 2 (fallback khi KG MCP không có)
+# Yêu cầu: Socraticode MCP server + project đã indexed
+
+provider: socraticode
+capability: code_exploration
+priority: 2
+
+detection:
+  method: "Gọi codebase_status() — nếu có collection với chunk_count > 0 → available"
+  fallback_signal: "Tool không tồn tại hoặc chưa index → chuyển sang grep-fallback"
+
+requires:
+  - "Socraticode MCP server"
+  - "Project đã indexed (chạy /index-source trước)"
+
+mapping:
+  check_availability:
+    tool: codebase_status
+    params: {}
+    notes: "Trả về chunk_count, progress, last_completed."
+
+  search_code:
+    tool: codebase_search
+    params:
+      query: "{query}"
+    notes: "Semantic search — tìm code chunks liên quan theo ngữ nghĩa."
+
+  get_source:
+    tool: view_file
+    params:
+      path: "{identifier}"
+    notes: "Socraticode không có get_source trực tiếp — dùng view_file với path từ search results."
+
+  get_dependencies:
+    tool: codebase_graph_query
+    params:
+      filePath: "{identifier}"
+    notes: "File-level dependency graph. Trả về imports + dependents."
+
+  trace_flow:
+    tool: codebase_flow
+    params:
+      entrypoint: "{identifier}"
+    notes: "Trace execution flow từ entry point. Depth mặc định 5."
+
+  find_blast_radius:
+    tool: codebase_impact
+    params:
+      target: "{identifier}"
+    notes: "Blast radius analysis — file hoặc symbol level."
+
+  get_detail:
+    tool: codebase_symbol
+    params:
+      name: "{identifier}"
+    notes: "360° view: definition, kind, callers, callees."
+
+# Ưu điểm:
+# - Semantic search (hiểu ngữ nghĩa, không chỉ keyword)
+# - Auto file-watcher (index tự cập nhật)
+# - Symbol-level analysis
+#
+# Hạn chế so với KG MCP:
+# - Không có domain grouping
+# - Graph ở file-level, không node-level

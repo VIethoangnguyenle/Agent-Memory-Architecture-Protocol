@@ -88,8 +88,16 @@ project-root/
 │   │   │   ├── validate_skills.py
 │   │   │   └── tests/
 │   │   └── README.md
-│   ├── adapters/                     ← Reserved cho SP3 (adapter layer)
-│   │   └── README.md
+│   ├── adapters/                     ← Adapter Layer (SP3) — capability abstraction
+│   │   ├── README.md
+│   │   ├── capabilities.yaml         ← Định nghĩa abstract operations
+│   │   ├── registry.yaml             ← Provider selection + detection order
+│   │   └── providers/                ← Provider configs
+│   │       ├── kg-mcp.yaml           ← Knowledge Graph MCP (priority 1)
+│   │       ├── socraticode.yaml      ← Socraticode MCP (priority 2)
+│   │       ├── grep-fallback.yaml    ← Grep/file search (priority 3)
+│   │       ├── db-remote.yaml        ← Database access
+│   │       └── confluence.yaml       ← Document/wiki search
 │   └── profiles/                     ← Reserved cho SP4 (agent profiles)
 │       └── README.md
 ```
@@ -128,6 +136,16 @@ READ: .agent/workflows/index-source.md (nếu cần Socraticode)
 READ: .agent/procedures/token-tracking.md
 ```
 
+### Bước 3b — Nạp Adapter Registry
+
+```txt
+READ: .agent/adapters/registry.yaml    ← Provider selection cho capabilities
+READ: .agent/adapters/capabilities.yaml ← Abstract operation definitions
+```
+
+Agent đọc `registry.yaml` để biết dùng provider nào cho mỗi capability.
+Khi lần đầu cần dùng capability → auto-detect theo `detection_order`.
+
 ### Bước 4 — Chạy Context Loader
 
 Agent phải chạy logic định vị context theo thứ tự ưu tiên:
@@ -165,6 +183,7 @@ chồng yêu — Em đã load xong:
 ✅ Core: AGENTS.md v{version} + RULES (manifest + 5 modules: flow, tool, exec, knowledge, guard)
 ✅ Skills: [requirement-analyst | spec-extract | db-explorer | codebase-explorer | architecture-reviewer | knowledge-curator | convention-intelligence-builder | author-dna-builder]
 ✅ Workflows: [/task | /idea-to-task | /index-source]
+🔌 Adapters: [code_exploration: <provider> | db_access: <provider> | document_search: <provider>]
 📋 Active context: [REQUIREMENT: <có/trống> | EXPLORE_CONTEXT: <có/trống>]
 🧬 Author DNA: <approved/draft/missing>
 📦 Archive: [<n> tickets archived]

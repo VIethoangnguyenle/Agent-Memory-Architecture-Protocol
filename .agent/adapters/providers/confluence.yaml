@@ -1,0 +1,41 @@
+# Provider: Confluence MCP
+# Priority: 1 (provider chính cho document_search)
+# Yêu cầu: Confluence MCP server + credentials
+
+provider: confluence
+capability: document_search
+priority: 1
+
+detection:
+  method: "Gọi confluence_list_spaces() — nếu trả về spaces → available"
+  fallback_signal: "MCP không tồn tại → document search unavailable"
+
+requires:
+  - "Confluence MCP server (hoặc wiki MCP tương đương)"
+  - "Access credentials"
+
+mapping:
+  check_availability:
+    tool: confluence_list_spaces
+    notes: "Trả về danh sách spaces. Có spaces = connected."
+
+  search_docs:
+    tool: confluence_search
+    params:
+      query: "{query}"
+      limit: "{limit}"
+    notes: "CQL hoặc text search."
+
+  get_page:
+    tool: confluence_get_page
+    params:
+      page_id: "{page_id}"
+    notes: "Đọc nội dung trang theo ID."
+
+  list_spaces:
+    tool: confluence_list_spaces
+    notes: "Liệt kê spaces có sẵn."
+
+# Khi Confluence unavailable:
+# - spec-extract phải yêu cầu user paste nội dung tài liệu trực tiếp
+# - Ghi hạn chế vào AGENT_TRANSPARENCY
