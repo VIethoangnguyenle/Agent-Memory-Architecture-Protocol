@@ -74,8 +74,11 @@ project-root/
 │   ├── skills/                        ← Các module skill tái sử dụng (12 skills)
 │   ├── workflows/                     ← Logic điều phối
 │   ├── procedures/                    ← Procedure bootstrap, context-loader & token-tracking
-│   ├── tools/                         ← Reserved cho SP1 (custom tool definitions)
-│   ├── adapters/                      ← Reserved cho SP3 (adapter layer)
+│   ├── tools/                         ← Công cụ hỗ trợ (skill lint, orchestrator)
+│   ├── adapters/                      ← Adapter Layer (SP3) — abstraction cho tool/platform
+│   │   ├── capabilities.yaml         ← Định nghĩa abstract operations
+│   │   ├── registry.yaml             ← Provider selection + auto-detection
+│   │   └── providers/                ← Provider configs (KG MCP, Socraticode, grep, DB, Confluence)
 │   └── profiles/                      ← Reserved cho SP4 (agent profiles)
 ```
 
@@ -157,15 +160,58 @@ cp .knowledge-layer/long-term/persona.template.yaml .knowledge-layer/long-term/p
 # Sửa persona.yaml theo phong cách tương tác mong muốn
 ```
 
-### 3. Bắt đầu sử dụng với AI agent
+### 3. Cấu hình adapter cho dự án (quan trọng cho dự án mới)
+
+Đây là bước quyết định agent sẽ dùng tool nào để khám phá codebase:
+
+```bash
+# Xem registry hiện tại
+cat .agent/adapters/registry.yaml
+```
+
+Mặc định, registry dùng mode `auto` — agent tự phát hiện provider nào available.
+Với project mới, thứ tự thường là:
+
+| Bước | Hành động | Kết quả |
+|------|----------|--------|
+| 1. Vừa copy AMAP vào | `grep-fallback` available | Agent dùng grep (confidence THẤP) |
+| 2. Chạy `/index-source` | `socraticode` available | Agent dùng Socraticode (confidence TRUNG BÌNH) |
+| 3. Setup KG MCP (nếu có) | `kg-mcp` available | Agent dùng KG (confidence CAO) |
+
+> **Tip**: Project nhỏ không cần KG MCP — Socraticode + grep đủ dùng.
+> Chỉ cần KG khi codebase lớn (>500 files) cần structured query + domain analysis.
+
+Nếu muốn force provider cụ thể, sửa `registry.yaml`:
+
+```yaml
+# Force dùng socraticode thay vì auto-detect
+active:
+  code_exploration: socraticode
+```
+
+### 4. Quét convention và DNA (khuyến khích cho dự án có code sẵn)
+
+```bash
+# Quét naming convention và design patterns
+# Agent sẽ dùng adapter để explore codebase
+/convention-scan
+
+# Quét và encode triết lý code của tác giả  
+/dna-scan
+```
+
+Sau bước này, `conventions.yaml` và `author-dna.yaml` sẽ được tạo — giúp agent hiểu phong cách codebase.
+
+### 5. Bắt đầu sử dụng với AI agent
 
 Agent sẽ đọc `AGENTS.md` ở root và tự động bootstrap. Ở tin nhắn đầu tiên, agent sẽ:
 
 1. Đọc `AGENTS.md` + toàn bộ rules
 2. Quét và nạp tất cả skills
 3. Nạp workflows và scripts
-4. Kiểm tra context đang active
-5. Báo cáo trạng thái bootstrap
+4. **Nạp adapter registry** — detect provider nào available
+5. Kiểm tra context đang active
+6. Báo cáo trạng thái bootstrap
 
 Sau đó bắt đầu làm việc:
 
@@ -198,15 +244,20 @@ AMAP hoạt động với bất kỳ AI coding agent nào có thể đọc file 
 | **GitHub Copilot** | `.github/copilot-instructions.md` | Tạo file trỏ về `AGENTS.md` |
 | **Windsurf** | `.windsurfrules` | Tạo file trỏ về `AGENTS.md` |
 
-### Tích hợp MCP Server (Tuỳ chọn)
+### Tích hợp MCP Server & Adapter Layer
 
-AMAP được thiết kế để hoạt động với các MCP server sau khi có sẵn:
+AMAP dùng **Adapter Layer** để trừu tượng hoá platform tools. Skills không hardcode tên tool — chúng gọi abstract operations, agent tự resolve tới provider phù hợp.
 
-| MCP Server | Mục đích |
-|------------|----------|
-| **Socraticode** | Tìm kiếm ngữ nghĩa code, dependency graph, phân tích symbol |
-| **Confluence** | Trích xuất tài liệu từ wiki/PRD |
-| **db-remote** | Khám phá database schema (chỉ đọc) |
+| Capability | Abstract Operations | Providers (ưu tiên giảm dần) |
+|-----------|--------------------|--------------------------|
+| **Code Exploration** | `search_code`, `get_source`, `get_dependencies`, `trace_flow`, `find_blast_radius` | KG MCP → Socraticode → grep |
+| **DB Access** | `list_tables`, `describe_table`, `query_sample` | db-remote |
+| **Document Search** | `search_docs`, `get_page` | Confluence |
+
+Khi setup project mới:
+- **Không cần cấu hình gì** — `grep-fallback` luôn available
+- **Chạy `/index-source`** → Socraticode available (semantic search)
+- **Setup MCP server** → KG/DB/Confluence available (structured query)
 
 ---
 
@@ -259,6 +310,7 @@ Khi agent bắt đầu làm việc trong dự án có AMAP, nó sẽ tạo báo 
            architecture-reviewer | knowledge-curator | convention-intelligence-builder |
            author-dna-builder | spec-validator | infra-tdd]
 ✅ Workflows: [/task | /idea-to-task | /index-source]
+🔌 Adapters: [code_exploration: socraticode | db_access: unavailable | document_search: unavailable]
 📋 Active context: [REQUIREMENT: trống | EXPLORE_CONTEXT: trống]
 🧬 Author DNA: approved
 📦 Archive: [3 tickets archived]
@@ -288,6 +340,20 @@ AMAP có quy tắc dữ liệu sẵn (R-Data-1, R-Data-2) cấm agent log PII ho
 ### Nhiều thành viên trong team có dùng chung được không?
 
 Có. File `persona.yaml` được gitignore — mỗi developer có phong cách tương tác riêng. Tri thức chung (`knowledge-snapshot.md`, `conventions.yaml`, `author-dna.yaml`) được commit và version-controlled.
+
+### Project mới hoàn toàn (không có code) thì adapter sẽ hoạt động thế nào?
+
+Giống nhau. Adapter Layer dùng auto-detection:
+
+1. **Lần đầu**: `grep-fallback` là provider duy nhất (luôn available) — confidence THẤP nhưng vẫn hoạt động
+2. **Sau khi có code + chạy `/index-source`**: Socraticode trở thành provider — confidence TRUNG BÌNH
+3. **Nếu setup KG MCP**: KG trở thành primary — confidence CAO
+
+Agent sẽ tự điều chỉnh confidence level và ghi rõ hạn chế vào AGENT_TRANSPARENCY.
+
+### Có thể thêm provider tự custom không?
+
+Có. Tạo file YAML trong `.agent/adapters/providers/`, map abstract operations → tool calls cụ thể, rồi thêm vào `detection_order` trong `registry.yaml`. Agent sẽ auto-detect ở phiên tiếp theo.
 
 ---
 
