@@ -1,0 +1,59 @@
+"""Generic Platform — fallback with abstract tool names preserved."""
+
+from .base import BasePlatform
+
+
+class GenericPlatform(BasePlatform):
+    """Generic platform that keeps abstract operation names.
+
+    Use this when the target platform is unknown or when you want
+    platform-agnostic output that can be manually adapted later.
+    """
+
+    name = "generic"
+    display_name = "Generic (Platform-agnostic)"
+    config_entry_point = "AGENTS.md"
+
+    tool_mapping = {
+        # All operations keep their abstract names.
+        # The output files will contain the abstract operation names,
+        # which the agent or user must resolve manually.
+        "read_file":         "read_file",
+        "write_file":        "write_file",
+        "edit_file":         "edit_file",
+        "multi_edit_file":   "multi_edit_file",
+        "search_text":       "search_text",
+        "list_directory":    "list_directory",
+        "run_command":       "run_command",
+        "command_status":    "command_status",
+        "send_input":        "send_input",
+        "search_code":       "search_code",
+        "index_code":        "index_code",
+        "code_status":       "code_status",
+        "get_dependencies":  "get_dependencies",
+        "trace_flow":        "trace_flow",
+        "find_blast_radius": "find_blast_radius",
+        "get_symbol":        "get_symbol",
+        "list_symbols":      "list_symbols",
+        "graph_stats":       "graph_stats",
+        "graph_build":       "graph_build",
+        "search_docs":       "search_docs",
+        "get_page":          "get_page",
+        "list_spaces":       "list_spaces",
+        "search_web":        "search_web",
+        "read_url":          "read_url",
+    }
+
+    capabilities = {
+        "subagent": False,
+        "persistent_terminal": False,
+        "artifacts": False,
+        "image_generation": False,
+        "browser": False,
+    }
+
+    notes = [
+        "Generic platform — tool names are abstract placeholders",
+        "You will need to manually map tool names for your agent runtime",
+        "Use this as a starting point for creating a custom platform adapter",
+    ]

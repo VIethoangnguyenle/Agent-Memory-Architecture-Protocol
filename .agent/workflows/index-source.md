@@ -21,7 +21,7 @@ Nếu KHÔNG tìm thấy → **DỪNG**:
 
 ## Bước 2 — Kiểm tra Trạng thái Socraticode Hiện tại
 
-Gọi `codebase_status(projectPath)` qua Socraticode MCP.
+Gọi `{{ tools.code_status }}(projectPath)` qua Socraticode MCP.
 
 ### Nếu đã lập chỉ mục (chunks > 0, không có indexing đang chạy):
 
@@ -64,7 +64,7 @@ Nhảy tới Bước 4 (polling).
 
 ## Bước 3 — Kích hoạt Indexing
 
-Gọi `codebase_index(projectPath)` để bắt đầu indexing.
+Gọi `{{ tools.index_code }}(projectPath)` để bắt đầu indexing.
 
 > "⏳ Đã bắt đầu indexing..."
 
@@ -72,7 +72,7 @@ Gọi `codebase_index(projectPath)` để bắt đầu indexing.
 
 ## Bước 4 — Poll cho đến khi Hoàn thành
 
-Poll `codebase_status(projectPath)` mỗi **15 giây**.
+Poll `{{ tools.code_status }}(projectPath)` mỗi **15 giây**.
 
 Báo cáo tiến độ mỗi lần poll:
 > "⏳ Đang indexing source... X% (Y/Z files)"
@@ -94,8 +94,8 @@ Báo cáo tiến độ mỗi lần poll:
 | Trạng thái | ✅ Sẵn sàng |
 
 Source giờ có thể tìm kiếm qua công cụ Socraticode MCP:
-- `codebase_search` — tìm kiếm code ngữ nghĩa
-- `codebase_graph_query` — truy vấn đồ thị phụ thuộc
+- `{{ tools.search_code }}` — tìm kiếm code ngữ nghĩa
+- `{{ tools.get_dependencies }}` — truy vấn đồ thị phụ thuộc
 - `codebase_context_search` — khám phá pattern và quy ước
 ```
 

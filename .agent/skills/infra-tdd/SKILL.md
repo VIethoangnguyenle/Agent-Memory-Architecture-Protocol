@@ -86,8 +86,8 @@ Template đầy đủ nằm ở `assets/TDD_TEMPLATE.md`. Copy nó làm điểm 
 #### T0 — Bối cảnh Nghiệp vụ
 ```
 PHẢI ĐỌC: Tài liệu nghiệp vụ gốc (SRS, BRD, Confluence) nếu có
-PHẢI GỌI: code_exploration.get_detail → hiểu business domain và layer boundaries
-PHẢI GỌI: code_exploration.trace_flow → guided walkthrough để hiểu flow end-to-end
+PHẢI GỌI: {{ tools.get_symbol }} → hiểu business domain và layer boundaries
+PHẢI GỌI: {{ tools.trace_flow }} → guided walkthrough để hiểu flow end-to-end
 NẾU CÓ: User story, use case diagram → trích xuất business rules
 QUY TẮC: KHÔNG dùng thuật ngữ kỹ thuật — viết cho người không biết code đọc
 ```
@@ -96,24 +96,24 @@ QUY TẮC: KHÔNG dùng thuật ngữ kỹ thuật — viết cho người khôn
 ```
 PHẢI ĐỌC: .knowledge-layer/long-term/knowledge-snapshot.md
 PHẢI GỌI: codebase-explorer → map module liên quan trong hệ thống
-PHẢI GỌI: code_exploration.search_code → tìm component hiện tại và pain points
+PHẢI GỌI: {{ tools.search_code }} → tìm component hiện tại và pain points
 NẾU CÓ: Tài liệu/ticket/incident → spec-extract hoặc đọc trực tiếp
 ```
 
 #### T2 — Kiến trúc
 ```
-PHẢI GỌI: code_exploration.get_dependencies → dependency map giữa components
-PHẢI GỌI: code_exploration.trace_flow → call flow thực tế
-PHẢI GỌI: code_exploration.search_code → tìm implementation patterns
-PHẢI GỌI: code_exploration.get_dependencies → dependency graph
+PHẢI GỌI: {{ tools.get_dependencies }} → dependency map giữa components
+PHẢI GỌI: {{ tools.trace_flow }} → call flow thực tế
+PHẢI GỌI: {{ tools.search_code }} → tìm implementation patterns
+PHẢI GỌI: {{ tools.get_dependencies }} → dependency graph
 PHẢI GỌI: db_access (db-explorer) → schema, constraints, indexes liên quan
 KẾT QUẢ: Mọi sơ đồ phải phản ánh code/DB thực tế, không phải giả định
 ```
 
 #### T3 — Quyết định
 ```
-PHẢI GỌI: code_exploration.find_blast_radius → blast radius của mỗi alternative
-PHẢI GỌI: code_exploration.find_blast_radius → files/modules bị ảnh hưởng
+PHẢI GỌI: {{ tools.find_blast_radius }} → blast radius của mỗi alternative
+PHẢI GỌI: {{ tools.find_blast_radius }} → files/modules bị ảnh hưởng
 PHẢI GỌI: db_access (db-explorer) → data model constraints ảnh hưởng lựa chọn
 PHẢI CHẠY: Socratic deep-dive protocol (references/socratic-deep-dive.md)
 KẾT QUẢ: Mỗi ADR phải có evidence từ codebase, không chỉ opinion
@@ -122,7 +122,7 @@ KẾT QUẢ: Mỗi ADR phải có evidence từ codebase, không chỉ opinion
 #### T4 — Vận hành
 ```
 PHẢI GỌI: codebase-explorer → tìm monitoring metrics, alert patterns hiện có
-PHẢI GỌI: code_exploration.search_code → tìm existing metric/alert/config patterns
+PHẢI GỌI: {{ tools.search_code }} → tìm existing metric/alert/config patterns
 KẾT QUẢ: T4 chỉ chứa Monitoring Metrics table + Configuration Reference
 KHÔNG VIẾT: Troubleshooting Runbook — tài liệu này dành cho management, không phải SRE ops
 ```

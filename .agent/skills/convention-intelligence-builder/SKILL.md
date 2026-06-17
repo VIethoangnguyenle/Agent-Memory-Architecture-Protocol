@@ -47,10 +47,10 @@ Trigger skill này khi:
 
 | Nguồn | Abstract Operation | Ghi chú |
 |-------|------|---------|
-| Code exploration (structured) | `code_exploration.search_code`, `code_exploration.get_detail`, `code_exploration.get_source` | Nguồn chính cho naming pattern |
+| Code exploration (structured) | `{{ tools.search_code }}`, `{{ tools.get_symbol }}`, `{{ tools.read_file }}` | Nguồn chính cho naming pattern |
 | Code exploration (upstream) | Cùng operations, filter theo `UPSTREAM_ROOTS` path | Tag `origin: upstream` |
-| Code exploration (semantic) | `code_exploration.search_code` (semantic mode) | Làm giàu pattern khi structured fuzzy |
-| Code exploration (domain) | `code_exploration.get_detail` | Hiểu layer boundaries |
+| Code exploration (semantic) | `{{ tools.search_code }}` (semantic mode) | Làm giàu pattern khi structured fuzzy |
+| Code exploration (domain) | `{{ tools.get_symbol }}` | Hiểu layer boundaries |
 
 ---
 
@@ -59,7 +59,7 @@ Trigger skill này khi:
 ### Bước 1 — Kiểm tra trạng thái công cụ
 
 ```
-CALL: code_exploration.check_availability()
+CALL: {{ tools.code_status }}()
   IF provider không tồn tại hoặc dữ liệu quá cũ:
     → WARN: "Code exploration chưa sẵn sàng. Cần setup provider trước."
     → ABORT
@@ -76,11 +76,11 @@ Chạy song song 5 chiều scan qua adapter operations:
 
 | Chiều | Nội dung | Operation chính |
 |-------|----------|------------|
-| **2A** | File & Class Naming Patterns (suffix grouping) | `code_exploration.search_code(type="class")` |
-| **2B** | Package / Layer Structure | `code_exploration.get_detail()` |
-| **2C** | Architecture Core Patterns & Dispatch | `code_exploration.get_dependencies()` |
-| **2D** | Upstream Conventions từ shared library | `code_exploration.search_code(upstream)` |
-| **2E** | Test & Config Conventions | `code_exploration.search_code()` |
+| **2A** | File & Class Naming Patterns (suffix grouping) | `{{ tools.search_code }}(type="class")` |
+| **2B** | Package / Layer Structure | `{{ tools.get_symbol }}()` |
+| **2C** | Architecture Core Patterns & Dispatch | `{{ tools.get_dependencies }}()` |
+| **2D** | Upstream Conventions từ shared library | `{{ tools.search_code }}(upstream)` |
+| **2E** | Test & Config Conventions | `{{ tools.search_code }}()` |
 
 > **Chi tiết đầy đủ (scan queries per dimension)**: Xem [references/structural-audit-scan.md](references/structural-audit-scan.md)
 

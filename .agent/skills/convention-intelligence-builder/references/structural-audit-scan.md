@@ -5,7 +5,7 @@
 ## 2A. File & Class Naming Patterns
 
 ```
-QUERY UA: query_nodes(type="class", limit=200)
+QUERY UA: {{ tools.search_code }}(type="class", limit=200)
   → Lấy tên tất cả class
   → GROUP BY suffix:
       *Service, *ServiceImpl, *Repository, *RepositoryImpl
@@ -29,11 +29,11 @@ CALL: get_domain_overview()
   → Liệt kê tất cả domain/layer hiện có
   → Map layer name → package path pattern
 
-CALL: get_domain_detail(mỗi layer)
+CALL: {{ tools.get_symbol }}(mỗi layer)
   → Hiểu responsibility của từng layer
   → Detect pattern: Clean Architecture / Hexagonal / Layered / CQRS
 
-QUERY UA: query_nodes(type="package")
+QUERY UA: {{ tools.search_code }}(type="package")
   → Extract package naming: {project_package_root}.{module}.{layer}
   → Identify depth convention (mấy cấp package)
 ```
@@ -41,13 +41,13 @@ QUERY UA: query_nodes(type="package")
 ## 2C. Architecture Core Patterns & Dispatch Mechanisms
 
 ```
-QUERY UA: query_nodes(type="class", filter="suffix IN [Controller, Command, Query, Handler, Processor]")
+QUERY UA: {{ tools.search_code }}(type="class", filter="suffix IN [Controller, Command, Query, Handler, Processor]")
   FOR EACH node:
-    CALL: get_relationships(node_id)
+    CALL: {{ tools.get_dependencies }}(node_id)
       → Khám phá cách Controller tương tác với Logic Layer: Controller gọi trực tiếp
         Handler/Service hay đi qua MessageBus / Dispatcher?
       → Controller có bắt buộc kế thừa Base class nào không (ví dụ: BaseWebController)?
-    CALL: get_node_source(node_id)
+    CALL: {{ tools.read_file }}(node_id)
       → Đọc actual implementation (chỉ signature, không toàn bộ body)
       → Nếu phát hiện CQRS (Controller -> MessageBus -> Command -> Handler),
         đánh dấu đây là kiến trúc cốt lõi với mức độ MANDATORY (upstream_constraints).
@@ -56,12 +56,12 @@ QUERY UA: query_nodes(type="class", filter="suffix IN [Controller, Command, Quer
 ## 2D. Upstream Conventions từ shared library
 
 ```
-QUERY UA: query_nodes(filter="source_path STARTS_WITH {upstream_root}")
+QUERY UA: {{ tools.search_code }}(filter="source_path STARTS_WITH {upstream_root}")
   → Lấy tất cả class/interface từ upstream library
   → GROUP BY type: Base*, I*, Abstract*, common annotations...
   → Đây là convention MANDATORY — project downstream PHẢI follow
 
-CALL: get_node_detail(mỗi base class/interface quan trọng)
+CALL: {{ tools.get_symbol }}(mỗi base class/interface quan trọng)
   → Extract: abstract method naming, field naming, annotation usage
   → Tag tất cả với origin: upstream, weight: mandatory
 ```
@@ -69,11 +69,11 @@ CALL: get_node_detail(mỗi base class/interface quan trọng)
 ## 2E. Test & Config Conventions
 
 ```
-QUERY Socraticode: codebase_search("@Test class", limit=50)
+QUERY Socraticode: {{ tools.search_code }}("@Test class", limit=50)
   → Detect: test class suffix (*Test, *Spec, *IT)
   → Detect: test method naming (should_*, when_*_then_*, given_*)
 
-QUERY UA: query_nodes(type="class", filter="name CONTAINS 'Config' OR name CONTAINS 'Properties'")
+QUERY UA: {{ tools.search_code }}(type="class", filter="name CONTAINS 'Config' OR name CONTAINS 'Properties'")
   → Extract config class naming pattern
   → Detect: @ConfigurationProperties prefix convention
 ```

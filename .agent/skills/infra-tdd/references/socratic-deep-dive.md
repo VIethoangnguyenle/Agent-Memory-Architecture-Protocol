@@ -23,19 +23,19 @@ Khi UA Knowledge Graph khả dụng, dùng các tool sau để drive deep-dive:
 
 | Tool | Mục đích trong deep-dive |
 |------|--------------------------|
-| `query_nodes` | Tìm components liên quan đến quyết định |
-| `get_node_detail` | Xem chi tiết implementation hiện tại |
-| `get_relationships` | Map dependency — ai gọi ai, ai phụ thuộc ai |
-| `find_impact` | Blast radius — nếu thay đổi, bao nhiêu files bị ảnh hưởng |
-| `trace_call_chain` | Luồng thực thi — data đi qua đâu |
-| `get_domain_detail` | Business rules liên quan |
-| `get_node_source` | Xem source code thực tế |
+| `{{ tools.search_code }}` | Tìm components liên quan đến quyết định |
+| `{{ tools.get_symbol }}` | Xem chi tiết implementation hiện tại |
+| `{{ tools.get_dependencies }}` | Map dependency — ai gọi ai, ai phụ thuộc ai |
+| `{{ tools.find_blast_radius }}` | Blast radius — nếu thay đổi, bao nhiêu files bị ảnh hưởng |
+| `{{ tools.trace_flow }}` | Luồng thực thi — data đi qua đâu |
+| `{{ tools.get_symbol }}` | Business rules liên quan |
+| `{{ tools.read_file }}` | Xem source code thực tế |
 
 **Workflow Mode A:**
-1. `query_nodes` → tìm module/class liên quan đến quyết định
-2. `get_relationships` → map "ai dùng cái này?"
-3. `find_impact` → nếu thay đổi, blast radius là gì?
-4. `trace_call_chain` → data flow thực tế
+1. `{{ tools.search_code }}` → tìm module/class liên quan đến quyết định
+2. `{{ tools.get_dependencies }}` → map "ai dùng cái này?"
+3. `{{ tools.find_blast_radius }}` → nếu thay đổi, blast radius là gì?
+4. `{{ tools.trace_flow }}` → data flow thực tế
 5. Đặt câu hỏi từ 5 buckets (xem bên dưới) dựa trên evidence thu được
 6. Viết ADR với evidence từ UA
 
@@ -45,16 +45,16 @@ Khi Socraticode index khả dụng:
 
 | Tool | Mục đích |
 |------|----------|
-| `codebase_search` | Tìm implementation patterns liên quan |
-| `codebase_graph_query` | Dependency graph — file X import gì, ai import X |
-| `codebase_impact` | Blast radius khi thay đổi file/symbol |
-| `codebase_symbol` | Chi tiết symbol (callers, callees) |
-| `codebase_flow` | Call tree từ entry point |
+| `{{ tools.search_code }}` | Tìm implementation patterns liên quan |
+| `{{ tools.get_dependencies }}` | Dependency graph — file X import gì, ai import X |
+| `{{ tools.find_blast_radius }}` | Blast radius khi thay đổi file/symbol |
+| `{{ tools.get_symbol }}` | Chi tiết symbol (callers, callees) |
+| `{{ tools.trace_flow }}` | Call tree từ entry point |
 
 **Workflow Mode B:**
-1. `codebase_search` → tìm patterns tương tự trong codebase
-2. `codebase_graph_query` → ai phụ thuộc module này
-3. `codebase_impact` → nếu refactor, ảnh hưởng gì
+1. `{{ tools.search_code }}` → tìm patterns tương tự trong codebase
+2. `{{ tools.get_dependencies }}` → ai phụ thuộc module này
+3. `{{ tools.find_blast_radius }}` → nếu refactor, ảnh hưởng gì
 4. Đặt câu hỏi dựa trên evidence
 5. Viết ADR
 
@@ -78,7 +78,7 @@ Khi không có MCP tools, chạy deep-dive bằng câu hỏi trực tiếp từ 
 | A4 | Data model đang giả định schema ổn định — nếu business thay đổi yêu cầu? |
 | A5 | Team đang giả định có skill gì? Nếu key person nghỉ? |
 
-**Với UA/Socraticode**: Dùng `find_impact` / `codebase_impact` để verify A2, A3 bằng blast radius thực tế.
+**Với UA/Socraticode**: Dùng `{{ tools.find_blast_radius }}` / `{{ tools.find_blast_radius }}` để verify A2, A3 bằng blast radius thực tế.
 
 ### Bucket 2 — Alternatives (Lựa chọn)
 
@@ -92,7 +92,7 @@ Khi không có MCP tools, chạy deep-dive bằng câu hỏi trực tiếp từ 
 | B4 | Có thể chia nhỏ quyết định không? (VD: chọn DB và chọn caching riêng) |
 | B5 | Nếu phải implement trong 1 tuần thay vì 1 tháng, chọn gì? |
 
-**Với UA**: Dùng `query_nodes` để tìm cách hệ thống khác trong codebase giải quyết vấn đề tương tự.
+**Với UA**: Dùng `{{ tools.search_code }}` để tìm cách hệ thống khác trong codebase giải quyết vấn đề tương tự.
 
 ### Bucket 3 — Trade-offs
 
@@ -118,7 +118,7 @@ Khi không có MCP tools, chạy deep-dive bằng câu hỏi trực tiếp từ 
 | F4 | Recovery time (RTO) mục tiêu là bao lâu? Hiện tại đạt được không? |
 | F5 | Lần cuối hệ thống tương tự gặp incident là khi nào? Root cause là gì? |
 
-**Với UA**: Dùng `get_relationships(direction="in")` để tìm mọi thứ phụ thuộc module này → single point of failure.
+**Với UA**: Dùng `{{ tools.get_dependencies }}(direction="in")` để tìm mọi thứ phụ thuộc module này → single point of failure.
 
 ### Bucket 5 — Evolution (Tiến hoá)
 
@@ -132,7 +132,7 @@ Khi không có MCP tools, chạy deep-dive bằng câu hỏi trực tiếp từ 
 | E4 | Module này có thể tách ra thành microservice riêng không? |
 | E5 | API contract có backward-compatible không khi thêm field mới? |
 
-**Với Socraticode**: Dùng `codebase_impact` để answer E1 bằng con số thực (bao nhiêu files thay đổi).
+**Với Socraticode**: Dùng `{{ tools.find_blast_radius }}` để answer E1 bằng con số thực (bao nhiêu files thay đổi).
 
 ---
 
@@ -175,10 +175,10 @@ Khi không có MCP tools, chạy deep-dive bằng câu hỏi trực tiếp từ 
 > Quyết định: "Dùng Redis Distributed Lock hay DB Pessimistic Lock cho transaction serialization?"
 
 **Mode A (UA):**
-1. `query_nodes("distributed lock")` → tìm `ExpirableLockRegistry`, `BaseTransReqActionProcessor`
-2. `get_relationships("BaseTransReqActionProcessor")` → 10 processors kế thừa
-3. `find_impact("BaseTransReqActionProcessor")` → blast radius = 10 files
-4. `trace_call_chain("BaseTransReqActionProcessor")` → Redis → tryLock → strategy → cache
+1. `{{ tools.search_code }}("distributed lock")` → tìm `ExpirableLockRegistry`, `BaseTransReqActionProcessor`
+2. `{{ tools.get_dependencies }}("BaseTransReqActionProcessor")` → 10 processors kế thừa
+3. `{{ tools.find_blast_radius }}("BaseTransReqActionProcessor")` → blast radius = 10 files
+4. `{{ tools.trace_flow }}("BaseTransReqActionProcessor")` → Redis → tryLock → strategy → cache
 
 **Evidence thu được**: Lock pattern đã dùng rộng (10 processors), blast radius lớn → thay đổi cần cẩn thận, Redis lock < 5ms P99.
 

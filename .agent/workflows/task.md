@@ -111,22 +111,22 @@ Sau khi nhận diện:
 3. Gọi `codebase-explorer`:
    - Đọc `.knowledge-layer/active/REQUIREMENT.md`, map yêu cầu → module/service/file.
    - **[GATE] Kiểm tra trạng thái KG graph trước bất kỳ tool nào khác** (theo R-Tool-5b):
-     - Gọi `get_graph_stats` (KG MCP Server) để xem graph có tồn tại và đủ mới không.
+     - Gọi `{{ tools.graph_stats }}` (KG MCP Server) để xem graph có tồn tại và đủ mới không.
      - Nếu **graph OK** → dùng KG tools làm nguồn chính:
-       - `query_nodes` → tìm nodes liên quan đến REQUIREMENT.
-       - `get_node_source` → đọc code thực tế.
-       - `get_relationships`, `trace_call_chain` → hiểu dependency và flow.
-       - `get_domain_detail` → business flow nếu cần.
+       - `{{ tools.search_code }}` → tìm nodes liên quan đến REQUIREMENT.
+       - `{{ tools.read_file }}` → đọc code thực tế.
+       - `{{ tools.get_dependencies }}`, `{{ tools.trace_flow }}` → hiểu dependency và flow.
+       - `{{ tools.get_symbol }}` → business flow nếu cần.
      - Nếu **chưa có graph hoặc quá cũ**:
        - Gợi ý user chạy `/understand` để rebuild graph.
        - Trong lúc chờ, dùng Socraticode/search/grep với Độ tin cậy thấp hơn.
    - Nếu cần câu hỏi open-ended → dùng `/understand-chat` (secondary).
    - Bổ sung bằng Socraticode cho semantic search khi KG fuzzy search chưa đủ.
    - Cập nhật section "Kiến trúc code hiện tại (codebase-explorer)" trong `.knowledge-layer/active/EXPLORE_CONTEXT.md`.
-   - **Ghi kèm node_id** cho mỗi component quan trọng → cho phép architecture-reviewer dùng `get_node_source(id)` sau.
+   - **Ghi kèm node_id** cho mỗi component quan trọng → cho phép architecture-reviewer dùng `{{ tools.read_file }}(id)` sau.
 4. Gọi `architecture-reviewer`:
    - Đối chiếu `.knowledge-layer/active/REQUIREMENT.md` + `.knowledge-layer/active/EXPLORE_CONTEXT.md` + `.knowledge-layer/long-term/knowledge-snapshot.md`.
-   - Nếu EXPLORE_CONTEXT có node IDs → dùng KG tools (`find_impact`, `get_node_source`, `get_relationships`) để verify.
+   - Nếu EXPLORE_CONTEXT có node IDs → dùng KG tools (`{{ tools.find_blast_radius }}`, `{{ tools.read_file }}`, `{{ tools.get_dependencies }}`) để verify.
    - Đánh giá:
      - Điểm align với kiến trúc hiện tại.
      - Điểm xung đột/rủi ro (boundary, ownership, coupling, DB, non-functional…).
@@ -171,12 +171,12 @@ Sau khi nhận diện:
    - Skill/tool đã gọi thành công:
      - requirement-analyst, db-explorer, codebase-explorer, architecture-reviewer.
      - Knowledge Graph MCP (chi tiết):
-       - `[ ] get_graph_stats`
-       - `[ ] query_nodes`
-       - `[ ] get_node_source`
-       - `[ ] get_relationships / trace_call_chain`
-       - `[ ] get_domain_detail`
-       - `[ ] find_impact / find_entry_points`
+       - `[ ] {{ tools.graph_stats }}`
+       - `[ ] {{ tools.search_code }}`
+       - `[ ] {{ tools.read_file }}`
+       - `[ ] {{ tools.get_dependencies }} / {{ tools.trace_flow }}`
+       - `[ ] {{ tools.get_symbol }}`
+       - `[ ] {{ tools.find_blast_radius }} / find_entry_points`
      - UA skills (nếu có).
      - Socraticode (nếu có).
    - Cảnh báo:
@@ -186,7 +186,7 @@ Sau khi nhận diện:
 7. Ghi token checkpoint vào `.knowledge-layer/active/TOKEN_LOG.md`:
    - Điền timestamp kết thúc Pha 1.
    - Estimate token Pha 1: input (files đọc + tool calls) + output (REQUIREMENT + EXPLORE_CONTEXT + AGENT_TRANSPARENCY).
-   - Liệt kê tool calls đáng chú ý (get_node_source nhiều lần, tài liệu dài...).
+   - Liệt kê tool calls đáng chú ý ({{ tools.read_file }} nhiều lần, tài liệu dài...).
    - Cập nhật dòng "Pha 1" trong bảng Tóm tắt.
    - Nếu tổng Pha 1 > 50,000 tokens estimate: ghi cảnh báo vào section "Cảnh báo".
    - Tham chiếu protocol đầy đủ: `.agent/procedures/token-tracking.md`.

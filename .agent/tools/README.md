@@ -38,5 +38,4 @@ tasks.md → topo-sort → TASK_QUEUE → per-task: TASK_HANDOFF → executor �
 
 Chi tiết: [docs/specs/2026-06-17-sp1b-coding-microloop-design.md](../../docs/specs/2026-06-17-sp1b-coding-microloop-design.md)
 
-## adapters/ — reserved cho SP3 (tool-capability adapter)
-## profiles/ — reserved cho SP4 (per-framework setup profile)
+## profiles/ — Execution mode config (SP1b tier)

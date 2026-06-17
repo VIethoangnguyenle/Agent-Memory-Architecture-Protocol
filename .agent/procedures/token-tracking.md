@@ -127,7 +127,7 @@ TRIGGER: Cuối Pha 1 khi tổng token Pha 1 > 50,000
 ACTION:
   APPEND vào section "Cảnh báo":
   "⚠️ Pha 1 ước tính {n} tokens — cao hơn baseline.
-   Nguyên nhân có thể: nhiều get_node_source calls, tài liệu dài, nhiều vòng lặp clarification."
+   Nguyên nhân có thể: nhiều {{ tools.read_file }} calls, tài liệu dài, nhiều vòng lặp clarification."
 ```
 
 ---

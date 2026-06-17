@@ -60,7 +60,7 @@ FUNCTION delta_scan():
      - Fallback: filter files có modified_time > last_scan_at
   3. Filter chỉ source files (*.java, *.kt, v.v.) — bỏ qua config, test, docs
   4. Với mỗi file changed:
-     - Query KG MCP: get_node_detail(file) → check node còn mới không
+     - Query KG MCP: {{ tools.get_symbol }}(file) → check node còn mới không
      - Nếu node OK: extract naming patterns từ file đó
      - Nếu graph outdated cho file này: dùng file read + pattern matching
   5. So sánh pattern mới với conventions hiện tại:
