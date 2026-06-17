@@ -152,7 +152,7 @@ Mỗi discovery rơi vào đúng một trong các bucket:
 | Loại nội dung | Thuộc store nào | Ví dụ |
 |--------------|----------------|-------|
 | **Sự thật** — hệ thống có gì, cái gì gọi cái gì | `knowledge-snapshot` ✅ | "Bảng X có column Y", "Module A gọi Module B" |
-| **Quy tắc** — viết code thế nào, đặt tên ra sao | `conventions.yaml` | "Table prefix phải là OMNI_", "Factory không chứa business logic" |
+| **Quy tắc** — viết code thế nào, đặt tên ra sao | `conventions.yaml` | "Table prefix phải là APP_", "Factory không chứa business logic" |
 | **Triết lý** — tại sao chọn cách này | `author-dna.yaml` | "HP-1: Chain of Responsibility vì need-driven" |
 | **Bài học** — team đã gặp gì, giải quyết ra sao | `agent-memory` | "Bug race condition → fix bằng DB-first read" |
 
@@ -178,7 +178,7 @@ Mỗi discovery rơi vào đúng một trong các bucket:
 | "Table prefix phải dùng `APP_` cho bảng project-native" | REDIRECT → conventions | Đây là **quy tắc**, không phải sự thật. Thuộc conventions.yaml |
 | "Dùng Chain of Responsibility vì need-driven, không ép buộc" | REDIRECT → author-dna | Đây là **triết lý**, không phải sự thật. Thuộc author-dna.yaml |
 | "Chiến lược cần thêm cột X" (chưa confirm) | ARCHIVE | Còn đang propose, chưa xác nhận |
-| Kafka topic tên `omni.transaction.created` (suy luận từ naming convention) | ARCHIVE | Chưa có evidence trực tiếp |
+| Kafka topic tên `app.order.created` (suy luận từ naming convention) | ARCHIVE | Chưa có evidence trực tiếp |
 | Sample data 5 dòng từ bảng user | DISCARD | PII potential, không có giá trị kiến trúc |
 | Logic validate giống hệt entry cũ đã có trong snapshot | DISCARD | Dư thừa |
 
@@ -207,7 +207,7 @@ FOR EACH entry trong snapshot có status:active:
 ### Module: Transaction Framework
 <!-- verified: 2026-06 | confidence: high | source: ticket-123 -->
 
-- Mọi transaction đi qua BaseTransReqHandler...
+- Mọi transaction đi qua BaseOrderHandler...
 ```
 
 > Agent đọc HTML comment để biết confidence, nhưng content vẫn là Markdown readable.

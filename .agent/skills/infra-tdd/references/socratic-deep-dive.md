@@ -175,10 +175,10 @@ Khi không có MCP tools, chạy deep-dive bằng câu hỏi trực tiếp từ 
 > Quyết định: "Dùng Redis Distributed Lock hay DB Pessimistic Lock cho transaction serialization?"
 
 **Mode A (UA):**
-1. `{{ tools.search_code }}("distributed lock")` → tìm `ExpirableLockRegistry`, `BaseTransReqActionProcessor`
-2. `{{ tools.get_dependencies }}("BaseTransReqActionProcessor")` → 10 processors kế thừa
-3. `{{ tools.find_blast_radius }}("BaseTransReqActionProcessor")` → blast radius = 10 files
-4. `{{ tools.trace_flow }}("BaseTransReqActionProcessor")` → Redis → tryLock → strategy → cache
+1. `{{ tools.search_code }}("distributed lock")` → tìm `ExpirableLockRegistry`, `BaseApprovalRequestProcessor`
+2. `{{ tools.get_dependencies }}("BaseApprovalRequestProcessor")` → 10 processors kế thừa
+3. `{{ tools.find_blast_radius }}("BaseApprovalRequestProcessor")` → blast radius = 10 files
+4. `{{ tools.trace_flow }}("BaseApprovalRequestProcessor")` → Redis → tryLock → strategy → cache
 
 **Evidence thu được**: Lock pattern đã dùng rộng (10 processors), blast radius lớn → thay đổi cần cẩn thận, Redis lock < 5ms P99.
 
