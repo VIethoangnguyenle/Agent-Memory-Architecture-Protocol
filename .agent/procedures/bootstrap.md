@@ -62,16 +62,14 @@ External KI tạo ảo giác "đã đủ context" trong khi thiếu hoàn toàn 
 ## PHASE 1 — Skill Discovery
 
 ```
-SCAN .agent/skills/*/SKILL.md
-  EXTRACT: chỉ YAML frontmatter (name, description) + section "Khi nào dùng" (trigger_conditions)
+READ .agent/skills/skill-index.yaml
+  EXTRACT: YAML frontmatter (name, description, trigger_conditions) của các skill
   KHÔNG ĐỌC: full instruction body — defer đến khi trigger condition match
   REGISTER vào skill-registry (in-memory): {name, description, triggers}
   ON ERROR (file corrupt): SKIP + WARN
 ```
 
-> **Lý do lazy-load**: Full SKILL.md = 100-475 dòng/file × 14 skills ≈ 2,000-6,000 dòng.
-> Chỉ cần frontmatter + triggers (≈ 10-20 dòng/skill) để biết khi nào invoke.
-> Full instructions được đọc khi skill thực sự được gọi.
+> **Lý do lazy-load**: Đọc `skill-index.yaml` (index tĩnh) thay vì quét toàn bộ 20+ file `SKILL.md` (2,000-6,000 dòng) giúp giảm bootstrap latency và token overhead (Bookkeeping Diet). Full instructions chỉ được đọc khi skill thực sự được kích hoạt.
 
 ---
 
@@ -158,19 +156,13 @@ IF REQUIREMENT.status == "active":
 Xuất ra câu đầu tiên bắt buộc chứa trigger phrase từ `persona.yaml` (field: `greeting`).
 Nếu `persona.yaml` không tồn tại → dùng `"Ready"`.
 
-Format:
+Format (Giới hạn dưới 5 dòng):
 
 ```
-{greeting} — Em đã load xong:
-✅ Core: {{ platform.config_entry_point }} v{version} + RULES (manifest + 5 modules: flow, tool, exec, knowledge, guard)
-✅ Skills ({n}): [list all discovered skill names]
-✅ Workflows: /task (3 pha) | /idea-to-task | /index-source
-📋 Active: REQUIREMENT={active/empty} | EXPLORE_CONTEXT={active/empty} | Ideation={n} file
-🗺️ Snapshot: {loaded — n entries / MISSING ⛔}
-📐 Conventions: {approved/draft/missing} {— n patterns, n upstream constraints nếu approved}
-🧠 Author DNA: {approved/draft/missing} {— n confirmed entries read}
-🔢 Token Log: {exists/new} {— tổng estimate nếu task đang dở}
-📦 Archive: {n} ticket(s) — Latest: {ticket-id} ({date})
+{greeting} — Đã Bootstrap: [x] Core [x] Skills ({n}) [x] Workflows
+📋 Context: REQ={active/empty} | EXPLORE={active/empty} | 🗺️ Snapshot: {loaded — n entries / MISSING ⛔}
+📐 DNA/Conv: 🧠 Author DNA: {approved — n confirmed entries read / missing} | Conv={approved/missing}
+📦 Archive: {n} tickets | Token Log: {exists/new}
 ⚠️ {warnings nếu có}
 ```
 

@@ -6,7 +6,7 @@
 
 ## 14. Guard Rules — Pre-invoke Guardrails
 
-### R-Guard-1: Kiểm tra pre_conditions trước khi gọi skill
+### [CRITICAL] R-Guard-1: Kiểm tra pre_conditions trước khi gọi skill
 
 - Mỗi skill có thể khai báo block `pre_conditions:` trong frontmatter.
 - Trước khi thực thi bất kỳ skill nào có `pre_conditions:`, agent **PHẢI**:
@@ -20,7 +20,7 @@
 - Không được bypass `pre_conditions` dù context có vẻ đủ — guard phải chạy deterministically.
 - Lý do (Arthur AI): "Pre-LLM guardrails should be fast and deterministic." Guards ngăn lỗi lan truyền sang downstream skills.
 
-### R-Guard-2: Artifact-type pre-check trước khi sinh code
+### [CRITICAL] R-Guard-2: Artifact-type pre-check trước khi sinh code
 
 Trước khi bắt đầu viết bất kỳ artifact nào (factory, service, repository, entity, etc.), agent PHẢI:
 
@@ -47,13 +47,13 @@ Trước khi bắt đầu viết bất kỳ artifact nào (factory, service, rep
 - **Không được** bắt đầu viết code trước khi checkpoint này được ghi.
 - Lý do: nguyên nhân trực tiếp của incident 2026-06-08 — agent sinh code mà không tham chiếu DNA + conventions.
 
-### R-DNA-7: Capture teaching moment ngay trong phiên
+### [CRITICAL] R-DNA-7: Capture teaching moment ngay trong phiên
 
 **Teaching moment** = user (tác giả) sửa code của agent VÀ giải thích nguyên tắc kỹ thuật:
 - "không dùng setter, dùng toBuilder()"
 - "Factory không được chứa business logic"
 - "đây sai rồi, phải là..."
-- Hoặc bất kỳ correction nào kèm nguyên tắc design/coding.
+- Hoặc bất kỳ: correction nào kèm nguyên tắc design/coding.
 
 **Bước 0 — Phân tách abstraction level TRƯỚC khi ghi** (bắt buộc):
 
@@ -96,7 +96,7 @@ hoặc sửa code agent trực tiếp kèm giải thích.
 Lý do: Incident 2026-06-08 — 13 rules học được chỉ ghi vào KI external (mất sau phiên),
 không vào `author-dna.yaml` (persistent).
 
-### R-KI-1: KI external phải là pointer, không phải source
+### [CRITICAL] R-KI-1: KI external phải là pointer, không phải source
 
 Khi bootstrap phát hiện external KI (Antigravity, Cursor rules, `.cursorrules`, v.v.):
 

@@ -7,13 +7,13 @@
 
 ## Tóm tắt
 
-| Pha | Token Input | Token Output | Tổng | Ghi chú |
-|-----|------------|-------------|------|---------|
-| Bootstrap | - | - | - | |
-| Pha 1 — Hiểu vấn đề | - | - | - | |
-| Pha 2 — Sinh spec | - | - | - | |
-| Pha 3 — Apply | - | - | - | |
-| **TỔNG TASK** | **-** | **-** | **-** | |
+| Pha | Bootstrap | Skill-load | Bookkeeping | Actual-work | Tổng |
+|-----|-----------|------------|-------------|-------------|------|
+| Bootstrap | - | - | - | - | - |
+| Pha 1 — Hiểu vấn đề | - | - | - | - | - |
+| Pha 2 — Sinh spec | - | - | - | - | - |
+| Pha 3 — Apply | - | - | - | - | - |
+| **TỔNG TASK** | **-** | **-** | **-** | **-** | **-** |
 
 ---
 
@@ -22,16 +22,22 @@
 ### Bootstrap
 - Bắt đầu: <!-- timestamp -->
 - Kết thúc: <!-- timestamp -->
-- Input tokens: -
-- Output tokens: -
+- Breakdown:
+  - Bootstrap/Init: -
+  - Skill-load: -
+  - Bookkeeping: -
+  - Actual-work: -
 - Tổng: -
 - Files đọc: <!-- {{ platform.config_entry_point }}, RULES.md, n SKILL.md files... -->
 
 ### Pha 1 — Hiểu vấn đề
 - Bắt đầu: <!-- timestamp -->
 - Kết thúc: <!-- timestamp -->
-- Input tokens: -
-- Output tokens: -
+- Breakdown:
+  - Bootstrap/Init: -
+  - Skill-load: -
+  - Bookkeeping: -
+  - Actual-work: -
 - Tổng: -
 - Skills gọi: <!-- list -->
 - Tool calls đáng chú ý: <!-- tool (n tokens), ... -->
@@ -39,15 +45,21 @@
 ### Pha 2 — Sinh spec
 - Bắt đầu: <!-- timestamp -->
 - Kết thúc: <!-- timestamp -->
-- Input tokens: -
-- Output tokens: -
+- Breakdown:
+  - Bootstrap/Init: -
+  - Skill-load: -
+  - Bookkeeping: -
+  - Actual-work: -
 - Tổng: -
 
 ### Pha 3 — Apply
 - Bắt đầu: <!-- timestamp -->
 - Kết thúc: <!-- timestamp -->
-- Input tokens: -
-- Output tokens: -
+- Breakdown:
+  - Bootstrap/Init: -
+  - Skill-load: -
+  - Bookkeeping: -
+  - Actual-work: -
 - Tổng: -
 
 ---

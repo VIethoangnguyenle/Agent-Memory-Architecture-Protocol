@@ -22,6 +22,16 @@ Tracking token usage **theo pha** (Pha 1 / Pha 2 / Pha 3) để:
 
 ---
 
+## Phân loại Token (Token Breakdown)
+
+Để đo lường chính xác overhead, token được chia thành 4 loại:
+1. **Bootstrap/Init:** Token nạp rules, persona, config hệ thống.
+2. **Skill-load:** Token nạp metadata và hướng dẫn của các skill.
+3. **Bookkeeping:** Token đọc/ghi các file quản lý trạng thái (REQUIREMENT, AGENT_TRANSPARENCY...).
+4. **Actual-work:** Token thực tế dùng xử lý code, logic, và thao tác sinh spec.
+
+---
+
 ## Cấu trúc TOKEN_LOG.md
 
 ```markdown
@@ -33,13 +43,13 @@ Tracking token usage **theo pha** (Pha 1 / Pha 2 / Pha 3) để:
 
 ## Tóm tắt
 
-| Pha | Token Input | Token Output | Tổng | Ghi chú |
-|-----|------------|-------------|------|---------|
-| Bootstrap | {n} | {n} | {n} | |
-| Pha 1 — Hiểu vấn đề | {n} | {n} | {n} | |
-| Pha 2 — Sinh spec | {n} | {n} | {n} | |
-| Pha 3 — Apply | {n} | {n} | {n} | |
-| **TỔNG TASK** | **{n}** | **{n}** | **{n}** | |
+| Pha | Bootstrap | Skill-load | Bookkeeping | Actual-work | Tổng |
+|-----|-----------|------------|-------------|-------------|------|
+| Bootstrap | {n} | {n} | {n} | {n} | {n} |
+| Pha 1 — Hiểu vấn đề | {n} | {n} | {n} | {n} | {n} |
+| Pha 2 — Sinh spec | {n} | {n} | {n} | {n} | {n} |
+| Pha 3 — Apply | {n} | {n} | {n} | {n} | {n} |
+| **TỔNG TASK** | **{n}** | **{n}** | **{n}** | **{n}** | **{n}** |
 
 ---
 
@@ -48,16 +58,22 @@ Tracking token usage **theo pha** (Pha 1 / Pha 2 / Pha 3) để:
 ### Bootstrap
 - Bắt đầu: {timestamp}
 - Kết thúc: {timestamp}
-- Input tokens: {n}
-- Output tokens: {n}
+- Breakdown:
+  - Bootstrap/Init: {n}
+  - Skill-load: {n}
+  - Bookkeeping: {n}
+  - Actual-work: {n}
 - Tổng: {n}
 - Files đọc: {{ platform.config_entry_point }} ({n} tokens), RULES.md ({n} tokens), {n} SKILL.md files
 
 ### Pha 1 — Hiểu vấn đề
 - Bắt đầu: {timestamp}
 - Kết thúc: {timestamp}
-- Input tokens: {n}
-- Output tokens: {n}
+- Breakdown:
+  - Bootstrap/Init: {n}
+  - Skill-load: {n}
+  - Bookkeeping: {n}
+  - Actual-work: {n}
 - Tổng: {n}
 - Skills gọi: requirement-analyst, db-explorer, codebase-explorer, architecture-reviewer
 - Tool calls tốn nhiều nhất: {tool} ({n} tokens), {tool} ({n} tokens)
@@ -65,15 +81,21 @@ Tracking token usage **theo pha** (Pha 1 / Pha 2 / Pha 3) để:
 ### Pha 2 — Sinh spec
 - Bắt đầu: {timestamp}
 - Kết thúc: {timestamp}
-- Input tokens: {n}
-- Output tokens: {n}
+- Breakdown:
+  - Bootstrap/Init: {n}
+  - Skill-load: {n}
+  - Bookkeeping: {n}
+  - Actual-work: {n}
 - Tổng: {n}
 
 ### Pha 3 — Apply
 - Bắt đầu: {timestamp}
 - Kết thúc: {timestamp}
-- Input tokens: {n}
-- Output tokens: {n}
+- Breakdown:
+  - Bootstrap/Init: {n}
+  - Skill-load: {n}
+  - Bookkeeping: {n}
+  - Actual-work: {n}
 - Tổng: {n}
 
 ---

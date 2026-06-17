@@ -6,14 +6,14 @@
 
 ## 4. Data Rules — Dữ liệu & bảo mật
 
-### R-Data-1: PII & bí mật
+### [CRITICAL] R-Data-1: PII & bí mật
 
 - Không được log/copy dữ liệu nhạy cảm (PII, credential, token…) vào:
   - `.knowledge-layer/active/REQUIREMENT.md`, `.knowledge-layer/active/EXPLORE_CONTEXT.md`, `.knowledge-layer/active/AGENT_TRANSPARENCY.md`.
 - Nếu tool trả về data nghi là PII:
   - Chỉ tóm tắt pattern, không lưu raw record.
 
-### R-Data-2: Sample data
+### [CRITICAL] R-Data-2: Sample data
 
 - Khi đọc sample data:
   - Luôn giới hạn số bản ghi nhỏ.
@@ -25,17 +25,17 @@
 
 ## 5. Architecture & Reliability Rules
 
-### R-Arch-1: Độ tin cậy kiến trúc ràng buộc tool
+### [CRITICAL] R-Arch-1: Độ tin cậy kiến trúc ràng buộc tool
 
 - Độ tin cậy đánh giá kiến trúc không được là CAO nếu:
   - UA chưa chạy / không khả dụng **và**
   - db-explorer chưa chạy cho phần dữ liệu liên quan.
 
-### R-Arch-2: Respect boundaries
+### [CRITICAL] R-Arch-2: Respect boundaries
 
 - Không đề xuất phá vỡ boundary/module rõ ràng hiện có mà không ghi rõ rủi ro trong `architecture-reviewer`.
 
-### R-Arch-3: Explore Database First (Data-Driven Architecture)
+### [CRITICAL] R-Arch-3: Explore Database First (Data-Driven Architecture)
 
 - Mọi requirement liên quan đến dữ liệu (mã dịch vụ mới, bảng mới, logic định tuyến theo database):
   - **BẮT BUỘC** phải gọi `db-explorer` (sử dụng `db-remote`) để soi dữ liệu/schema thực tế **TRƯỚC KHI** phân tích mã nguồn bằng `codebase-explorer`.
@@ -47,17 +47,17 @@
 
 ## 7. Cost & Execution Rules
 
-### R-Exec-1: Giới hạn vòng lặp & tool call
+### [CRITICAL] R-Exec-1: Giới hạn vòng lặp & tool call
 
 - Mỗi lượt `/task` có giới hạn mềm về số tool call. Nếu vượt:
   - Agent nên dừng, ghi vào `.knowledge-layer/active/AGENT_TRANSPARENCY.md` và hỏi user.
 
-### R-Exec-2: Thời gian chạy
+### [REFERENCE] R-Exec-2: Thời gian chạy
 
 - Nếu một pipeline kéo dài quá lâu:
   - Agent cần tóm tắt trạng thái và đề nghị chia nhỏ thành phiên mới.
 
-### R-Exec-3: Tool call budget per phase (complexity-scaled)
+### [CRITICAL] R-Exec-3: Tool call budget per phase (complexity-scaled)
 
 Budget được điều chỉnh theo complexity tier — xác định ở đầu mỗi pha dựa trên scope:
 
@@ -84,7 +84,7 @@ Cách xác định tier:
   - Không được tự mở rộng budget mà không có xác nhận của user.
 - Lý do: Ngăn agent loop không giới hạn khi gặp KG query mơ hồ hoặc sparse results.
 
-### R-Exec-4: TOKEN_LOG checkpoint bắt buộc
+### [CRITICAL] R-Exec-4: TOKEN_LOG checkpoint bắt buộc
 
 - Trước khi báo hoàn thành bất kỳ pha nào (Pha 1/2/3), agent **PHẢI**:
   - Ghi checkpoint vào `.knowledge-layer/active/TOKEN_LOG.md` (timestamp + token estimate).
@@ -100,12 +100,12 @@ Cách xác định tier:
 
 ## 8. Observability & Audit Rules
 
-### R-Obs-1: AGENT_TRANSPARENCY bắt buộc
+### [CRITICAL] R-Obs-1: AGENT_TRANSPARENCY bắt buộc
 
 - Sau mỗi pha quan trọng (`/task` Pha 1/2/3, `/idea-to-task`):
   - Phải cập nhật `.knowledge-layer/active/AGENT_TRANSPARENCY.md` (nguồn đã đọc, tool đã gọi, cảnh báo, độ tin cậy).
 
-### R-Obs-2: Log vi phạm rule
+### [CRITICAL] R-Obs-2: Log vi phạm rule
 
 - Nếu có ý định vi phạm rule:
   - Không thực thi.

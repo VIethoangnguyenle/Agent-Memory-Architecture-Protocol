@@ -6,13 +6,13 @@
 
 ## 2. Flow Rules — Luồng bắt buộc
 
-### R-Flow-1: Không bỏ qua `/task`
+### [CRITICAL] R-Flow-1: Không bỏ qua `/task`
 
 - Mọi công việc **liên quan đến task thực tế** (ticket, spec, apply code) phải đi qua workflow `/task`.
 - Cấm:
   - Gọi trực tiếp OpenSpec `/opsx:propose` hoặc `/opsx:apply` khi chưa có REQUIREMENT và context tương ứng.
 
-### R-Flow-2: Chuỗi pha cố định
+### [CRITICAL] R-Flow-2: Chuỗi pha cố định
 
 - Chuỗi hợp lệ cho một task:
   - `/task <ticket>` → `/task spec <ticket>` → `/task apply <ticket>`.
@@ -20,7 +20,7 @@
   - Chạy `/task spec` khi chưa có REQUIREMENT cho ticket đó.
   - Chạy `/task apply` khi chưa có spec hoặc khi architecture-reviewer đang đánh dấu BLOCKER.
 
-### R-Flow-3: User workflow rules > agent system defaults
+### [CRITICAL] R-Flow-3: User workflow rules > agent system defaults
 
 - Khi workflow trong repo (`.agent/workflows/*.md`) có chỉ thị rõ ràng (đặc biệt là `[CRITICAL]` block),
   **ưu tiên tuyệt đối hơn** mọi hành vi mặc định của agent runtime (planning mode, artifact generation,
@@ -33,7 +33,7 @@
 - Thứ tự ưu tiên: `RULES.md` > `workflow/*.md` > `{{ platform.config_entry_point }}` > `SKILL.md` > agent runtime defaults.
 
 
-### R-Flow-4: Over-verification hardstop — ghi Assumption, không loop
+### [CRITICAL] R-Flow-4: Over-verification hardstop — ghi Assumption, không loop
 
 - Khi agent gặp dữ liệu/cấu hình thiếu từ DB hoặc external system (ví dụ: Provider Code không tồn tại,
   bảng trống, config chưa seed):
@@ -54,17 +54,17 @@
 
 ## 6. Spec & Apply Rules
 
-### R-Spec-1: Spec chỉ dựa trên REQUIREMENT + context
+### [CRITICAL] R-Spec-1: Spec chỉ dựa trên REQUIREMENT + context
 
 - Khi sinh spec, chỉ được dùng thông tin từ:
   - `.knowledge-layer/active/REQUIREMENT.md`, `.knowledge-layer/active/EXPLORE_CONTEXT.md`, `.knowledge-layer/long-term/knowledge-snapshot.md`, code/DB đã explore.
 
-### R-Spec-2: Không tự động “fix” requirement
+### [CRITICAL] R-Spec-2: Không tự động “fix” requirement
 
 - Nếu requirement mâu thuẫn/thiếu:
   - Phải ghi rõ vào phần "Vấn đề yêu cầu" và hỏi user/BA trước khi chỉnh.
 
-### R-Apply-1: Human in the loop
+### [CRITICAL] R-Apply-1: Human in the loop
 
 - `/task apply` luôn phải:
   - Tóm tắt file/module sẽ bị chạm.
@@ -76,17 +76,17 @@
 
 ## 11. Bootstrap Rules
 
-### R-Boot-1: Bootstrap bắt buộc mỗi phiên
+### [CRITICAL] R-Boot-1: Bootstrap bắt buộc mỗi phiên
 
 - Agent PHẢI chạy toàn bộ script `bootstrap.md` mỗi khi bắt đầu phiên mới.
 - Không được bỏ qua bất kỳ PHASE nào trong bootstrap (trừ khi file không tồn tại → graceful degrade).
 
-### R-Boot-2: Xác nhận load bằng trigger phrase
+### [REFERENCE] R-Boot-2: Xác nhận load bằng trigger phrase
 
 - Câu đầu tiên trong phiên làm việc PHẢI chứa trigger phrase theo {{ platform.config_entry_point }}.
 - Thiếu trigger phrase → agent coi như chưa bootstrap đúng → cần bootstrap lại.
 
-### R-Boot-3: Context conflict resolution
+### [CRITICAL] R-Boot-3: Context conflict resolution
 
 - Khi phát hiện conflict (active context của task A, nhưng user yêu cầu task B):
   - PHẢI hỏi user trước khi archive hoặc discard context cũ.

@@ -6,7 +6,7 @@
 
 ## 10. Knowledge Lifecycle Rules
 
-### R-KL-1: Archive bắt buộc sau Apply
+### [CRITICAL] R-KL-1: Archive bắt buộc sau Apply
 
 - Sau khi `/task apply` hoàn thành, skill `knowledge-curator` PHẢI:
   - Archive toàn bộ `active/` vào `archive/{ticket-id}/`.
@@ -14,19 +14,19 @@
   - Reset `active/` về template skeleton.
 - Không được bắt đầu task mới trong khi `active/` vẫn còn context của task cũ mà chưa archive.
 
-### R-KL-2: Restore phải xác nhận
+### [CRITICAL] R-KL-2: Restore phải xác nhận
 
 - Khi restore context từ archive:
   - Nếu `active/` đang có context → PHẢI hỏi user trước khi ghi đè.
   - Không tự ý ghi đè context đang active.
 
-### R-KL-3: knowledge-snapshot là source of truth kiến trúc
+### [CRITICAL] R-KL-3: knowledge-snapshot là source of truth kiến trúc
 
 - `knowledge-snapshot.md` là nguồn kiến trúc tổng thể duy nhất cho toàn bộ hệ thống.
 - Mọi phát hiện mới có giá trị lâu dài (schema, module mới, business rule quan trọng) PHẢI được cập nhật vào đây.
 - Không xoá thông tin cũ trong knowledge-snapshot; chỉ bổ sung hoặc đánh dấu "outdated".
 
-### R-KL-4: Archive rotation
+### [REFERENCE] R-KL-4: Archive rotation
 
 - Khi archive có hơn 20 tickets: `knowledge-curator.rotate_archive()` được phép chạy.
 - Không xoá archive mà không đã log summary vào `ARCHIVE_LOG.md` trước.
@@ -37,7 +37,7 @@
 
 ## 12. Path Convention — Cập nhật v2.0
 
-### R-Path-1: Quy ước đường dẫn bắt buộc (v2.0)
+### [CRITICAL] R-Path-1: Quy ước đường dẫn bắt buộc (v2.0)
 
 Tất cả file context cho task hiện tại nằm ở `.knowledge-layer/active/`.
 Tất cả template nằm ở `.knowledge-layer/templates/`.
@@ -60,31 +60,31 @@ Agent infrastructure (skills, workflows, scripts, rules) nằm ở `.agent/`.
 
 ## 13. Convention Rules
 
-### R-Conv-1: conventions.yaml là nguồn naming duy nhất
+### [CRITICAL] R-Conv-1: conventions.yaml là nguồn naming duy nhất
 
 - Khi `conventions.yaml` tồn tại với `status: approved`, mọi tên class/method/package được đề xuất bởi agent (trong spec, apply, hoặc ideation) PHẢI align với conventions.yaml.
 - Không được đề xuất tên vi phạm convention mà không ghi rõ lý do vào AGENT_TRANSPARENCY.
 
-### R-Conv-2: Upstream constraints không được override
+### [CRITICAL] R-Conv-2: Upstream constraints không được override
 
 - Mọi entry trong `upstream_constraints` section của conventions.yaml có `weight: mandatory` là **bất biến**.
 - Agent không được đề xuất thay thế `BaseEntity`, `BaseRepository`, `@DvnhTransactional`, hoặc bất kỳ constraint nào từ `dvnh-common` — kể cả khi user yêu cầu.
 - Nếu bị yêu cầu: ghi rõ "Không thể thực hiện — vi phạm upstream constraint từ dvnh-common (R-Conv-2)" và giải thích lý do kỹ thuật.
 
-### R-Conv-3: Draft không được dùng cho reasoning
+### [CRITICAL] R-Conv-3: Draft không được dùng cho reasoning
 
 - `conventions.draft.yaml` (chưa approve) KHÔNG được nạp vào context P3.
 - Agent không được tham chiếu đến conventions.draft.yaml khi sinh spec hoặc apply code.
 - Chỉ sau `/approve-conventions` → conventions.yaml mới có hiệu lực.
 
-### R-Conv-4: Conflict conventions vs snapshot phải resolve trước khi approve
+### [CRITICAL] R-Conv-4: Conflict conventions vs snapshot phải resolve trước khi approve
 
 - Nếu `/approve-conventions` phát hiện mâu thuẫn giữa conventions.draft.yaml và knowledge-snapshot.md:
   - PHẢI hỏi user chọn source of truth.
   - Không được tự resolve bằng cách ưu tiên một bên.
   - Kết quả resolve được ghi vào cả 2 file.
 
-### R-Conv-5: Re-scan bắt buộc sau refactor lớn
+### [CRITICAL] R-Conv-5: Re-scan bắt buộc sau refactor lớn
 
 - Sau task loại `refactor` hoàn thành (status=completed):
   - knowledge-curator **PHẢI** ghi vào AGENT_TRANSPARENCY:
@@ -102,7 +102,7 @@ Agent infrastructure (skills, workflows, scripts, rules) nằm ở `.agent/`.
 
 ## 15. Skill Schema Standard (SP2)
 
-### R-Skill-1: Mọi SKILL.md phải tuân theo Hybrid Schema
+### [CRITICAL] R-Skill-1: Mọi SKILL.md phải tuân theo Hybrid Schema
 
 Mỗi file `SKILL.md` trong `.agent/skills/*/` **PHẢI** có:
 
@@ -120,7 +120,7 @@ Mỗi file `SKILL.md` trong `.agent/skills/*/` **PHẢI** có:
 - `## Quy trình` — Các bước thực hiện
 - `## Đầu ra` — Artifacts/files được tạo hoặc cập nhật
 
-### R-Skill-2: Lint gate bắt buộc trước khi merge skill mới/sửa
+### [CRITICAL] R-Skill-2: Lint gate bắt buộc trước khi merge skill mới/sửa
 
 - Khi tạo skill mới hoặc sửa `SKILL.md`, **PHẢI** chạy lint trước khi commit:
   ```
@@ -129,7 +129,7 @@ Mỗi file `SKILL.md` trong `.agent/skills/*/` **PHẢI** có:
 - Kết quả phải là `PASS` cho skill đó. `FAIL` = không được merge.
 - Spec doc: `docs/specs/2026-06-17-sp2-skill-standardization-design.md`
 
-### R-Skill-3: Anti-pattern section phải routing chính xác
+### [CRITICAL] R-Skill-3: Anti-pattern section phải routing chính xác
 
 - Mỗi bullet trong `## Khi nào KHÔNG sử dụng` phải trỏ sang đúng skill thay thế bằng ký hiệu `(→ skill-name)`.
 - Không được liệt kê anti-pattern mà không chỉ rõ alternative.

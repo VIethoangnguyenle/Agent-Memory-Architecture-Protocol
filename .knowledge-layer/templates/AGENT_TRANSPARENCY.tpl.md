@@ -39,46 +39,12 @@ phase_state: bootstrapped
 
 ---
 
-## Bootstrap Log
+## Delta Context (Chỉ ghi thay đổi)
 
-- Bootstrap tại: <!-- timestamp -->
-- {{ platform.config_entry_point }}: [ ] loaded
-- RULES.md: [ ] loaded
-- Lịch sử pha: <!-- Bootstrap | <time> | Task: <input> -->
+> LUẬT TỐI ƯU TOKEN (BOOKKEEPING DIET): Không liệt kê lại toàn bộ những gì đã đọc/đã gọi từ đầu. Chỉ ghi những thay đổi (delta) phát sinh trong pha/phiên hiện tại.
 
----
-
-## Nguồn đã đọc
-
-- [ ] {{ platform.config_entry_point }}
-- [ ] .agent/rules/RULES.md
-- [ ] REQUIREMENT.md
-- [ ] EXPLORE_CONTEXT.md
-- [ ] knowledge-snapshot.md
-- [ ] Tài liệu (wiki/Confluence/PRD/…)
-- [ ] Codebase (UA / Socraticode / search)
-- [ ] Database (qua db-explorer)
-
----
-
-## Tool / Skill đã gọi thành công
-
-- [ ] requirement-analyst
-- [ ] spec-extract
-- [ ] db-explorer
-- [ ] codebase-explorer
-- [ ] architecture-reviewer
-- [ ] knowledge-curator
-- [ ] OpenSpec (`/opsx:explore`, `/opsx:propose`, `/opsx:apply`)
-- [ ] Knowledge Graph MCP:
-  - [ ] get_graph_stats
-  - [ ] query_nodes
-  - [ ] get_node_source
-  - [ ] get_relationships / trace_call_chain
-  - [ ] get_domain_detail
-  - [ ] find_impact / find_entry_points
-- [ ] Understand-Anything (`/understand`, `/understand-chat`)
-- [ ] Socraticode
+- **Nguồn mới đọc thêm:** <!-- Liệt kê file/doc mới đọc trong pha này -->
+- **Tool/Skill mới gọi:** <!-- Liệt kê tool/skill mới sử dụng trong pha này -->
 
 ---
 
