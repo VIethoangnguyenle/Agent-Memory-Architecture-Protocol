@@ -1,18 +1,28 @@
-# Procedure: Executor (one micro-loop task)
+# Procedure: Executor (one Hybrid Contract DAG node)
 
-> Consumed by the agent acting as code-executor. Input: a TASK_HANDOFF.md path.
-> Output: TASK_RESULT.md. Platform-neutral — same steps on every tier.
+> Consumed by the agent acting as a role-specific coding executor. Input: a `TASK_HANDOFF.<node-id>.md` path.
+> Output: `TASK_RESULT.<node-id>.md`, or one request artifact when blocked.
 
-1. Read the TASK_HANDOFF at the given path. Note: task, dna_slice, spec_slice,
-   snapshot_slice, written_files, boundary, feedback.
-2. Read the actual existing files listed in `written_files` FROM DISK (not just the
-   summaries) so inheritance is consistent.
-3. Generate code for THIS task ONLY. Obey:
-   - dna_slice.hard_principles (REJECT_* = hard) and complexity_thresholds.
-   - boundary constraints — do not touch listed files/packages.
-   - If `feedback` is present (a retry), fix exactly what it reports.
-4. Write changed files to disk.
-5. Write TASK_RESULT.md: task_id, changed_files (path/change_type/summary),
-   gate_status left as "PENDING" (orchestrator fills it), self_flagged for anything
-   you are unsure about.
-6. Stop. Do NOT advance to the next task — the orchestrator owns the loop.
+1. Read the TASK_HANDOFF at the given path. Note: task, dna_slice, convention_slice,
+   spec_slice, snapshot_slice, contract_snapshot, written_files, boundary, feedback.
+2. Read actual existing files from disk for every path listed in `written_files`,
+   `contract_snapshot.source_file`, and task read-only files. Do not rely on summaries alone.
+3. Execute only the assigned node:
+   - Contract node: write/update the contract file and produce `CONTRACT_SNAPSHOT.<node-id>.md`.
+   - Leaf node: implement only the child/adapter/mapper/repository file allowed by the handoff.
+   - Integration node: apply queued `INTEGRATION_REQUEST` entries to shared wiring files.
+   - Test node: add or update tests described by the handoff.
+4. Obey hard boundaries:
+   - Do not call UA/KG, DB, or agent-memory tools directly.
+   - Do not edit files outside `allowed_files`.
+   - Do not edit frozen contract/base files from a leaf node.
+   - Do not edit shared wiring files from a leaf node.
+   - Do not introduce dependencies that are absent from the spec or handoff.
+5. If context is missing, stop and write `CONTEXT_REQUEST.<node-id>.md`.
+6. If a leaf node needs the contract changed, stop and write `CONTRACT_CHANGE_REQUEST.<node-id>.md`.
+7. If a leaf node needs registry/config/wiring, write `INTEGRATION_REQUEST.<node-id>.md`
+   and continue only if the feature code itself can be completed without editing the shared file.
+8. Write changed files to disk.
+9. Write `TASK_RESULT.<node-id>.md` with: task_id, changed_files, gate_status set to `PENDING`,
+   gate_violations as `[]`, and self_flagged for any unresolved concern.
+10. Stop. The orchestrator owns gate execution, retries, stale invalidation, and task advancement.
