@@ -51,7 +51,7 @@ plugins:
     type: meta-prompt
     source: AGENTS.md
     template: false
-    output: AGENTS.md
+    output: "{{ platform.config_entry_point }}"
 
   # ─── RULES (mostly static) ───
   - name: rules-manifest

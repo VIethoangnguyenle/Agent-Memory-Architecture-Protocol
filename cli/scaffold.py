@@ -155,7 +155,8 @@ def scaffold_plugins(
             continue
 
         source_path = resolve_source_path(amap_root, plugin["source"])
-        target_path = write_root / plugin["output"]
+        output_rel = render_string(jinja_env, plugin["output"], context)
+        target_path = write_root / output_rel
         if not source_path.exists():
             if verbose:
                 print(f"  ⚠️  {name:35s} (source not found: {source_path})")
@@ -171,7 +172,7 @@ def scaffold_plugins(
         else:
             stats["copied"] += 1
         if verbose:
-            print(f"  ✅ {plugin['output']:35s}")
+            print(f"  ✅ {output_rel:35s}")
     return stats
 
 
