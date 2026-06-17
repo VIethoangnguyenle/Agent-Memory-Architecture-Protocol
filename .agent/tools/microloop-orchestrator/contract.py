@@ -102,7 +102,12 @@ def dump_knowledge_pack(kp, path):
 
 def validate_contract_dag(dag):
     _require_keys(dag, ("ticket_id", "spec_path", "contract_version_counter", "nodes"), "contract_dag")
-    ids = {node.get("id") for node in dag["nodes"]}
+    ids = set()
+    for node in dag["nodes"]:
+        _require_keys(node, ("id",), "contract_dag node")
+        if node["id"] in ids:
+            raise ValueError(f"duplicate node id: {node['id']}")
+        ids.add(node["id"])
     for node in dag["nodes"]:
         _require_keys(node, ("id", "type", "desc", "depends_on", "reads", "writes", "status"), "contract_dag node")
         if node["type"] not in VALID_NODE_TYPE:
@@ -112,7 +117,28 @@ def validate_contract_dag(dag):
         for dep_id in node.get("depends_on", []):
             if dep_id not in ids:
                 raise ValueError(f"node {node['id']} depends on non-existent node {dep_id}")
+    _reject_contract_dag_cycles(dag["nodes"])
     return dag
+
+
+def _reject_contract_dag_cycles(nodes):
+    by_id = {node["id"]: node for node in nodes}
+    visiting = set()
+    visited = set()
+
+    def visit(node_id):
+        if node_id in visiting:
+            raise ValueError(f"dependency cycle detected at node {node_id}")
+        if node_id in visited:
+            return
+        visiting.add(node_id)
+        for dep_id in by_id[node_id].get("depends_on", []):
+            visit(dep_id)
+        visiting.remove(node_id)
+        visited.add(node_id)
+
+    for node_id in by_id:
+        visit(node_id)
 
 
 def load_contract_dag(path):

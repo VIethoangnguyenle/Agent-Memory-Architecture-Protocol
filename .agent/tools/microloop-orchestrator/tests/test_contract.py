@@ -167,3 +167,33 @@ def test_contract_dag_rejects_unknown_node_type():
     import pytest
     with pytest.raises(ValueError, match="bad node type"):
         contract.validate_contract_dag(dag)
+
+
+def test_contract_dag_rejects_duplicate_node_id():
+    dag = {
+        "ticket_id": "ABC-1",
+        "spec_path": "openspec/changes/x/",
+        "contract_version_counter": 1,
+        "nodes": [
+            {"id": "C1", "type": "contract", "desc": "first", "depends_on": [], "reads": [], "writes": [], "status": "pending"},
+            {"id": "C1", "type": "leaf", "desc": "duplicate", "depends_on": [], "reads": [], "writes": [], "status": "pending"},
+        ],
+    }
+    import pytest
+    with pytest.raises(ValueError, match="duplicate node id"):
+        contract.validate_contract_dag(dag)
+
+
+def test_contract_dag_rejects_cycle():
+    dag = {
+        "ticket_id": "ABC-1",
+        "spec_path": "openspec/changes/x/",
+        "contract_version_counter": 1,
+        "nodes": [
+            {"id": "C1", "type": "contract", "desc": "base", "depends_on": ["L1"], "reads": [], "writes": [], "status": "pending"},
+            {"id": "L1", "type": "leaf", "desc": "child", "depends_on": ["C1"], "reads": [], "writes": [], "status": "pending"},
+        ],
+    }
+    import pytest
+    with pytest.raises(ValueError, match="dependency cycle"):
+        contract.validate_contract_dag(dag)
