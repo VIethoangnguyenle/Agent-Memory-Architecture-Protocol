@@ -21,16 +21,16 @@ READ: .amap/rules/rules-guard.md        ← pre-invoke guards (đọc SAU cùng)
 Logou
 ### PHASE 0.5 — External KI Conflict Check
 
-> Ngăn "false sense of completeness" khi agent runtime có hệ thống KI external (Antigravity, Cursor rules, GitHub Copilot instructions, etc.)
+> Ngăn "false sense of completeness" khi agent runtime có hệ thống KI external (vd: Cursor rules, GitHub Copilot instructions, Antigravity knowledge, v.v.)
 
 ```
 DETECT external KI:
   Kiểm tra sự tồn tại của bất kỳ path nào sau:
-  - ~/.gemini/antigravity/knowledge/
   - ~/.cursor/rules/
-  - .github/copilot-instructions.md
   - .cursorrules
-  - Bất kỳ file nào có tên *-rules.md hoặc *-ki.md ngoài .amap/knowledge/
+  - .github/copilot-instructions.md
+  - ~/.gemini/antigravity/knowledge/
+  - Bất kỳ file nào có tên *-rules.md hoặc *-ki.md ngoài .amap/
 
 IF external KI detected:
   1. WARN bắt buộc trong bootstrap report:
@@ -49,9 +49,10 @@ IF external KI NOT detected:
   → tiếp tục bình thường
 ```
 
-**Lý do**: Incident 2026-06-08 — agent dựa vào `~/.gemini/antigravity/knowledge/factory-rules.md`
-(không version-controlled, không có DNA judgment layer) thay vì `.amap/knowledge/long-term/conventions.yaml`.
-External KI tạo ảo giác "đã đủ context" trong khi thiếu hoàn toàn judgment layer.
+**Lý do**: Một class lỗi đã quan sát được — agent dựa vào KI external (vd một file `*-rules.md` do tool
+runtime sinh ra: không version-controlled, không có DNA judgment layer) thay vì
+`.amap/knowledge/long-term/conventions.yaml`. External KI tạo ảo giác "đã đủ context" trong khi thiếu
+hoàn toàn judgment layer.
 
 **Periodic re-scan**: Ngoài bootstrap, cũng chạy scan này khi:
 - `knowledge-curator` chạy `archive_active_context` (kiểm tra xem có KI mới xuất hiện).

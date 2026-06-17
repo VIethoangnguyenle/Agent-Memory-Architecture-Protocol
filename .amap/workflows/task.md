@@ -251,7 +251,7 @@ Mục tiêu: dùng OpenSpec để sinh **spec kỹ thuật** dựa trên REQUIRE
      - Thường là `/opsx:propose` (hoặc `/opsx:new` tuỳ convention).
    - **Không được** dùng planning mode mặc định của agent (sinh `implementation_plan.md`, `plan.md`,
      hoặc bất kỳ file nào ra ngoài `openspec/changes/<change-id>/`) — kể cả khi agent
-     runtime có planning mode nằm ngoài workflow này (Antigravity, v.v.).
+     runtime có planning mode nằm ngoài workflow này (vd Cursor, Antigravity, v.v.).
    - Chờ spec được sinh ra (file spec riêng, ví dụ trong thư mục `spec/`).
    - Xác nhận output path là `openspec/changes/<change-id>/` trước khi báo cáo hoàn thành.
    - **[H5 — State Invalidation]** Sau khi `/opsx:propose` thành công:

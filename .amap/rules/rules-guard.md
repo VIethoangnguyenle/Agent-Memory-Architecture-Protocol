@@ -98,7 +98,7 @@ không vào `author-dna.yaml` (persistent).
 
 ### [CRITICAL] R-KI-1: KI external phải là pointer, không phải source
 
-Khi bootstrap phát hiện external KI (Antigravity, Cursor rules, `.cursorrules`, v.v.):
+Khi bootstrap phát hiện external KI (vd: Cursor rules, `.cursorrules`, Antigravity knowledge, v.v.):
 
 1. **Bắt buộc** WARN trong bootstrap report.
 2. **Bắt buộc** đề xuất action cleanup cụ thể:

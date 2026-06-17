@@ -74,7 +74,7 @@ Nếu section không tìm thấy trong conventions.yaml → load toàn bộ file
 - Không tồn tại → WARN "author-dna.yaml chưa có. Agent dùng generic judgment. Chạy /dna-scan để tạo."
 - author-dna.yaml được dùng bởi: `architecture-reviewer` (hard principles), `spec-engineer` (pattern preferences), `/task apply` (style + complexity thresholds).
 
-> **[R-KI-1 — Bắt buộc]**: Nếu external KI (Antigravity, Cursor rules, etc.) chứa
+> **[R-KI-1 — Bắt buộc]**: Nếu external KI (vd Cursor rules, Antigravity knowledge, etc.) chứa
 > file `factory-rules.md`, `coding-rules.md`, hoặc bất kỳ file nào duplicate nội dung
 > từ `conventions.yaml` / `author-dna.yaml`:
 >

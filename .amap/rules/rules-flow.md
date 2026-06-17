@@ -24,11 +24,11 @@
 
 - Khi workflow trong repo (`.amap/workflows/*.md`) có chỉ thị rõ ràng (đặc biệt là `[CRITICAL]` block),
   **ưu tiên tuyệt đối hơn** mọi hành vi mặc định của agent runtime (planning mode, artifact generation,
-  file output convention từ Antigravity, Gemini, Claude, v.v.).
+  file output convention của agent runtime, vd Claude, Cursor, Gemini, Antigravity, v.v.).
 - Cụ thể:
   - Khi `task.md` yêu cầu dùng OpenSpec → **không được** dùng planning mode sinh `implementation_plan.md`.
   - Khi `task.md` yêu cầu confirm trước → **không được** skip dù context có vẻ đã đồng ý.
-  - Agent runtime defaults (kể cả các tool như Antigravity planning) là **secondary** — chỉ dùng
+  - Agent runtime defaults (kể cả planning mode của các tool như Cursor, Antigravity, v.v.) là **secondary** — chỉ dùng
     khi workflow không có chỉ thị gì về hành động đó.
 - Thứ tự ưu tiên: `RULES.md` > `workflow/*.md` > `{{ platform.config_entry_point }}` > `SKILL.md` > agent runtime defaults.
 
