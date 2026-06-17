@@ -130,20 +130,22 @@ def copy_and_render_directory(
             target = dst / rel
             target.parent.mkdir(parents=True, exist_ok=True)
 
-            # Try to render text files containing Jinja2 variables
+            # Try to render text files containing Jinja2 variables.
+            # Only UnicodeDecodeError (binary file with a text extension) is
+            # tolerated; template errors must surface, never ship unrendered.
             if _is_text_file(item):
                 try:
                     content = item.read_text(encoding="utf-8")
-                    if _has_jinja_vars(content):
-                        output = render_string(env, content, context)
-                        target.write_text(output, encoding="utf-8")
-                        # Preserve original file timestamps
-                        shutil.copystat(item, target)
-                        rendered += 1
-                        total += 1
-                        continue
-                except (UnicodeDecodeError, Exception):
-                    pass  # Fall through to plain copy
+                except UnicodeDecodeError:
+                    content = None
+                if content is not None and _has_jinja_vars(content):
+                    output = render_string(env, content, context)
+                    target.write_text(output, encoding="utf-8")
+                    # Preserve original file timestamps
+                    shutil.copystat(item, target)
+                    rendered += 1
+                    total += 1
+                    continue
 
             # Plain copy (binary files or text without Jinja2)
             shutil.copy2(item, target)
