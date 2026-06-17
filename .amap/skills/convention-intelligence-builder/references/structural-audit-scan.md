@@ -45,11 +45,11 @@ QUERY UA: {{ tools.search_code }}(type="class", filter="suffix IN [Controller, C
   FOR EACH node:
     CALL: {{ tools.get_dependencies }}(node_id)
       → Khám phá cách Controller tương tác với Logic Layer: Controller gọi trực tiếp
-        Handler/Service hay đi qua MessageBus / Dispatcher?
-      → Controller có bắt buộc kế thừa Base class nào không (ví dụ: BaseWebController)?
+        Handler/Service hay đi qua một message bus / dispatcher?
+      → Controller có bắt buộc kế thừa base class nào không (vd một base class chung do dự án quy định)?
     CALL: {{ tools.read_file }}(node_id)
       → Đọc actual implementation (chỉ signature, không toàn bộ body)
-      → Nếu phát hiện CQRS (Controller -> MessageBus -> Command -> Handler),
+      → Nếu phát hiện một dispatch pattern bắt buộc (vd CQRS: Controller → bus → Command → Handler),
         đánh dấu đây là kiến trúc cốt lõi với mức độ MANDATORY (upstream_constraints).
 ```
 

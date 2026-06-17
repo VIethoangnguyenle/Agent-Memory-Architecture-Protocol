@@ -205,7 +205,7 @@ Dựa vào `AGENT_TRANSPARENCY` + thực tế tool:
    - Cảnh báo BLOCKER nếu luồng Asynchronous (như Kafka Consumer) bị đặt nhầm vào các service thuần API, mà nên hướng về các service xử lý nền (ví dụ: `worker-service` hoặc module background tương đương).
 3. Layering & Convention Enforcement:
    - Đối chiếu với `conventions.yaml` và `knowledge-snapshot.md`. Bất kể dự án đang dùng kiến trúc gì (CQRS, MVC, Hexagonal), phải enforce chặt chẽ các constraint của kiến trúc đó.
-   - Ví dụ: Nếu `conventions.yaml` quy định API phải kế thừa `BaseWebController` và dùng `MessageBus`, phải bắt lỗi ngay nếu Requirement/Spec dự định inject trực tiếp Handler vào Controller. Không hardcode CQRS vào skill này, nhưng phải đọc và áp dụng từ file convention.
+   - Ví dụ (giả định, không phải mặc định): nếu `conventions.yaml` quy định API phải kế thừa một base class nhất định và mọi lệnh phải đi qua một message/command bus, thì phải bắt lỗi ngay khi Requirement/Spec định đi tắt (vd gọi thẳng tầng dưới, bỏ qua bus). Skill này **không** hardcode bất kỳ pattern nào (CQRS/MVC/Hexagonal…) — luôn đọc constraint từ `conventions.yaml` rồi enforce.
 4. Coupling:
    - Yêu cầu có thêm phụ thuộc mới giữa module/service vốn nên độc lập không?
    - Nếu có identifiers: `{{ tools.find_blast_radius }}(identifier)` → xem blast radius trước khi sửa.
