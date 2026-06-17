@@ -84,6 +84,21 @@ Cách xác định tier:
   - Không được tự mở rộng budget mà không có xác nhận của user.
 - Lý do: Ngăn agent loop không giới hạn khi gặp KG query mơ hồ hoặc sparse results.
 
+### [CRITICAL] R-Exec-3b: Hybrid Contract DAG context-request budget
+
+Trong Pha 3 Hybrid Contract DAG:
+
+- Mỗi node được tối đa 2 `CONTEXT_REQUEST` vòng enrich trước khi hardstop.
+- Mỗi node được tối đa 2 contract/gate retry trước khi chuyển `blocked`.
+- Parallel leaf batch chỉ hợp lệ khi:
+  - mọi dependency đã `done`;
+  - không có write conflict;
+  - không node nào dùng stale contract_version;
+  - integration/shared wiring được gom về Integration Lane.
+- Khi đạt hardstop, orchestrator ghi vào AGENT_TRANSPARENCY:
+  `[HCD-BLOCKED] node={node_id} reason={reason} requests={n} retries={n}`
+  và hỏi user quyết định.
+
 ### [CRITICAL] R-Exec-4: TOKEN_LOG checkpoint bắt buộc
 
 - Trước khi báo hoàn thành bất kỳ pha nào (Pha 1/2/3), agent **PHẢI**:
