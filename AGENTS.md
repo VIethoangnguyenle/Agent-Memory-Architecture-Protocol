@@ -151,6 +151,15 @@ PRIORITY 4: .knowledge-layer/archive/{latest-ticket}/
 - Nếu file trống hoặc chỉ là template skeleton → **KHÔNG** coi là context hợp lệ.
 - Nếu `archive/` có ticket gần nhất → gợi ý user xem có muốn restore/tiếp tục không.
 
+### Bước 4.1 — Khởi tạo Knowledge cho Dự án mới (Sau khi `amap init`)
+
+**QUAN TRỌNG:** Các file template (`author-dna.yaml`, `conventions.yaml`) mặc định trong AMAP là các **Skeleton trống** (framework-agnostic).
+Sau khi chạy `amap init` vào một dự án mới, người dùng **PHẢI** chạy các lệnh sau để agent quét codebase và xây dựng rules thực tế:
+1. Chạy `/convention-scan` để tạo `conventions.draft.yaml`, sau đó `/approve-conventions`.
+2. Chạy `/dna-scan` để tạo `author-dna.draft.yaml`, sau đó `/approve-dna`.
+
+Nếu chưa chạy các lệnh này, hệ thống sẽ chỉ có các rule mặc định cơ bản.
+
 ### Bước 5 — Xác nhận loaded (Bootstrap Report)
 
 **Câu trả lời đầu tiên** trong phiên làm việc phải bắt đầu bằng:
