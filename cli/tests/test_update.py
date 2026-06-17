@@ -41,3 +41,29 @@ def test_update_aborts_when_no_config(tmp_path, amap_root, capsys):
     target.mkdir()
     run_update(target_dir=str(target), amap_root=str(amap_root))
     assert "No AMAP installation" in capsys.readouterr().out
+
+
+def test_reconfigure_switches_platform_keeps_user_files(tmp_path, amap_root, monkeypatch):
+    target = tmp_path / "proj"
+    _init_claude(target, amap_root, monkeypatch)
+
+    persona = target / ".knowledge-layer" / "long-term" / "persona.yaml"
+    persona.write_text("KEEP ME\n", encoding="utf-8")
+
+    skill = target / ".agent" / "skills" / "codebase-explorer" / "SKILL.md"
+    assert "mcp__socraticode__codebase_search" in skill.read_text(encoding="utf-8")
+
+    # Reconfigure to antigravity (platform=1), MCPs=1,2,3, language=3.
+    answers = iter(["1", "1,2,3", "3"])
+    monkeypatch.setattr("builtins.input", lambda *a, **k: next(answers))
+    run_update(target_dir=str(target), amap_root=str(amap_root), reconfigure=True)
+
+    body = skill.read_text(encoding="utf-8")
+    # Antigravity uses single-underscore MCP prefix.
+    assert "mcp_socraticode_codebase_search" in body
+    assert "mcp__socraticode__codebase_search" not in body
+    assert persona.read_text(encoding="utf-8") == "KEEP ME\n"
+
+    # resolved-config now records antigravity.
+    cfg = (target / ".agent" / "resolved-config.yaml").read_text(encoding="utf-8")
+    assert "antigravity" in cfg
