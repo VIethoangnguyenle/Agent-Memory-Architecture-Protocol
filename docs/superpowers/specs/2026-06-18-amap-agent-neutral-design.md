@@ -1,4 +1,4 @@
-# AMAP Agent-Neutral — Design Spec
+# AMAP Neutral — Design Spec
 
 > Ngày: 2026-06-18 · Topic A của phiên brainstorming 2026-06-18.
 > Phục vụ North Star: **#1 Generic** + **#4 IDE/agent-independent**.
@@ -8,10 +8,17 @@
 
 ## 1. Mục tiêu & ranh giới
 
-Làm AMAP **đọc ra trung-lập-agent** — xoá cảm giác "framework chỉ dành cho Antigravity". Hai workstream:
+Làm AMAP **đọc ra trung lập** — xoá cảm giác "framework chỉ dành cho một tool/một kiến trúc cụ thể".
+
+**Nguyên tắc thống nhất:** *prose framework không được lấy một instance cụ thể làm ví dụ độc tôn/mặc định* —
+dù đó là **tool** (A2) hay **kiến trúc dự án** (A3). Mô tả generic trước; ví dụ cụ thể chỉ là *một trong nhiều*,
+không chiếm vị trí "the default".
+
+Ba workstream:
 
 - **A1** — rename `.agent/` → `.amap/`; gộp `.knowledge-layer/` vào `.amap/knowledge/`.
-- **A2** — trung-lập-hoá framing "Antigravity-first" trong các file vận hành.
+- **A2** — trung-lập-hoá framing "Antigravity-first" trong các file vận hành (trục *tool*).
+- **A3** — trung-lập-hoá ví dụ kiến-trúc privileged (CQRS/`BaseWebController`/`MessageBus`) trong skill (trục *content*).
 
 **Đảo quyết định SP0 §4 (có chủ đích):** SP0 từng giữ `.agent/` top-level vì rename "churn không thêm
 giá trị" — nhưng SP0 **chỉ cân nhắc trục kỹ thuật/portability**, không xét trục *cái tên có signal được
@@ -34,6 +41,14 @@ A2 **KHÔNG** gỡ bỏ Antigravity. Antigravity là platform first-class, có a
 
 A2 chỉ sửa **prose nơi Antigravity bị privileged**: đứng đầu enumeration mặc định, là ví dụ độc tôn,
 hoặc là incident neo cứng cho một rule tổng quát.
+
+A3 **KHÔNG** cấm nhắc tên pattern kiến trúc. Những thứ sau **giữ nguyên**:
+
+- Liệt kê đa-pattern trung lập (vd "CQRS, MVC, Hexagonal" ở [SKILL.md:207](../../../.agent/skills/architecture-reviewer/SKILL.md#L207); enum `layered|hexagonal|clean|cqrs`) — đúng tinh thần generic.
+- Cơ chế "đọc constraint từ `conventions.yaml` rồi enforce" — đây là logic cốt lõi của skill, giữ.
+
+A3 chỉ thay **class name dự án cụ thể bị lấy làm ví dụ độc tôn** (`BaseWebController`, `MessageBus`) bằng
+placeholder generic, và đổi ví dụ CQRS chi tiết thành *một trong nhiều* ví dụ giả định.
 
 ---
 
@@ -113,7 +128,7 @@ falsify history. → **Không sửa.** Spec này là source-of-truth hiện hàn
 
 ---
 
-## 4. A2 — trung-lập-hoá framing + bug Lớp-3
+## 4. A2 & A3 — trung-lập-hoá framing/content + bug Lớp-3
 
 ### 4.1 Inventory prose cần sửa (Antigravity bị privileged)
 
@@ -139,6 +154,18 @@ falsify history. → **Không sửa.** Spec này là source-of-truth hiện hàn
 - Hôm nay chưa nổ chỉ vì framework rules đặt tên prefix (`rules-flow.md`), không khớp suffix `*-rules.md` —
   may, không phải thiết kế. Namespace gộp (Phần 2) làm fix này thành 1 gốc duy nhất.
 
+### 4.3 A3 — ví dụ kiến-trúc privileged trong skill (trục content)
+
+| File:line | Vấn đề | Hướng sửa |
+|-----------|--------|-----------|
+| [architecture-reviewer/SKILL.md:208](../../../.agent/skills/architecture-reviewer/SKILL.md#L208) | Ví dụ độc tôn dùng `BaseWebController`/`MessageBus`/Handler→Controller — tự mâu thuẫn ("không hardcode CQRS" nhưng CQRS là ví dụ chi tiết duy nhất) | Thay class name bằng placeholder ("Base class do `conventions.yaml` quy định", "message/command bus nếu có"); CQRS thành *một trong nhiều* ví dụ giả định |
+| [structural-audit-scan.md:48-49,52](../../../.agent/skills/convention-intelligence-builder/references/structural-audit-scan.md#L48) | Lại `BaseWebController`/`MessageBus`; CQRS (Controller→MessageBus→Command→Handler) là ví dụ chi tiết độc tôn | Generic hoá tên class; giữ ý "phát hiện Base class / message bus nếu có" nhưng không neo vào tên cụ thể |
+
+> **Bối cảnh:** u2-min-neutrality phân loại `.agent/skills` là Framework-owned-phải-generic nhưng chỉ dọn
+> nội dung knowledge-layer, **không quét body skill**. `BaseWebController`/`MessageBus` lọt lưới các pass
+> "genericize Vietbank" vì không chứa token "Vietbank/OMNI". A3 bịt đúng khe này — **bó gọn 2 file trên**,
+> không phải audit toàn bộ skill.
+
 ---
 
 ## 5. Verification ("done")
@@ -155,6 +182,8 @@ falsify history. → **Không sửa.** Spec này là source-of-truth hiện hàn
 8. A2: không file vận hành nào để Antigravity làm ví dụ độc tôn/đầu-mặc-định; adapter `antigravity.py` +
    detect path còn nguyên; `cli/tests` Antigravity vẫn pass.
 9. Lớp-3: exclusion KI-detect = "ngoài `.amap/`"; framework rule files không bị flag là external KI.
+10. A3: `grep -rn "BaseWebController\|MessageBus" .agent/skills` → **0** (đã thay placeholder); liệt kê
+    đa-pattern (CQRS/MVC/Hexagonal) + enum + cơ chế "đọc từ `conventions.yaml`" **còn nguyên**.
 
 ---
 
@@ -177,4 +206,6 @@ falsify history. → **Không sửa.** Spec này là source-of-truth hiện hàn
   *U3 sẽ phải xử lý thêm bước `.agent`→`.amap` + `.knowledge-layer`→`.amap/knowledge`.*
 - Rewrite docs lịch sử (specs/plans cũ).
 - Gỡ Antigravity khỏi danh sách platform.
+- **Audit toàn bộ body skill** cho project-content khác ngoài 2 file A3 đã xác định → để pass neutrality
+  sau (gap-fill u2-min). A3 chỉ bó gọn đúng leak đã phát hiện trong phiên này.
 - **Topic B (multi-persona presets)** — spec riêng sau.
