@@ -11,6 +11,7 @@ from typing import List, Optional
 import yaml
 
 from cli.renderer import render_string
+from cli.renderer import _TEXT_EXTENSIONS as _RENDERED_SUFFIXES
 
 
 # Maps plugin source prefixes to actual directories in the AMAP repo.
@@ -175,10 +176,16 @@ def scaffold_plugins(
 
 
 def verify_no_unresolved(root: Path) -> List[Path]:
-    """Return text files under root that still contain an unresolved '{{ ' marker."""
+    """Return text files under root that still contain an unresolved '{{ ' marker.
+
+    Scans every extension the renderer actually renders (cli.renderer's
+    _TEXT_EXTENSIONS), not just the narrower single-file auto-render set,
+    so the safety gate can't miss a leftover marker in a rendered file type
+    (e.g. .py/.json/.sh) that copy_and_render_directory touched.
+    """
     offenders = []
     for path in root.rglob("*"):
-        if not path.is_file() or path.suffix.lower() not in _RENDERABLE_SUFFIXES:
+        if not path.is_file() or path.suffix.lower() not in _RENDERED_SUFFIXES:
             continue
         try:
             if "{{ " in path.read_text(encoding="utf-8"):

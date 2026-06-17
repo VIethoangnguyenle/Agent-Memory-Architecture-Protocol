@@ -10,6 +10,7 @@ from cli.scaffold import (
     get_ownership,
     resolve_source_path,
     scaffold_plugin,
+    verify_no_unresolved,
 )
 
 
@@ -110,3 +111,16 @@ def test_load_resolved_config_returns_none_when_resolved_not_dict(tmp_path):
 def test_load_resolved_config_returns_none_when_malformed_yaml(tmp_path):
     _write_resolved_config(tmp_path, "resolved:\n  - [unterminated\n")
     assert load_resolved_config(tmp_path) is None
+
+
+def test_verify_no_unresolved_flags_offending_py_file(tmp_path):
+    # .py is not in scaffold's single-file render allowlist, but the
+    # renderer's copy_and_render_directory does render .py files — so the
+    # safety gate must scan it too, or an unresolved marker in a rendered
+    # .py file would slip past verify_no_unresolved undetected.
+    offending = tmp_path / "hook.py"
+    offending.write_text("value = {{ tools.read_file }}\n", encoding="utf-8")
+
+    offenders = verify_no_unresolved(tmp_path)
+
+    assert offending in offenders
