@@ -141,22 +141,35 @@ Hệ thống quy tắc ngăn chặn các lỗi phổ biến của AI agent:
 
 ```bash
 # Clone protocol
-git clone https://github.com/VIethoangnguyenle/Agent-Memory-Architecture-Protocol.git
-cd Agent-Memory-Architecture-Protocol
+git clone https://github.com/VIethoangnguyenle/Agent-Memory-Architecture-Protocol.git amap
+cd amap
 
-# Cài CLI
-pip install -e .
-
-# Scaffold vào dự án — chọn platform và MCP
-amap init --target /path/to/your-project
+# Cài đặt + scaffold vào dự án trong một lệnh
+./install.sh /path/to/your-project
 ```
 
-CLI sẽ hỏi 3 câu:
+`install.sh` tự bootstrap virtualenv riêng (`.venv/`) cho CLI, không đụng tới
+môi trường Python của bạn. Sau đó nó hỏi 3 câu:
 1. **Platform** — Antigravity, Claude Code, Cursor, hoặc Generic
 2. **MCP servers** — Socraticode, Confluence, DB Remote (tuỳ chọn)
 3. **Ngôn ngữ** — Java, TypeScript, Python, Go...
 
-Sau đó tự động copy/render toàn bộ framework với tool names đã resolve cho platform.
+Rồi tự động copy/render toàn bộ framework với tool names đã resolve cho platform.
+
+**Cập nhật sau này** (bản AMAP mới, hoặc đổi IDE):
+
+```bash
+./install.sh /path/to/your-project          # refresh framework, giữ nguyên tuỳ biến của bạn
+
+# hoặc, từ repo amap, để đổi platform/MCP:
+.venv/bin/python -m cli.amap update --target /path/to/your-project --reconfigure
+```
+
+`install.sh` tự nhận diện dự án đã có AMAP (qua `.agent/resolved-config.yaml`)
+và route sang `update` thay vì `init` — chạy lại cùng một lệnh là an toàn.
+File framework (skills, workflows, rules) được re-render mỗi lần update; file
+của bạn trong `.knowledge-layer/long-term/` và `.knowledge-layer/active/`
+không bao giờ bị ghi đè.
 
 ### 2. Tuỳ chỉnh persona (tuỳ chọn)
 
@@ -221,7 +234,7 @@ AMAP dùng CLI để resolve tool names tại thời điểm `amap init`. Khi ch
 | **Confluence** | Wiki/document search | Dự án có tài liệu trên Confluence |
 | **DB Remote** | Database schema exploration (read-only) | Dự án có DB cần khám phá |
 
-Nếu thêm/bớt MCP sau này: chạy lại `amap init` để re-scaffold.
+Nếu thêm/bớt MCP sau này: chạy `.venv/bin/python -m cli.amap update --target /path/to/your-project --reconfigure` (từ repo amap) để re-scaffold mà không mất tuỳ biến hiện có.
 
 ---
 
