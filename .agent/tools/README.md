@@ -21,5 +21,22 @@ author-dna.yaml + conventions.yaml
 
 Chi tiết: [docs/specs/2026-06-17-sp1a-mechanical-enforcement-design.md](../../docs/specs/2026-06-17-sp1a-mechanical-enforcement-design.md)
 
+## microloop-orchestrator/ (SP1b — Coding Micro-loop + Extraction Review)
+
+Viết lại Pha 3 thành vòng lặp subagent tuần tự context-sạch + extraction review (HP-10/11).
+Lõi portable: **contract trung lập trên filesystem** + 3 execution tier; orchestrator
+platform-agnostic, chỉ `dispatch` là điểm tier-specific.
+
+```
+tasks.md → topo-sort → TASK_QUEUE → per-task: TASK_HANDOFF → executor → mechanical gate (SP1a)
+   → semantic surface-check → mark done → next ; hết task → extraction review → EXTRACTION_REPORT
+```
+
+- **Tier** khai báo ở `.agent/profiles/execution-mode.yaml`: `subagent` (Claude) ·
+  `fresh-session` (Cursor/Antigravity) · `inline-reload` (fallback, luôn chạy được).
+- **Test**: `python3 -m pytest .agent/tools/microloop-orchestrator/tests/ -v`
+
+Chi tiết: [docs/specs/2026-06-17-sp1b-coding-microloop-design.md](../../docs/specs/2026-06-17-sp1b-coding-microloop-design.md)
+
 ## adapters/ — reserved cho SP3 (tool-capability adapter)
 ## profiles/ — reserved cho SP4 (per-framework setup profile)
