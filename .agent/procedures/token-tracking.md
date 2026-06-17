@@ -51,7 +51,7 @@ Tracking token usage **theo pha** (Pha 1 / Pha 2 / Pha 3) để:
 - Input tokens: {n}
 - Output tokens: {n}
 - Tổng: {n}
-- Files đọc: AGENTS.md ({n} tokens), RULES.md ({n} tokens), {n} SKILL.md files
+- Files đọc: {{ platform.config_entry_point }} ({n} tokens), RULES.md ({n} tokens), {n} SKILL.md files
 
 ### Pha 1 — Hiểu vấn đề
 - Bắt đầu: {timestamp}

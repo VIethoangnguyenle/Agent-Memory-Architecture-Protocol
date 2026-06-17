@@ -42,7 +42,7 @@ phase_state: bootstrapped
 ## Bootstrap Log
 
 - Bootstrap tại: <!-- timestamp -->
-- AGENTS.md: [ ] loaded
+- {{ platform.config_entry_point }}: [ ] loaded
 - RULES.md: [ ] loaded
 - Lịch sử pha: <!-- Bootstrap | <time> | Task: <input> -->
 
@@ -50,7 +50,7 @@ phase_state: bootstrapped
 
 ## Nguồn đã đọc
 
-- [ ] AGENTS.md
+- [ ] {{ platform.config_entry_point }}
 - [ ] .agent/rules/RULES.md
 - [ ] REQUIREMENT.md
 - [ ] EXPLORE_CONTEXT.md

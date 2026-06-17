@@ -11,7 +11,7 @@
 - **Ưu tiên**:
   1. Policy tổ chức / luật pháp (nếu có).
   2. Rules trong `RULES.md`.
-  3. Hướng dẫn trong `AGENTS.md`.
+  3. Hướng dẫn trong `{{ platform.config_entry_point }}`.
   4. Hướng dẫn trong từng `SKILL.md`.
   5. Chat trực tiếp với user.
 

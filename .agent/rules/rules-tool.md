@@ -77,7 +77,7 @@ Các tool MCP `agent-memory` chỉ là **lớp truy xuất phụ**.
 Chúng bổ sung — không bao giờ thay thế — Bootstrap Protocol, thứ tự ưu tiên context-loader P1→P4,
 hay `knowledge-snapshot.md` với tư cách nguồn sự thật chính thức.
 
-**Bootstrap PHẢI hoàn tất (§1 AGENTS.md) trước khi gọi bất kỳ memory tool nào.**
+**Bootstrap PHẢI hoàn tất (§1 {{ platform.config_entry_point }}) trước khi gọi bất kỳ memory tool nào.**
 
 #### Danh sách tool được phép
 

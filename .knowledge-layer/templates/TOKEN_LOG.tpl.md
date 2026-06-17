@@ -25,7 +25,7 @@
 - Input tokens: -
 - Output tokens: -
 - Tổng: -
-- Files đọc: <!-- AGENTS.md, RULES.md, n SKILL.md files... -->
+- Files đọc: <!-- {{ platform.config_entry_point }}, RULES.md, n SKILL.md files... -->
 
 ### Pha 1 — Hiểu vấn đề
 - Bắt đầu: <!-- timestamp -->

@@ -34,3 +34,22 @@ def test_init_aborts_on_unresolved_marker(tmp_path, amap_root, monkeypatch):
     assert not (target / "CLAUDE.md").exists()
     assert not (target / ".agent").exists()
 
+
+def test_init_templatizes_entry_point_references(tmp_path, amap_root, monkeypatch):
+    target = tmp_path / "proj"
+    _answers(monkeypatch, ["2", "1,2,3", "3", "y"])  # claude-code
+
+    run_init(target_dir=str(target), amap_root=str(amap_root))
+
+    entry = (target / "CLAUDE.md").read_text(encoding="utf-8")
+    assert "CLAUDE.md" in entry
+    assert "AGENTS.md" not in entry
+    assert "{{ " not in entry
+
+    rules = (target / ".agent" / "rules" / "RULES.md").read_text(encoding="utf-8")
+    assert "CLAUDE.md" in rules
+    assert "AGENTS.md" not in rules
+
+    boot = (target / ".agent" / "procedures" / "bootstrap.md").read_text(encoding="utf-8")
+    assert "AGENTS.md" not in boot
+

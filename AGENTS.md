@@ -1,4 +1,4 @@
-# AGENTS.md — Agent Memory Architecture Protocol  
+# {{ platform.config_entry_point }} — Agent Memory Architecture Protocol  
 > Version: 3.0 | Cập nhật: 2026-06
 
 Repo này được thiết kế cho flow nhiều bước:
@@ -15,7 +15,7 @@ Mọi agent khi làm việc trong repo này **phải tuân theo flow này**,
 ```txt
 project-root/
 │
-├── AGENTS.md                          ← Meta-prompt chính (file này) — đọc đầu tiên
+├── {{ platform.config_entry_point }}                          ← Meta-prompt chính (file này) — đọc đầu tiên
 │
 ├── .knowledge-layer/                  ← Memory Hierarchy (bộ nhớ phân tầng)
 │   ├── active/                        ← Working memory — context cho task đang xử lý
@@ -102,7 +102,7 @@ Khi bắt đầu **bất kỳ** cuộc trò chuyện nào trong project này, ag
 ### Bước 1 — Đọc core config
 
 ```txt
-READ: AGENTS.md (file này)
+READ: {{ platform.config_entry_point }} (file này)
 READ: .agent/rules/RULES.md              ← manifest — chỉ dẫn load 5 sub-files
 READ: .agent/rules/rules-flow.md         ← flow constraints
 READ: .agent/rules/rules-tool.md         ← tool permissions
@@ -161,7 +161,7 @@ Kèm theo report ngắn về trạng thái bootstrap:
 
 ```txt
 chồng yêu — Em đã load xong:
-✅ Core: AGENTS.md v{version} + RULES (manifest + 5 modules: flow, tool, exec, knowledge, guard)
+✅ Core: {{ platform.config_entry_point }} v{version} + RULES (manifest + 5 modules: flow, tool, exec, knowledge, guard)
 ✅ Skills: [requirement-analyst | spec-extract | db-explorer | codebase-explorer | architecture-reviewer | knowledge-curator | convention-intelligence-builder | author-dna-builder]
 ✅ Workflows: [/task | /idea-to-task | /index-source]
 🔌 Platform: <platform> | MCPs: [<danh sách MCP đã resolve>]
@@ -288,7 +288,7 @@ Sau mỗi pha quan trọng, agent phải cập nhật:
 
 Tối thiểu bao gồm:
 
-- **Nguồn đã đọc**: AGENTS.md, RULES.md, REQUIREMENT.md, EXPLORE_CONTEXT.md, knowledge-snapshot, tài liệu, codebase, database.
+- **Nguồn đã đọc**: {{ platform.config_entry_point }}, RULES.md, REQUIREMENT.md, EXPLORE_CONTEXT.md, knowledge-snapshot, tài liệu, codebase, database.
 - **Tool/skill đã gọi**: Danh sách có ✅/❌ kèm ghi chú (gọi thành công, không cần, bị chặn, thiếu permission…).
 - **Cảnh báo/hạn chế**: UA chưa chạy, thiếu quyền DB, tài liệu độ tin cậy thấp, context cũ chưa được refresh.
 - **Độ tin cậy tổng thể**: CAO / TRUNG BÌNH / THẤP + 1–2 câu lý do (ví dụ: “CAO vì requirement rõ, DB schema đã explore”, hoặc “THẤP vì thiếu spec gốc, chỉ suy luận từ PR”).
@@ -314,7 +314,7 @@ Khi một task hoàn thành (sau `/task apply` hoặc user đóng task):
 - **Không bịa.** Khi thiếu dữ liệu, phải nói rõ giả định hoặc hỏi thêm.
 - **Tôn trọng boundary kiến trúc.** Không đề xuất giải pháp phá vỡ kiến trúc trừ khi có lý do mạnh và đã chỉ ra trade-off.
 - **Luôn ưu tiên flow chuẩn**: Ideation → Requirement → Architecture → Spec → Apply.
-- **AGENTS.md là file sống**: Cập nhật khi flow/tool/convention thay đổi.
+- **{{ platform.config_entry_point }} là file sống**: Cập nhật khi flow/tool/convention thay đổi.
 - **Context Loader chạy đầu mỗi phiên**: Không dựa vào memory của phiên trước như source of truth.
 
 ---

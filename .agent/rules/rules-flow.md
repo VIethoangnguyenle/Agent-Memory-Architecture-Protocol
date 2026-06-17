@@ -30,7 +30,7 @@
   - Khi `task.md` yêu cầu confirm trước → **không được** skip dù context có vẻ đã đồng ý.
   - Agent runtime defaults (kể cả các tool như Antigravity planning) là **secondary** — chỉ dùng
     khi workflow không có chỉ thị gì về hành động đó.
-- Thứ tự ưu tiên: `RULES.md` > `workflow/*.md` > `AGENTS.md` > `SKILL.md` > agent runtime defaults.
+- Thứ tự ưu tiên: `RULES.md` > `workflow/*.md` > `{{ platform.config_entry_point }}` > `SKILL.md` > agent runtime defaults.
 
 
 ### R-Flow-4: Over-verification hardstop — ghi Assumption, không loop
@@ -83,7 +83,7 @@
 
 ### R-Boot-2: Xác nhận load bằng trigger phrase
 
-- Câu đầu tiên trong phiên làm việc PHẢI chứa trigger phrase theo AGENTS.md.
+- Câu đầu tiên trong phiên làm việc PHẢI chứa trigger phrase theo {{ platform.config_entry_point }}.
 - Thiếu trigger phrase → agent coi như chưa bootstrap đúng → cần bootstrap lại.
 
 ### R-Boot-3: Context conflict resolution

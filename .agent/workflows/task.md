@@ -29,7 +29,7 @@ Trước khi bắt đầu bất kỳ nhánh nào, luôn chạy bước bootstrap
 2. Tương tự cho `.knowledge-layer/active/EXPLORE_CONTEXT.md`.
 3. Reset `.knowledge-layer/active/AGENT_TRANSPARENCY.md`:
    - Ghi mới với task/ticket ID hiện tại.
-   - Đánh dấu `[x] AGENTS.md` và `[x] .agent/rules/RULES.md` nếu đã đọc.
+   - Đánh dấu `[x] {{ platform.config_entry_point }}` và `[x] .agent/rules/RULES.md` nếu đã đọc.
    - Ghi vào "Lịch sử pha": `Bootstrap | <thời điểm> | Task: <input>`.
 
 4. Tạo hoặc reset `.knowledge-layer/active/TOKEN_LOG.md`:

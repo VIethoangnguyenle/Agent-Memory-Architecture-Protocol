@@ -8,9 +8,9 @@
 ## PHASE 0 — Pre-flight
 
 ```
-CHECK AGENTS.md        → không có: ABORT "Repo chưa cấu hình Agent Memory Architecture."
+CHECK {{ platform.config_entry_point }}        → không có: ABORT "Repo chưa cấu hình Agent Memory Architecture."
 CHECK .agent/rules/RULES.md → không có: WARN, tiếp tục với guardrails mặc định
-READ: AGENTS.md
+READ: {{ platform.config_entry_point }}
 READ: .agent/rules/RULES.md              ← manifest + index
 READ: .agent/rules/rules-flow.md         ← flow constraints
 READ: .agent/rules/rules-tool.md         ← tool permissions
@@ -162,7 +162,7 @@ Format:
 
 ```
 {greeting} — Em đã load xong:
-✅ Core: AGENTS.md v{version} + RULES (manifest + 5 modules: flow, tool, exec, knowledge, guard)
+✅ Core: {{ platform.config_entry_point }} v{version} + RULES (manifest + 5 modules: flow, tool, exec, knowledge, guard)
 ✅ Skills ({n}): [list all discovered skill names]
 ✅ Workflows: /task (3 pha) | /idea-to-task | /index-source
 📋 Active: REQUIREMENT={active/empty} | EXPLORE_CONTEXT={active/empty} | Ideation={n} file
@@ -186,7 +186,7 @@ Format:
 Sau đó ghi vào `.knowledge-layer/active/AGENT_TRANSPARENCY.md` — section Bootstrap:
 
 ```
-- Timestamp, AGENTS.md [x], RULES.md [x], Skills loaded [list], Workflows [list]
+- Timestamp, {{ platform.config_entry_point }} [x], RULES.md [x], Skills loaded [list], Workflows [list]
 - Context state: {requirement/explore_context/snapshot status}
 - Warnings: {list}
 ```
@@ -197,7 +197,7 @@ Sau đó ghi vào `.knowledge-layer/active/AGENT_TRANSPARENCY.md` — section Bo
 
 | Tình huống | Hành động |
 |-----------|-----------|
-| AGENTS.md không tồn tại | ABORT |
+| {{ platform.config_entry_point }} không tồn tại | ABORT |
 | Skill file corrupt | SKIP + WARN |
 | active/ file không đọc được | WARN, treat as empty |
 | archive/ > 50 tickets | Chỉ đọc metadata 10 gần nhất |
