@@ -1,0 +1,118 @@
+# author-dna.yaml — VÍ DỤ THAM KHẢO (worked example)
+# Một author-dna ĐÃ ĐIỀN ĐẦY, mã hoá triết lý code kinh điển:
+# SOLID + Clean Code + Design Patterns (GoF).
+# Mục đích: cho thấy "skeleton rỗng → khi điền đầy trông thế nào".
+# ĐÂY KHÔNG phải DNA của dự án bạn — chạy `/dna-scan` để build DNA thật từ codebase.
+
+version: "1.1"
+
+meta:
+  author: "example"
+  interview_date: "2026-06-17"
+  approved_at: "2026-06-17"
+  scanned_by: "author-dna-builder"
+  status: approved
+  stats: {}
+  source_split: {}
+
+# SECTION 1: Hard Principles — agent KHÔNG đề xuất solution vi phạm.
+hard_principles:
+  HP-1:
+    name: "Single Responsibility (SRP)"
+    description: >
+      Mỗi class/method chỉ có một lý do để thay đổi. Tách concern: business
+      logic, persistence, presentation không trộn trong một unit.
+    agent_action: REJECT_AND_PROPOSE
+    confirmed: true
+    source: "Clean Code (R. Martin) · SOLID"
+    author_note: "Một unit — một trách nhiệm"
+    exemplar:
+      node_id: ""
+      file_path: ""
+      description: "SRP"
+    scope: all
+    exceptions: []
+  HP-2:
+    name: "Open/Closed (OCP)"
+    description: >
+      Mở để mở rộng, đóng để sửa đổi. Thêm hành vi mới bằng cách thêm code
+      (Strategy, polymorphism), không sửa code đang chạy ổn định.
+    agent_action: REJECT_AND_PROPOSE
+    confirmed: true
+    source: "SOLID"
+    author_note: "Mở rộng không sửa đổi"
+    exemplar:
+      node_id: ""
+      file_path: ""
+      description: "OCP"
+    scope: all
+    exceptions: []
+  HP-3:
+    name: "Liskov / Interface Segregation / Dependency Inversion"
+    description: >
+      Subtype thay thế được base (LSP); interface nhỏ chuyên biệt (ISP);
+      phụ thuộc abstraction chứ không phụ thuộc concrete (DIP).
+    agent_action: REJECT_AND_PROPOSE
+    confirmed: true
+    source: "SOLID"
+    author_note: "L-I-D của SOLID"
+    exemplar:
+      node_id: ""
+      file_path: ""
+      description: "LSP/ISP/DIP"
+    scope: all
+    exceptions: []
+  HP-4:
+    name: "Clean Code — hàm nhỏ, tên có ý nghĩa"
+    description: >
+      Hàm ngắn làm một việc; tên biểu đạt ý định; không side-effect ẩn;
+      tránh comment thừa bằng cách đặt tên tốt.
+    agent_action: REJECT_AND_PROPOSE
+    confirmed: true
+    source: "Clean Code (R. Martin)"
+    author_note: "Code đọc như văn xuôi"
+    exemplar:
+      node_id: ""
+      file_path: ""
+      description: "Clean Code"
+    scope: all
+    exceptions: []
+
+# SECTION 2: Style Preferences (Soft) — ưu tiên, không reject.
+style_preferences:
+  SP-1:
+    name: "Early return thay vì nesting sâu"
+    description: "Guard clause + early return để giữ nesting nông."
+    confirmed: true
+
+# SECTION 3: Creative Overrides — nơi chủ đích break convention.
+creative_overrides: {}
+
+# SECTION 4: Pattern Preferences — design pattern prefer cho từng use case.
+pattern_preferences:
+  PP-1:
+    use_case: "Nhiều thuật toán hoán đổi runtime"
+    pattern: "Strategy"
+    note: "Đóng gói mỗi thuật toán sau một interface chung (hỗ trợ OCP)."
+  PP-2:
+    use_case: "Khởi tạo object phức tạp / chọn implementation theo input"
+    pattern: "Factory Method / Abstract Factory"
+    note: "Tách logic khởi tạo khỏi business logic."
+  PP-3:
+    use_case: "Khung xử lý cố định, vài bước thay đổi"
+    pattern: "Template Method"
+    note: "Base định nghĩa skeleton; subclass override bước cụ thể."
+
+# SECTION 5: Complexity Thresholds
+complexity_thresholds:
+  max_nesting_depth: 2
+  max_method_branches: 4
+  max_lines_per_method: 40
+  early_return_required: true
+  confirmed: true
+
+# SECTION 6: Codebase Evidence Summary
+codebase_evidence_summary: {}
+
+# SECTION 7: Rejected Hypotheses Log
+rejected_hypotheses: {}
