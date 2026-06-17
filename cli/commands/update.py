@@ -10,12 +10,11 @@ import tempfile
 from pathlib import Path
 from typing import Optional
 
-import yaml
-
 from cli.platforms import get_platform
 from cli.renderer import create_renderer
 from cli.scaffold import (
     load_manifest,
+    load_resolved_config,
     scaffold_plugins,
     verify_no_unresolved,
     sync_tree,
@@ -23,20 +22,12 @@ from cli.scaffold import (
 )
 
 
-def _load_resolved(target: Path) -> Optional[dict]:
-    config_path = target / ".agent" / "resolved-config.yaml"
-    if not config_path.exists():
-        return None
-    with open(config_path, "r", encoding="utf-8") as f:
-        return (yaml.safe_load(f) or {}).get("resolved")
-
-
 def run_update(target_dir: str, amap_root: Optional[str] = None, reconfigure: bool = False) -> None:
     """Re-render framework files into an existing AMAP project."""
     target = Path(target_dir).resolve()
     amap = Path(amap_root).resolve() if amap_root else Path(__file__).resolve().parent.parent.parent
 
-    resolved = _load_resolved(target)
+    resolved = load_resolved_config(target)
     if resolved is None:
         print(f"\n  ❌ No AMAP installation found in {target}")
         print(f"     Run: amap init --target {target}")

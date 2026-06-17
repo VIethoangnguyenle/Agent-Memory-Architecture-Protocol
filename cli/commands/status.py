@@ -6,7 +6,7 @@ language, and installed skills/workflows.
 
 from pathlib import Path
 
-import yaml
+from cli.scaffold import load_resolved_config
 
 
 def run_status(target_dir: str) -> None:
@@ -15,7 +15,6 @@ def run_status(target_dir: str) -> None:
 
     # ─── Check for AMAP installation ───
     agents_md = target / "AGENTS.md"
-    config_path = target / ".agent" / "resolved-config.yaml"
 
     if not agents_md.exists():
         print(f"\n  ❌ No AMAP installation found in {target}")
@@ -27,11 +26,8 @@ def run_status(target_dir: str) -> None:
     print()
 
     # ─── Resolved config ───
-    if config_path.exists():
-        with open(config_path, "r", encoding="utf-8") as f:
-            config = yaml.safe_load(f)
-
-        resolved = config.get("resolved", {})
+    resolved = load_resolved_config(target)
+    if resolved is not None:
         platform = resolved.get("platform", "unknown")
         mcps = resolved.get("mcps", [])
         language = resolved.get("language", "unknown")

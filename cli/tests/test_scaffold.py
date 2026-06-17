@@ -5,6 +5,7 @@ from jinja2 import TemplateSyntaxError
 
 from cli.scaffold import (
     load_manifest,
+    load_resolved_config,
     has_capability,
     get_ownership,
     resolve_source_path,
@@ -70,3 +71,42 @@ def test_knowledge_dirs_are_user_owned(amap_root):
     assert get_ownership(by_name["knowledge-long-term"]) == "user"
     # Templates remain framework-managed.
     assert get_ownership(by_name["knowledge-templates"]) == "framework"
+
+
+def _write_resolved_config(target, content):
+    config_path = target / ".agent" / "resolved-config.yaml"
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+    config_path.write_text(content, encoding="utf-8")
+
+
+def test_load_resolved_config_returns_dict_when_valid(tmp_path):
+    _write_resolved_config(
+        tmp_path,
+        "resolved:\n  platform: claude-code\n  mcps: []\n  language: python\n",
+    )
+    resolved = load_resolved_config(tmp_path)
+    assert resolved == {"platform": "claude-code", "mcps": [], "language": "python"}
+
+
+def test_load_resolved_config_returns_none_when_missing(tmp_path):
+    assert load_resolved_config(tmp_path) is None
+
+
+def test_load_resolved_config_returns_none_when_empty(tmp_path):
+    _write_resolved_config(tmp_path, "")
+    assert load_resolved_config(tmp_path) is None
+
+
+def test_load_resolved_config_returns_none_when_only_comment(tmp_path):
+    _write_resolved_config(tmp_path, "# just a comment\n")
+    assert load_resolved_config(tmp_path) is None
+
+
+def test_load_resolved_config_returns_none_when_resolved_not_dict(tmp_path):
+    _write_resolved_config(tmp_path, "resolved: 3\n")
+    assert load_resolved_config(tmp_path) is None
+
+
+def test_load_resolved_config_returns_none_when_malformed_yaml(tmp_path):
+    _write_resolved_config(tmp_path, "resolved:\n  - [unterminated\n")
+    assert load_resolved_config(tmp_path) is None

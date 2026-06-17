@@ -6,7 +6,7 @@ Used by both `amap init` (writes directly to target) and `amap update`
 
 import shutil
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 import yaml
 
@@ -76,6 +76,22 @@ def generate_resolved_config(
             }},
             f, default_flow_style=False, allow_unicode=True,
         )
+
+
+def load_resolved_config(target: Path) -> Optional[dict]:
+    """Load .agent/resolved-config.yaml's 'resolved' section, or None if missing/invalid."""
+    config_path = target / ".agent" / "resolved-config.yaml"
+    if not config_path.exists():
+        return None
+    try:
+        with open(config_path, "r", encoding="utf-8") as f:
+            data = yaml.safe_load(f)
+    except yaml.YAMLError:
+        return None
+    resolved = (data or {}).get("resolved")
+    if not isinstance(resolved, dict):
+        return None
+    return resolved
 
 
 def scaffold_plugin(
