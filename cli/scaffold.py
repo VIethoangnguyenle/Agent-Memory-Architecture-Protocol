@@ -6,7 +6,7 @@ Used by both `amap init` (writes directly to target) and `amap update`
 
 import shutil
 from pathlib import Path
-from typing import Dict, List
+from typing import List
 
 import yaml
 
