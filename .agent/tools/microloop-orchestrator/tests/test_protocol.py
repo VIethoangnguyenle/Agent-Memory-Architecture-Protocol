@@ -83,5 +83,39 @@ def test_make_gate_fn_maps_runner_output():
     gate_ok = orchestrator.make_gate_fn(ok_runner)
     gate_bad = orchestrator.make_gate_fn(bad_runner)
     files = [{"path": "X.java"}]
-    assert gate_ok(files) == "PASS"
-    assert gate_bad(files) == "FAIL"
+    # SP1c: make_gate_fn returns dict with status + violations
+    assert gate_ok(files) == {"status": "PASS", "violations": []}
+    assert gate_bad(files) == {"status": "FAIL", "violations": []}
+
+
+def test_make_gate_fn_with_parse_fn():
+    """SP1c: parse_fn extracts violations from linter output."""
+    def runner(changed_files):
+        return (1, "HP-6:Val.java:12:depth 2")
+    def parser(raw):
+        parts = raw.split(":")
+        return [{"rule": parts[0], "file": parts[1], "line": int(parts[2]), "message": parts[3]}]
+    gate = orchestrator.make_gate_fn(runner, parse_fn=parser)
+    result = gate([{"path": "Val.java"}])
+    assert result["status"] == "FAIL"
+    assert len(result["violations"]) == 1
+    assert result["violations"][0]["rule"] == "HP-6"
+
+
+def test_apply_result_stores_gate_history():
+    """SP1c: apply_result records gate_history per-attempt."""
+    q = {"ticket_id": "X", "spec_path": "p", "execution_mode": "inline-reload",
+         "tasks": [{"id": "T1", "desc": "d", "depends_on": [], "status": "pending", "retries": 0}]}
+    # First call: FAIL with violations (dict format)
+    orchestrator.apply_result(q, "T1", {"status": "FAIL", "violations": [
+        {"rule": "HP-6", "file": "A.java", "line": 1, "message": "bad"}
+    ]}, max_retries=2)
+    t1 = q["tasks"][0]
+    assert len(t1["gate_history"]) == 1
+    assert t1["gate_history"][0]["violations"][0]["rule"] == "HP-6"
+    # Second call: PASS (string format — backward compat)
+    orchestrator.apply_result(q, "T1", "PASS", max_retries=2)
+    assert len(t1["gate_history"]) == 2
+    assert t1["gate_history"][1]["status"] == "PASS"
+    assert t1["gate_history"][1]["violations"] == []
+    assert t1["status"] == "done"

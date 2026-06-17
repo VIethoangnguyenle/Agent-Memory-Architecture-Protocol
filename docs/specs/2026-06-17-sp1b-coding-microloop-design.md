@@ -75,7 +75,7 @@ Code Agent-tool chỉ là MỘT adapter trong 3 tier, ngang hàng với fresh-se
   [phần semantic]  ruleset (SP1a, derived)               │ slice
         │            │                                    ▼
         │      ┌──── ORCHESTRATOR (task.md Pha 3) ──── topo-sort task (base trước)
-        │      │              │ tuần tự
+        │      │              │ tuần tự`                        
         ▼      ▼              ▼
    [3] CODING MICRO-LOOP (mỗi task = 1 executor context sạch)
         │  TASK_HANDOFF = DNA slice + spec slice + snapshot slice + 1 task + tóm tắt file đã ghi

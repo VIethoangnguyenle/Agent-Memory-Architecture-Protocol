@@ -69,11 +69,31 @@ def next_task(queue):
     return None
 
 
-def apply_result(queue, task_id, gate_status, max_retries=2):
-    """Mutate queue per gate outcome. PASS->done; FAIL->retry; FAIL over budget->blocked."""
+def apply_result(queue, task_id, gate_result, max_retries=2):
+    """Mutate queue per gate outcome. PASS->done; FAIL->retry; FAIL over budget->blocked.
+
+    gate_result: str ('PASS'/'FAIL') for backward compat, or dict
+    {'status': 'PASS'|'FAIL', 'violations': [...]} from enriched gate (SP1c).
+    Stores gate_history per-attempt for outcome loop."""
     t = next((t for t in queue["tasks"] if t["id"] == task_id), None)
     if t is None:
         raise ValueError(f"task {task_id} not in queue")
+
+    # Backward-compatible: accept string or dict
+    if isinstance(gate_result, str):
+        gate_status = gate_result
+        violations = []
+    else:
+        gate_status = gate_result["status"]
+        violations = gate_result.get("violations", [])
+
+    # Record gate history per-attempt (SP1c outcome loop)
+    t.setdefault("gate_history", []).append({
+        "attempt": t.get("retries", 0),
+        "status": gate_status,
+        "violations": violations,
+    })
+
     if gate_status == "PASS":
         t["status"] = "done"
         return queue
@@ -86,22 +106,28 @@ def apply_result(queue, task_id, gate_status, max_retries=2):
     return queue
 
 
-def make_gate_fn(runner):
-    """Adapt a (changed_files)->(exit_code, output) runner into gate_fn->'PASS'|'FAIL'.
+def make_gate_fn(runner, parse_fn=None):
+    """Adapt a (changed_files)->(exit_code, output) runner into enriched gate_fn.
 
-    The real runner shells out to the SP1a mechanical gate (checkstyle on the generated
-    ruleset). Injected so the protocol is testable without Java."""
+    Returns dict {'status': 'PASS'|'FAIL', 'violations': [...]}.
+    parse_fn: optional (raw_output) -> list[{rule, file, line, message}].
+    If None, violations is always []. Injected so backend-specific parsing
+    (Checkstyle, ESLint, Ruff) is decoupled from the protocol."""
     def gate_fn(changed_files):
-        exit_code, _output = runner(changed_files)
-        return "PASS" if exit_code == 0 else "FAIL"
+        exit_code, output = runner(changed_files)
+        status = "PASS" if exit_code == 0 else "FAIL"
+        violations = parse_fn(output) if parse_fn else []
+        return {"status": status, "violations": violations}
     return gate_fn
 
 
 def run_loop(queue, dispatch_fn, gate_fn, max_retries=2):
-    """Drive the micro-loop. dispatch_fn(task)->changed_files; gate_fn(changed_files)->'PASS'|'FAIL'.
+    """Drive the micro-loop. dispatch_fn(task)->changed_files;
+    gate_fn(changed_files)->dict{'status','violations'} or str 'PASS'|'FAIL'.
 
     Pure protocol: no knowledge of tiers or the real gate — both injected. This is
     what makes the loop platform-agnostic and unit-testable (portability gate).
+    gate_history is accumulated in each task for SP1c outcome loop.
     """
     while True:
         t = next_task(queue)
@@ -109,7 +135,7 @@ def run_loop(queue, dispatch_fn, gate_fn, max_retries=2):
             return queue
         t["status"] = "in_progress"  # resumable marker before dispatch
         changed_files = dispatch_fn(t)
-        gate_status = gate_fn(changed_files)
-        apply_result(queue, t["id"], gate_status, max_retries=max_retries)
+        gate_result = gate_fn(changed_files)
+        apply_result(queue, t["id"], gate_result, max_retries=max_retries)
         if t["status"] == "blocked":
             return queue
