@@ -35,7 +35,16 @@ Skill này là **quality gate** — không sinh spec, không sửa code.
 
 ---
 
-## 3. Các hàm chính
+## Khi nào KHÔNG sử dụng
+
+- Khi cần sinh spec mới (→ openspec-propose).
+- Khi cần review kiến trúc (→ architecture-reviewer).
+- Khi cần chuẩn hoá yêu cầu (→ requirement-analyst).
+- Khi chưa có REQUIREMENT.md — chạy requirement-analyst trước.
+
+---
+
+## 3. Quy trình
 
 ### 3.1 `pre_apply_gate(spec_path, requirement_path)`
 
@@ -184,6 +193,15 @@ Ghi sau mỗi lần chạy:
 - **[G2] C6 gate cần design contract**: C6 (Contract Alignment check) chỉ chạy khi REQUIREMENT.md có section "Design Contract" hoặc "Interface Specification". Nếu không có → C6 skip silently, ghi note trong output.
 - **[G3] Pre-apply vs Post-apply output format**: Pre-apply gate trả `PASS | BLOCK` (binary). Post-apply verify trả `OK | issues list`. Không nhầm 2 format khi parse kết quả.
 - **[G4] AC coverage false positive**: Nếu Acceptance Criteria quá generic (e.g. "Hệ thống hoạt động đúng"), coverage check sẽ trả 100% nhưng thực tế chưa verify gì. Agent phải WARN khi phát hiện AC quá mơ hồ.
+
+---
+
+## Đầu ra
+
+- **Kết quả pre-apply gate**: `PASS` hoặc `BLOCK` — quyết định có được apply hay không.
+- **Báo cáo AC coverage**: `{n_covered}/{n_total}` AC được cover.
+- **Kết quả post-apply verify**: `OK` hoặc danh sách mismatch.
+- **Cập nhật**: `.knowledge-layer/active/AGENT_TRANSPARENCY.md` — ghi lại kết quả mỗi lần chạy.
 
 ---
 

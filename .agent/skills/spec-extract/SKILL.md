@@ -41,6 +41,15 @@ Không dùng `spec-extract` cho:
 
 ---
 
+## Khi nào KHÔNG sử dụng
+
+- Khi ticket có sẵn đã rõ scope (→ requirement-analyst).
+- Khi cần ideation/brainstorm ý tưởng thô (→ openspec-explore).
+- Khi cần khám phá DB schema, constraint (→ db-explorer).
+- Khi cần sinh spec kỹ thuật chi tiết cho implementation (→ openspec-propose).
+
+---
+
 ## 3. Input / Output
 
 ### Input

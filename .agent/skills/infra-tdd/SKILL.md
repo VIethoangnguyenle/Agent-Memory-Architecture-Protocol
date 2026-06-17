@@ -4,7 +4,7 @@ version: '1.0'
 description: >
   Xây dựng Technical Design Document (TDD) chuẩn hoá theo 5 tầng hybrid:
   Bối cảnh Nghiệp vụ, Chiến lược, Kiến trúc, Quyết định, và Vận hành.
-  Đối tượng: Trưởng phòng, Tech Leads, Architect. BẮT BUỘC dùng knowledge tools để viết dựa trên evidence.
+  Dùng khi cần thiết kế, viết hoặc review TDD / Design Doc / RFC / ADR cho module infrastructure.
   KHÔNG dùng cho: README/how-to/runbook (→ document-writer),
   spec OpenSpec (→ openspec-propose), review kiến trúc (→ architecture-reviewer).
 license: MIT
@@ -17,9 +17,17 @@ metadata:
 
 # Skill Viết Technical Design Document (TDD) cho Infrastructure
 
-## Khi nào kích hoạt Skill này
+## Mục tiêu
 
-Kích hoạt skill khi user yêu cầu:
+- Tạo Technical Design Document (TDD) chuẩn hoá, trả lời được 5 câu hỏi cốt lõi về nghiệp vụ, chiến lược, kiến trúc, quyết định thiết kế, và vận hành.
+- Đảm bảo tài liệu có thể đọc được bởi cả non-tech (T0) và tech (T1–T4).
+- Mọi claim trong TDD phải dựa trên evidence thực tế từ codebase, database, hoặc knowledge graph.
+
+---
+
+## Khi nào sử dụng
+
+Kích hoạt skill khi:
 
 - Thiết kế hoặc viết **TDD / Technical Design Document / Design Doc / RFC** cho module infrastructure hoặc platform
 - Chuẩn hoá cách đội viết design document
@@ -29,6 +37,15 @@ Kích hoạt skill khi user yêu cầu:
 - Chạy Socratic deep-dive trên quyết định kỹ thuật để lộ các giả định ẩn
 
 Trigger: `/tdd <module-name>`, "viết TDD", "thiết kế module", "design doc cho service", "ADR cho lựa chọn DB", "sơ đồ kiến trúc", "RFC hạ tầng", "chuẩn hoá tài liệu thiết kế".
+
+---
+
+## Khi nào KHÔNG sử dụng
+
+- Khi cần viết README, how-to, runbook (→ document-writer).
+- Khi cần sinh spec kỹ thuật OpenSpec (→ openspec-propose).
+- Khi cần review kiến trúc, đánh giá rủi ro (→ architecture-reviewer).
+- Khi cần chuẩn hoá requirement (→ requirement-analyst).
 
 ## Triết lý cốt lõi
 
@@ -119,7 +136,7 @@ Nếu một MCP tool không khả dụng:
 
 ---
 
-## Workflow
+## Quy trình
 
 Tuân thủ workflow theo thứ tự. **KHÔNG bỏ qua Socratic deep-dive** — đó là thứ phân biệt design doc thật với wiki page.
 
@@ -225,12 +242,12 @@ Sau khi TDD hoàn thành:
 
 ---
 
-## Quy ước Output
+## Đầu ra
 
-- **Ngôn ngữ**: Tiếng Việt. Thuật ngữ kỹ thuật giữ tiếng Anh (SLO, ADR, C4, Kafka, Redis, gRPC...).
-- **Format**: Markdown.
 - **Vị trí TDD**: `docs/tdd/<module>-TDD.md`
 - **Vị trí ADR**: `docs/tdd/<module>-adr/NNNN-title.md`
+- **Ngôn ngữ**: Tiếng Việt. Thuật ngữ kỹ thuật giữ tiếng Anh (SLO, ADR, C4, Kafka, Redis, gRPC...).
+- **Định dạng**: Markdown.
 
 ## Format Standards
 

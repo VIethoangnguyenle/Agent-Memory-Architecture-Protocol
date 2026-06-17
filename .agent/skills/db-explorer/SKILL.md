@@ -52,6 +52,16 @@ Dùng `db-explorer` khi:
 
 ---
 
+## Khi nào KHÔNG sử dụng
+
+- Khi cần khám phá code/module, dependency (→ codebase-explorer).
+- Khi cần review kiến trúc tổng thể, phát hiện xung đột (→ architecture-reviewer).
+- Khi cần viết tài liệu kỹ thuật (→ document-writer).
+- Khi cần sinh spec kỹ thuật chi tiết (→ openspec-propose).
+- Khi không có REQUIREMENT.md chuẩn hoá — chạy requirement-analyst trước.
+
+---
+
 ## 3. Input
 
 - `.knowledge-layer/active/REQUIREMENT.md`:

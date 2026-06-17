@@ -83,7 +83,10 @@ project-root/
 │   │   ├── context-loader.md         ← Logic định vị file theo priority
 │   │   ├── context-compressor.md     ← Nén context khi vượt budget
 │   │   └── token-tracking.md         ← Protocol tracking token usage theo pha
-│   ├── tools/                        ← Reserved cho SP1 (custom tool definitions)
+│   ├── tools/                        ← Công cụ hỗ trợ (SP1+SP2)
+│   │   ├── skill-lint/               ← Skill schema validator (SP2)
+│   │   │   ├── validate_skills.py
+│   │   │   └── tests/
 │   │   └── README.md
 │   ├── adapters/                     ← Reserved cho SP3 (adapter layer)
 │   │   └── README.md
@@ -260,15 +263,20 @@ Có **3 nhóm command** phân biệt — agent cần nhận diện đúng nhóm 
 | `codebase-explorer`          | Code Mapper — map REQUIREMENT → module/file          | Sau db-explorer         |
 | `architecture-reviewer`      | Arch Reviewer — phát hiện xung đột, rủi ro           | Trước `/task spec`      |
 | `knowledge-curator`          | Knowledge Manager — archive, rotate, snapshot       | Sau `/task apply` hoàn thành |
-| `convention-intelligence-builder` | Convention Scanner — extract naming + architecture patterns từ UA/Socraticode | Onboard project mới, sau refactor lớn |
-| `author-dna-builder`              | DNA Builder — infer coding philosophy, interview tác giả, encode judgment layer | `/dna-scan`, sau convention-scan |
-| `spec-validator`                  | Spec Validator — pre-apply gate, AC coverage check, post-apply verify          | Trước và sau `/task apply` |
-| `infra-tdd`                       | TDD Builder — 5-layer Hybrid TDD (T0 nghiệp vụ + T1-T4 kỹ thuật)               | Khi arch có impact hạ tầng (M5 trigger từ architecture-reviewer) |
+| `convention-intelligence-builder` | Convention Scanner — extract naming + architecture patterns | Onboard project mới, sau refactor lớn |
+| `author-dna-builder`              | DNA Builder — infer coding philosophy, encode judgment layer | `/dna-scan`, sau convention-scan |
+| `spec-validator`                  | Spec Validator — pre-apply gate, AC coverage check          | Trước và sau `/task apply` |
+| `infra-tdd`                       | TDD Builder — 5-layer Hybrid TDD (T0–T4)               | Khi arch có impact hạ tầng |
+| `document-writer`                 | Doc Writer — tạo/cập nhật tài liệu kỹ thuật             | Khi cần README, overview, ADR, runbook |
+| `openspec-explore`                | Thinking Partner — brainstorm, khám phá ý tưởng         | `/opsx:explore`, ý tưởng mơ hồ |
+| `openspec-propose`                | Spec Generator — sinh change proposal + artifacts       | `/opsx:propose`, sau Pha 1 |
+| `openspec-archive-change`         | Archive Manager — lưu trữ change đã hoàn thành          | Sau `/opsx:apply` hoàn tất |
 
 **Nguyên tắc:**
 
 - Chọn skill đúng vai trò, không gộp nhiều vai trò vào một skill.
 - Ưu tiên đi qua `/task` để orchestrate thay vì gọi skill rời rạc.
+- Mọi SKILL.md tuân theo **Hybrid Schema SP2** (§15 trong rules-knowledge.md) — validate bằng `python3 .agent/tools/skill-lint/validate_skills.py`.
 
 ---
 

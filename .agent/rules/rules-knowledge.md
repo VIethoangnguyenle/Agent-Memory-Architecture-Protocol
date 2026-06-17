@@ -99,3 +99,39 @@ Agent infrastructure (skills, workflows, scripts, rules) nằm ở `.agent/`.
   Khác với token overhead (có thể detect), staleness không có warning tự nhiên.
 
 ---
+
+## 15. Skill Schema Standard (SP2)
+
+### R-Skill-1: Mọi SKILL.md phải tuân theo Hybrid Schema
+
+Mỗi file `SKILL.md` trong `.agent/skills/*/` **PHẢI** có:
+
+**Frontmatter (YAML)**:
+- `name` (kebab-case, unique)
+- `version` (format `X.Y`)
+- `description` (≥ 20 ký tự, chứa trigger keyword `Dùng khi` hoặc `Use when`)
+- `pre_conditions` (tuỳ chọn — nếu có phải đúng cấu trúc)
+- `outputs` (tuỳ chọn — nếu có phải đúng cấu trúc)
+
+**Body Sections (5 heading bắt buộc)**:
+- `## Mục tiêu` — Skill này giải quyết vấn đề gì
+- `## Khi nào sử dụng` — Trigger conditions
+- `## Khi nào KHÔNG sử dụng` — Anti-patterns, trỏ sang skill phù hợp
+- `## Quy trình` — Các bước thực hiện
+- `## Đầu ra` — Artifacts/files được tạo hoặc cập nhật
+
+### R-Skill-2: Lint gate bắt buộc trước khi merge skill mới/sửa
+
+- Khi tạo skill mới hoặc sửa `SKILL.md`, **PHẢI** chạy lint trước khi commit:
+  ```
+  python3 .agent/tools/skill-lint/validate_skills.py
+  ```
+- Kết quả phải là `PASS` cho skill đó. `FAIL` = không được merge.
+- Spec doc: `docs/specs/2026-06-17-sp2-skill-standardization-design.md`
+
+### R-Skill-3: Anti-pattern section phải routing chính xác
+
+- Mỗi bullet trong `## Khi nào KHÔNG sử dụng` phải trỏ sang đúng skill thay thế bằng ký hiệu `(→ skill-name)`.
+- Không được liệt kê anti-pattern mà không chỉ rõ alternative.
+
+---

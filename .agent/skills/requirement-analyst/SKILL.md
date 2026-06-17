@@ -51,6 +51,15 @@ Không dùng skill này để:
 
 ---
 
+## Khi nào KHÔNG sử dụng
+
+- Khi ý tưởng còn thô, chưa thành ticket rõ ràng (→ openspec-explore).
+- Khi cần extract từ wiki/Confluence dài nhiều trang (→ spec-extract).
+- Khi cần review kiến trúc hoặc đánh giá rủi ro (→ architecture-reviewer).
+- Khi cần sinh spec kỹ thuật chi tiết (→ openspec-propose).
+
+---
+
 ## 3. Input
 
 Nguồn thông tin mà skill có thể dùng:

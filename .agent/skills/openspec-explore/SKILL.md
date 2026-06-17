@@ -22,6 +22,30 @@ Enter explore mode. Think deeply. Visualize freely. Follow the conversation wher
 
 ---
 
+## Mục tiêu
+
+- Làm đối tác tư duy, giúp người dùng khám phá ý tưởng, điều tra vấn đề, và làm rõ yêu cầu trước khi bắt tay vào giải pháp.
+- Cung cấp không gian tư duy tự do — không ràng buộc bước cố định, không bắt buộc đầu ra.
+
+---
+
+## Khi nào sử dụng
+
+- Khi người dùng muốn brainstorm, suy nghĩ sâu về một vấn đề trước khi tạo change proposal.
+- Khi ý tưởng còn mơ hồ và cần được khám phá đa chiều.
+- Khi đang giữa implementation và gặp vấn đề cần suy nghĩ lại thiết kế.
+
+---
+
+## Khi nào KHÔNG sử dụng
+
+- Khi yêu cầu đã rõ ràng và cần chuẩn hoá (→ requirement-analyst).
+- Khi cần sinh spec/artifacts kỹ thuật (→ openspec-propose).
+- Khi cần review kiến trúc (→ architecture-reviewer).
+- Khi cần viết code hoặc implement feature — thoát explore mode trước.
+
+---
+
 ## The Stance
 
 - **Curious, not prescriptive** - Ask questions that emerge naturally, don't follow a script
@@ -33,9 +57,9 @@ Enter explore mode. Think deeply. Visualize freely. Follow the conversation wher
 
 ---
 
-## What You Might Do
+## Quy trình
 
-Depending on what the user brings, you might:
+Không có quy trình cố định — đây là chế độ tư duy tự do. Tùy theo người dùng mang đến gì, có thể:
 
 **Explore the problem space**
 - Ask clarifying questions that emerge from what they said
@@ -287,6 +311,14 @@ When it feels like things are crystallizing, you might summarize:
 ```
 
 But this summary is optional. Sometimes the thinking IS the value.
+
+---
+
+## Đầu ra
+
+- **Không bắt buộc**: Explore mode không yêu cầu đầu ra cụ thể.
+- **Tuỳ chọn**: Có thể tạo summary, cập nhật design.md, hoặc chuyển sang change proposal nếu sẵn sàng.
+- **Giá trị chính**: Sự rõ ràng trong tư duy, không nhất thiết là artifact.
 
 ---
 

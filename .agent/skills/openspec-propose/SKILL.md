@@ -35,6 +35,32 @@ When ready to implement, run /opsx:apply
 
 ---
 
+## Mục tiêu
+
+- Tạo change proposal hoàn chỉnh với đầy đủ artifacts (proposal, design, tasks) trong một bước duy nhất.
+- Chuyển yêu cầu của người dùng thành kế hoạch implementation sẵn sàng apply.
+
+---
+
+## Khi nào sử dụng
+
+- Khi người dùng muốn mô tả nhanh những gì họ muốn xây và nhận được proposal hoàn chỉnh.
+- Sau khi đã hoàn thành Pha 1 (requirement + explore) trong `/task`.
+- Khi cần sinh spec kỹ thuật cho một thay đổi cụ thể.
+
+---
+
+## Khi nào KHÔNG sử dụng
+
+- Khi cần brainstorm, khám phá ý tưởng (→ openspec-explore).
+- Khi cần validate spec đã có (→ spec-validator).
+- Khi cần viết TDD 5 tầng (→ infra-tdd).
+- Khi cần review kiến trúc (→ architecture-reviewer).
+
+---
+
+## Quy trình
+
 **Input**: The user's request should include a change name (kebab-case) OR a description of what they want to build.
 
 **Steps**
@@ -113,7 +139,7 @@ When ready to implement, run /opsx:apply
    openspec status --change "<name>"
    ```
 
-**Output**
+## Đầu ra
 
 After completing all artifacts, summarize:
 - Change name and location

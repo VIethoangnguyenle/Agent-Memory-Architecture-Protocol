@@ -32,6 +32,16 @@ Kích hoạt `knowledge-curator` khi:
 
 ---
 
+## Khi nào KHÔNG sử dụng
+
+- Khi cần review kiến trúc, đánh giá rủi ro (→ architecture-reviewer).
+- Khi cần sinh hoặc validate spec (→ openspec-propose, spec-validator).
+- Khi cần viết tài liệu kỹ thuật (→ document-writer).
+- Khi cần chuẩn hoá requirement (→ requirement-analyst).
+- Khi task chưa hoàn thành và chưa sẵn sàng archive.
+
+---
+
 ## 3. Các hàm chính
 
 ### 3.1 `archive_active_context(ticket_id, status="completed")`
@@ -242,6 +252,15 @@ STEPS:
      c. XOÁ thư mục archive/{ticket_id}/
 3. REPORT: "Rotated {n} old tickets to ARCHIVE_LOG.md. Keeping {keep_n} most recent."
 ```
+
+---
+
+## Đầu ra
+
+- **Thư mục archive**: `.knowledge-layer/archive/{ticket-id}/` — context task đã hoàn thành.
+- **Cập nhật**: `.knowledge-layer/long-term/knowledge-snapshot.md` — phát hiện mới từ task.
+- **Reset**: `.knowledge-layer/active/` — về template skeleton sẵn sàng task mới.
+- **Log**: `.knowledge-layer/active/AGENT_TRANSPARENCY.md` — ghi lại hành động archive.
 
 ---
 

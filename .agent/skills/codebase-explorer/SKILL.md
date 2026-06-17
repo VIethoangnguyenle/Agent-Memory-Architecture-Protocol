@@ -55,6 +55,16 @@ Agent không được tự ý bỏ qua KG tools chỉ vì grep/search cho cảm 
 
 ---
 
+## Khi nào KHÔNG sử dụng
+
+- Khi cần khám phá DB schema, constraint, trigger (→ db-explorer).
+- Khi cần review kiến trúc, phát hiện xung đột, đánh giá rủi ro (→ architecture-reviewer).
+- Khi cần sinh spec kỹ thuật chi tiết (→ openspec-propose).
+- Khi chưa có REQUIREMENT.md chuẩn hoá — chạy requirement-analyst trước.
+- Khi chỉ cần viết tài liệu mà không cần khám phá code (→ document-writer).
+
+---
+
 ## 3. Input
 
 - `.knowledge-layer/active/REQUIREMENT.md`

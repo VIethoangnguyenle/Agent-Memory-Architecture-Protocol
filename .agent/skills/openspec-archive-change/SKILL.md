@@ -15,6 +15,33 @@ metadata:
 
 Archive a completed change in the experimental workflow.
 
+---
+
+## Mục tiêu
+
+- Lưu trữ một change đã hoàn thành vào thư mục archive theo định dạng chuẩn.
+- Đồng bộ trạng thái với knowledge-layer thông qua knowledge-curator.
+
+---
+
+## Khi nào sử dụng
+
+- Sau khi implementation hoàn tất và người dùng muốn đóng change.
+- Khi tất cả artifacts và tasks đã được hoàn thành (hoặc người dùng xác nhận bỏ qua).
+
+---
+
+## Khi nào KHÔNG sử dụng
+
+- Khi cần archive knowledge-layer context (→ knowledge-curator).
+- Khi cần post-apply review/validation (→ spec-validator).
+- Khi change chưa được implement — chạy `/opsx:apply` trước.
+- Khi cần sinh spec mới (→ openspec-propose).
+
+---
+
+## Quy trình
+
 **Input**: Optionally specify a change name. If omitted, check if it can be inferred from conversation context. If vague or ambiguous you MUST prompt for available changes.
 
 **Steps**
@@ -95,7 +122,7 @@ Archive a completed change in the experimental workflow.
    - Whether specs were synced (if applicable)
    - Note about any warnings (incomplete artifacts/tasks)
 
-**Output On Success**
+## Đầu ra
 
 ```
 ## Archive Complete

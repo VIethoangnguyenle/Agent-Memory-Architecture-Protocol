@@ -39,9 +39,14 @@ Agent chỉ được kết luận sau khi tác giả xác nhận. Mọi inferenc
 - `author-dna.yaml` chưa tồn tại hoặc `status: stale`.
 - Sau khi codebase có thay đổi kiến trúc lớn.
 
-Không dùng khi:
-- Đang ở giữa Pha 2 hoặc Pha 3 của một task cụ thể.
-- Chỉ muốn tra cứu DNA (đọc `author-dna.yaml` trực tiếp).
+---
+
+## Khi nào KHÔNG sử dụng
+
+- Khi đang ở giữa Pha 2 hoặc Pha 3 của một task cụ thể.
+- Khi chỉ muốn tra cứu DNA — đọc `author-dna.yaml` trực tiếp.
+- Khi cần scan convention (→ convention-intelligence-builder).
+- Khi cần review kiến trúc (→ architecture-reviewer).
 
 ---
 
@@ -248,6 +253,14 @@ Rejected hypothesis log ngăn agent re-infer cùng sai lầm.
 Tự động gợi ý re-validation khi DNA stale (>90 ngày hoặc 2+ refactor tasks).
 
 > **Chi tiết đầy đủ (usage, rescan, L5)**: Xem [references/dna-usage-guide.md](references/dna-usage-guide.md)
+
+---
+
+## Đầu ra
+
+- **File chính**: `.knowledge-layer/long-term/author-dna.draft.yaml` — bản nháp DNA chờ user review.
+- **Sau `/approve-dna`**: `.knowledge-layer/long-term/author-dna.yaml` — bản chính thức (approved).
+- **Cập nhật**: `.knowledge-layer/active/AGENT_TRANSPARENCY.md` — ghi lại kết quả scan + interview.
 
 ---
 

@@ -26,7 +26,7 @@
 | `rules/rules-flow.md` | Flow bắt buộc, Spec/Apply, Bootstrap | §2, §6, §11 |
 | `rules/rules-tool.md` | Quyền MCP & tool | §3 |
 | `rules/rules-exec.md` | Data, Architecture, Cost, Observability | §4, §5, §7, §8 |
-| `rules/rules-knowledge.md` | Knowledge Lifecycle, Path Convention, Conventions | §10, §12, §13 |
+| `rules/rules-knowledge.md` | Knowledge Lifecycle, Path Convention, Conventions, Skill Schema | §10, §12, §13, §15 |
 | `rules/rules-guard.md` | Pre-invoke Guards, R-DNA-7, R-KI-1 | §14 |
 
 > §9 (Path Convention Deprecated) đã bị xoá — xem §12 thay thế.

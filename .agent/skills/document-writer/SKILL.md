@@ -4,7 +4,7 @@ version: '1.0'
 description: >
   Khung chuẩn để tạo mới hoặc cập nhật tài liệu kỹ thuật cho nhiều loại tài liệu:
   README, overview, architecture/design doc, how-to, runbook, ADR, và tài liệu module hạ tầng.
-  Tập trung vào tính đúng đắn, tính hữu ích, giải thích bối cảnh và quyết định thiết kế.
+  Dùng khi cần tạo, viết lại, hoặc cập nhật tài liệu kỹ thuật trong dự án.
   KHÔNG dùng cho: viết TDD 5 tầng (→ infra-tdd), sinh spec OpenSpec (→ openspec-propose),
   chuẩn hoá requirement (→ requirement-analyst).
 ---
@@ -31,6 +31,21 @@ Tạo ra tài liệu:
 - tránh lan man, tránh lặp lại, tránh bịa đặt
 
 ## Giai đoạn 1: Xác định loại tài liệu
+
+---
+
+## Khi nào KHÔNG sử dụng
+
+- Khi cần viết TDD 5 tầng (→ infra-tdd).
+- Khi cần sinh spec kỹ thuật OpenSpec (→ openspec-propose).
+- Khi cần chuẩn hoá requirement (→ requirement-analyst).
+- Khi cần review kiến trúc, đánh giá rủi ro (→ architecture-reviewer).
+
+---
+
+## Quy trình
+
+### Giai đoạn 1: Xác định loại tài liệu
 
 Trước khi viết, agent PHẢI xác định loại tài liệu cần tạo/cập nhật:
 
@@ -159,6 +174,14 @@ Trước khi hoàn tất, agent PHẢI kiểm tra:
 > Tài liệu tốt không phải là tài liệu dài nhất; đó là tài liệu đúng, ngắn gọn, cập nhật, và giúp người đọc hành động đúng.
 
 > Ghi nhận công sức khi phù hợp, đặc biệt với các module nền tảng hoặc quyết định kiến trúc quan trọng; nhưng luôn giữ văn phong tiết chế, chuyên nghiệp.
+
+---
+
+## Đầu ra
+
+- **File tài liệu**: Vị trí tuỳ loại (`README.md`, `docs/`, `docs/tdd/`, v.v.).
+- **Định dạng**: Markdown, tiếng Việt, theo cấu trúc chuẩn của loại tài liệu tương ứng.
+- **Chất lượng**: Đã qua validation 5 điểm (Giai đoạn 8) trước khi hoàn tất.
 ## Gold Standard Reference
 
 > Bộ tài liệu `dvnh-common/docs/vi` (9 chương) được coi là **gold standard** cho format tài liệu kỹ thuật.

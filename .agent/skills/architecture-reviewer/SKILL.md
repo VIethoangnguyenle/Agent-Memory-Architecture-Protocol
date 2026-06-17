@@ -49,10 +49,15 @@ Kích hoạt `architecture-reviewer` khi:
   - Dùng OpenSpec `/opsx:propose` để viết spec chi tiết.
   - Giao task cho implementation (dev/agent bắt đầu chỉnh code).
 
-Không dùng skill này:
+---
 
-- Như công cụ refactor code chi tiết.
+## Khi nào KHÔNG sử dụng
+
+- Như công cụ refactor code chi tiết — dùng codebase-explorer hoặc apply trực tiếp.
 - Để thay thế quyết định kiến trúc cấp tổ chức (EA, tiêu chuẩn global).
+- Khi chưa có REQUIREMENT.md — chạy requirement-analyst trước.
+- Khi chỉ cần khám phá code/module chi tiết (→ codebase-explorer).
+- Khi cần validate spec đã sinh (→ spec-validator).
 
 ---
 

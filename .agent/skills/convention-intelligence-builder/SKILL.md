@@ -31,9 +31,15 @@ Trigger skill này khi:
 - User cảm thấy agent đang đề xuất tên class/file không khớp với convention thực tế.
 - `conventions.yaml` chưa tồn tại hoặc `status: stale` trong metadata.
 
-Không dùng khi:
-- Chỉ muốn tra cứu convention (đọc `conventions.yaml` trực tiếp).
-- Task đang ở Pha 2/3 — không nên scan convention giữa chừng spec.
+---
+
+## Khi nào KHÔNG sử dụng
+
+- Khi chỉ muốn tra cứu convention — đọc `conventions.yaml` trực tiếp.
+- Khi task đang ở Pha 2/3 — không nên scan convention giữa chừng spec.
+- Khi cần viết convention thủ công (→ edit trực tiếp conventions.yaml).
+- Khi cần review kiến trúc/rủi ro (→ architecture-reviewer).
+- Khi cần infer coding philosophy (→ author-dna-builder).
 
 ---
 
@@ -131,6 +137,14 @@ Validate draft → Cross-check với snapshot → Promote to approved → Update
 Scan chỉ files changed since last scan. Fallback to full scan nếu >20% files thay đổi.
 
 > **Chi tiết đầy đủ (re-scan, usage, delta algorithm)**: Xem [references/rescan-usage-guide.md](references/rescan-usage-guide.md)
+
+---
+
+## Đầu ra
+
+- **File chính**: `.knowledge-layer/long-term/conventions.draft.yaml` — bản nháp chờ user review.
+- **Sau `/approve-conventions`**: `.knowledge-layer/long-term/conventions.yaml` — bản chính thức (approved).
+- **Cập nhật**: `.knowledge-layer/active/AGENT_TRANSPARENCY.md` — ghi lại kết quả scan.
 
 ---
 
