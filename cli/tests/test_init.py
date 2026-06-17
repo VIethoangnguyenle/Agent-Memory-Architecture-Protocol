@@ -32,7 +32,7 @@ def test_init_aborts_on_unresolved_marker(tmp_path, amap_root, monkeypatch):
 
     # Aborted before syncing — target was never written.
     assert not (target / "CLAUDE.md").exists()
-    assert not (target / ".agent").exists()
+    assert not (target / ".amap").exists()
 
 
 def test_init_templatizes_entry_point_references(tmp_path, amap_root, monkeypatch):
@@ -46,11 +46,11 @@ def test_init_templatizes_entry_point_references(tmp_path, amap_root, monkeypatc
     assert "AGENTS.md" not in entry
     assert "{{ " not in entry
 
-    rules = (target / ".agent" / "rules" / "RULES.md").read_text(encoding="utf-8")
+    rules = (target / ".amap" / "rules" / "RULES.md").read_text(encoding="utf-8")
     assert "CLAUDE.md" in rules
     assert "AGENTS.md" not in rules
 
-    boot = (target / ".agent" / "procedures" / "bootstrap.md").read_text(encoding="utf-8")
+    boot = (target / ".amap" / "procedures" / "bootstrap.md").read_text(encoding="utf-8")
     assert "AGENTS.md" not in boot
 
 

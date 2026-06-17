@@ -52,7 +52,7 @@ def run_status(target_dir: str) -> None:
         print(f"     Run: amap init --target {target}")
 
     # ─── Skills ───
-    skills_dir = target / ".agent" / "skills"
+    skills_dir = target / ".amap" / "skills"
     if skills_dir.is_dir():
         skills = sorted([d.name for d in skills_dir.iterdir() if d.is_dir()])
         print(f"\n  🧠 Skills ({len(skills)}):")
@@ -60,7 +60,7 @@ def run_status(target_dir: str) -> None:
             print(f"     • {s}")
 
     # ─── Workflows ───
-    workflows_dir = target / ".agent" / "workflows"
+    workflows_dir = target / ".amap" / "workflows"
     if workflows_dir.is_dir():
         wfs = sorted([f.stem for f in workflows_dir.iterdir() if f.is_file() and f.suffix == ".md"])
         print(f"\n  📋 Workflows ({len(wfs)}):")
@@ -68,8 +68,8 @@ def run_status(target_dir: str) -> None:
             print(f"     • /{w}")
 
     # ─── Knowledge layer ───
-    kl_active = target / ".knowledge-layer" / "active"
-    kl_archive = target / ".knowledge-layer" / "archive"
+    kl_active = target / ".amap/knowledge" / "active"
+    kl_archive = target / ".amap/knowledge" / "archive"
 
     if kl_active.is_dir():
         req = kl_active / "REQUIREMENT.md"
@@ -81,8 +81,8 @@ def run_status(target_dir: str) -> None:
         print(f"  📦 Archive: {len(tickets)} tickets")
 
     # ─── Author DNA ───
-    dna = target / ".knowledge-layer" / "long-term" / "author-dna.yaml"
-    dna_draft = target / ".knowledge-layer" / "long-term" / "author-dna.draft.yaml"
+    dna = target / ".amap/knowledge" / "long-term" / "author-dna.yaml"
+    dna_draft = target / ".amap/knowledge" / "long-term" / "author-dna.draft.yaml"
     if dna.exists():
         print(f"  🧬 Author DNA: approved")
     elif dna_draft.exists():

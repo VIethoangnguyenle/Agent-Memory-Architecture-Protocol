@@ -1,0 +1,12 @@
+# Declares the active micro-loop execution tier for THIS platform.
+# The ONLY place platform-specifics live. Change one line to retarget.
+#   subagent      → Claude Code (Agent tool, full isolation)
+#   fresh-session → Cursor / Antigravity (new session per task)
+#   inline-reload → fallback single-session (LCD; always works)
+execution_mode: inline-reload
+max_retries: 2
+gate:
+  # Path to the SP1a generated ruleset at the target project.
+  checkstyle_xml: ".amap/tools/rule-projector/generated/checkstyle.generated.xml"
+  # Command template; {xml} and {files} are substituted. Empty in AMAP repo (no Java).
+  command: "checkstyle -c {xml} {files}"

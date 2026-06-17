@@ -34,7 +34,7 @@ def test_has_capability(amap_root):
 
 def test_resolve_source_path_maps_skills(amap_root):
     p = resolve_source_path(amap_root, "skills/codebase-explorer/")
-    assert p == amap_root / ".agent/skills/codebase-explorer/"
+    assert p == amap_root / ".amap/skills/codebase-explorer/"
 
 
 def test_scaffold_plugin_renders_template_source(tmp_path, jinja_env, claude_context):
@@ -75,7 +75,7 @@ def test_knowledge_dirs_are_user_owned(amap_root):
 
 
 def _write_resolved_config(target, content):
-    config_path = target / ".agent" / "resolved-config.yaml"
+    config_path = target / ".amap" / "resolved-config.yaml"
     config_path.parent.mkdir(parents=True, exist_ok=True)
     config_path.write_text(content, encoding="utf-8")
 

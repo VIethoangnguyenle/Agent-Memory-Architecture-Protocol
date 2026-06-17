@@ -58,58 +58,58 @@ plugins:
     type: rule
     source: rules/RULES.md
     template: false
-    output: .agent/rules/RULES.md
+    output: .amap/rules/RULES.md
 
   - name: rules-flow
     type: rule
     source: rules/rules-flow.md
     template: false
-    output: .agent/rules/rules-flow.md
+    output: .amap/rules/rules-flow.md
 
   - name: rules-tool
     type: rule
     source: rules/rules-tool.md
     template: false
-    output: .agent/rules/rules-tool.md
+    output: .amap/rules/rules-tool.md
 
   - name: rules-exec
     type: rule
     source: rules/rules-exec.md
     template: false
-    output: .agent/rules/rules-exec.md
+    output: .amap/rules/rules-exec.md
 
   - name: rules-knowledge
     type: rule
     source: rules/rules-knowledge.md
     template: false
-    output: .agent/rules/rules-knowledge.md
+    output: .amap/rules/rules-knowledge.md
 
   - name: rules-guard
     type: rule
     source: rules/rules-guard.md
     template: false
-    output: .agent/rules/rules-guard.md
+    output: .amap/rules/rules-guard.md
 
   # ─── SKILLS ───
   - name: requirement-analyst
     type: skill
     source: skills/requirement-analyst/
     template: false
-    output: .agent/skills/requirement-analyst/
+    output: .amap/skills/requirement-analyst/
     copy_dir: true
 
   - name: spec-extract
     type: skill
     source: skills/spec-extract/
     template: false
-    output: .agent/skills/spec-extract/
+    output: .amap/skills/spec-extract/
     copy_dir: true
 
   - name: db-explorer
     type: skill
     source: skills/db-explorer/
     template: false
-    output: .agent/skills/db-explorer/
+    output: .amap/skills/db-explorer/
     copy_dir: true
     requires_capability: db_access
 
@@ -117,7 +117,7 @@ plugins:
     type: skill
     source: skills/codebase-explorer/
     template: false
-    output: .agent/skills/codebase-explorer/
+    output: .amap/skills/codebase-explorer/
     copy_dir: true
     requires_capability: code_exploration
 
@@ -125,70 +125,70 @@ plugins:
     type: skill
     source: skills/architecture-reviewer/
     template: false
-    output: .agent/skills/architecture-reviewer/
+    output: .amap/skills/architecture-reviewer/
     copy_dir: true
 
   - name: knowledge-curator
     type: skill
     source: skills/knowledge-curator/
     template: false
-    output: .agent/skills/knowledge-curator/
+    output: .amap/skills/knowledge-curator/
     copy_dir: true
 
   - name: convention-intelligence-builder
     type: skill
     source: skills/convention-intelligence-builder/
     template: false
-    output: .agent/skills/convention-intelligence-builder/
+    output: .amap/skills/convention-intelligence-builder/
     copy_dir: true
 
   - name: author-dna-builder
     type: skill
     source: skills/author-dna-builder/
     template: false
-    output: .agent/skills/author-dna-builder/
+    output: .amap/skills/author-dna-builder/
     copy_dir: true
 
   - name: spec-validator
     type: skill
     source: skills/spec-validator/
     template: false
-    output: .agent/skills/spec-validator/
+    output: .amap/skills/spec-validator/
     copy_dir: true
 
   - name: document-writer
     type: skill
     source: skills/document-writer/
     template: false
-    output: .agent/skills/document-writer/
+    output: .amap/skills/document-writer/
     copy_dir: true
 
   - name: infra-tdd
     type: skill
     source: skills/infra-tdd/
     template: false
-    output: .agent/skills/infra-tdd/
+    output: .amap/skills/infra-tdd/
     copy_dir: true
 
   - name: openspec-explore
     type: skill
     source: skills/openspec-explore/
     template: false
-    output: .agent/skills/openspec-explore/
+    output: .amap/skills/openspec-explore/
     copy_dir: true
 
   - name: openspec-propose
     type: skill
     source: skills/openspec-propose/
     template: false
-    output: .agent/skills/openspec-propose/
+    output: .amap/skills/openspec-propose/
     copy_dir: true
 
   - name: openspec-archive-change
     type: skill
     source: skills/openspec-archive-change/
     template: false
-    output: .agent/skills/openspec-archive-change/
+    output: .amap/skills/openspec-archive-change/
     copy_dir: true
 
   # ─── WORKFLOWS ───
@@ -196,114 +196,114 @@ plugins:
     type: workflow
     source: workflows/task.md
     template: false
-    output: .agent/workflows/task.md
+    output: .amap/workflows/task.md
 
   - name: workflow-idea-to-task
     type: workflow
     source: workflows/idea-to-task.md
     template: false
-    output: .agent/workflows/idea-to-task.md
+    output: .amap/workflows/idea-to-task.md
 
   - name: workflow-index-source
     type: workflow
     source: workflows/index-source.md
     template: false
-    output: .agent/workflows/index-source.md
+    output: .amap/workflows/index-source.md
     requires_capability: code_exploration
 
   - name: workflow-opsx-explore
     type: workflow
     source: workflows/opsx-explore.md
     template: false
-    output: .agent/workflows/opsx-explore.md
+    output: .amap/workflows/opsx-explore.md
 
   - name: workflow-opsx-propose
     type: workflow
     source: workflows/opsx-propose.md
     template: false
-    output: .agent/workflows/opsx-propose.md
+    output: .amap/workflows/opsx-propose.md
 
   - name: workflow-opsx-apply
     type: workflow
     source: workflows/opsx-apply.md
     template: false
-    output: .agent/workflows/opsx-apply.md
+    output: .amap/workflows/opsx-apply.md
 
   - name: workflow-opsx-archive
     type: workflow
     source: workflows/opsx-archive.md
     template: false
-    output: .agent/workflows/opsx-archive.md
+    output: .amap/workflows/opsx-archive.md
 
   - name: workflow-approve-conventions
     type: workflow
     source: workflows/approve-conventions.md
     template: false
-    output: .agent/workflows/approve-conventions.md
+    output: .amap/workflows/approve-conventions.md
 
   - name: workflow-tdd
     type: workflow
     source: workflows/tdd.md
     template: false
-    output: .agent/workflows/tdd.md
+    output: .amap/workflows/tdd.md
 
   # ─── PROCEDURES ───
   - name: bootstrap
     type: procedure
     source: procedures/bootstrap.md
     template: false
-    output: .agent/procedures/bootstrap.md
+    output: .amap/procedures/bootstrap.md
 
   - name: context-loader
     type: procedure
     source: procedures/context-loader.md
     template: false
-    output: .agent/procedures/context-loader.md
+    output: .amap/procedures/context-loader.md
 
   - name: context-compressor
     type: procedure
     source: procedures/context-compressor.md
     template: false
-    output: .agent/procedures/context-compressor.md
+    output: .amap/procedures/context-compressor.md
 
   - name: token-tracking
     type: procedure
     source: procedures/token-tracking.md
     template: false
-    output: .agent/procedures/token-tracking.md
+    output: .amap/procedures/token-tracking.md
 
   - name: executor
     type: procedure
     source: procedures/executor.md
     template: false
-    output: .agent/procedures/executor.md
+    output: .amap/procedures/executor.md
 
   - name: reviewer
     type: procedure
     source: procedures/reviewer.md
     template: false
-    output: .agent/procedures/reviewer.md
+    output: .amap/procedures/reviewer.md
 
   # ─── TOOLS ───
   - name: rule-projector
     type: tool
     source: tools/rule-projector/
     template: false
-    output: .agent/tools/rule-projector/
+    output: .amap/tools/rule-projector/
     copy_dir: true
 
   - name: microloop-orchestrator
     type: tool
     source: tools/microloop-orchestrator/
     template: false
-    output: .agent/tools/microloop-orchestrator/
+    output: .amap/tools/microloop-orchestrator/
     copy_dir: true
 
   - name: skill-lint
     type: tool
     source: tools/skill-lint/
     template: false
-    output: .agent/tools/skill-lint/
+    output: .amap/tools/skill-lint/
     copy_dir: true
 
   # ─── KNOWLEDGE LAYER TEMPLATES ───
@@ -311,14 +311,14 @@ plugins:
     type: template
     source: knowledge-templates/
     template: false
-    output: .knowledge-layer/templates/
+    output: .amap/knowledge/templates/
     copy_dir: true
 
   - name: knowledge-active-skeleton
     type: template
     source: knowledge-active/
     template: false
-    output: .knowledge-layer/active/
+    output: .amap/knowledge/active/
     copy_dir: true
     ownership: user
 
@@ -326,6 +326,6 @@ plugins:
     type: template
     source: knowledge-long-term/
     template: false
-    output: .knowledge-layer/long-term/
+    output: .amap/knowledge/long-term/
     copy_dir: true
     ownership: user

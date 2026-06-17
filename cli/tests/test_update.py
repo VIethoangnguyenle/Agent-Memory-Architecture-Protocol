@@ -20,9 +20,9 @@ def test_update_preserves_user_file_rerenders_framework(tmp_path, amap_root, mon
     _init_claude(target, amap_root, monkeypatch)
 
     # User edits a user-owned file and a framework file.
-    persona = target / ".knowledge-layer" / "long-term" / "persona.yaml"
+    persona = target / ".amap/knowledge" / "long-term" / "persona.yaml"
     persona.write_text("MY CUSTOM PERSONA\n", encoding="utf-8")
-    skill = target / ".agent" / "skills" / "codebase-explorer" / "SKILL.md"
+    skill = target / ".amap" / "skills" / "codebase-explorer" / "SKILL.md"
     skill.write_text("user tampered\n", encoding="utf-8")
 
     run_update(target_dir=str(target), amap_root=str(amap_root))
@@ -47,10 +47,10 @@ def test_reconfigure_switches_platform_keeps_user_files(tmp_path, amap_root, mon
     target = tmp_path / "proj"
     _init_claude(target, amap_root, monkeypatch)
 
-    persona = target / ".knowledge-layer" / "long-term" / "persona.yaml"
+    persona = target / ".amap/knowledge" / "long-term" / "persona.yaml"
     persona.write_text("KEEP ME\n", encoding="utf-8")
 
-    skill = target / ".agent" / "skills" / "codebase-explorer" / "SKILL.md"
+    skill = target / ".amap" / "skills" / "codebase-explorer" / "SKILL.md"
     assert "mcp__socraticode__codebase_search" in skill.read_text(encoding="utf-8")
 
     # Reconfigure to antigravity (platform=1), MCPs=1,2,3, language=3.
@@ -65,7 +65,7 @@ def test_reconfigure_switches_platform_keeps_user_files(tmp_path, amap_root, mon
     assert persona.read_text(encoding="utf-8") == "KEEP ME\n"
 
     # resolved-config now records antigravity.
-    cfg = (target / ".agent" / "resolved-config.yaml").read_text(encoding="utf-8")
+    cfg = (target / ".amap" / "resolved-config.yaml").read_text(encoding="utf-8")
     assert "antigravity" in cfg
 
 

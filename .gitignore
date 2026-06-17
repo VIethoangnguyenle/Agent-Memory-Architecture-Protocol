@@ -1,8 +1,8 @@
-.agent/tools/rule-projector/generated/*
-!.agent/tools/rule-projector/generated/.gitkeep
+.amap/tools/rule-projector/generated/*
+!.amap/tools/rule-projector/generated/.gitkeep
 __pycache__/
 *.pyc
 .venv
 
 # Per-dev: persona là phong cách tương tác riêng từng developer (seed từ persona.template.yaml)
-.knowledge-layer/long-term/persona.yaml
+.amap/knowledge/long-term/persona.yaml
