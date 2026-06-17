@@ -288,7 +288,8 @@ Mục tiêu: dùng OpenSpec để sinh **spec kỹ thuật** dựa trên REQUIRE
       > Session mới sẽ Bootstrap fresh — DNA/conventions ở top-of-mind khi code."
     - Nếu user tiếp tục trong cùng session:
       - Ghi WARN vào AGENT_TRANSPARENCY: `[SESSION-BOUNDARY] Tiếp tục cùng session sau Pha 2 — rủi ro Context Dilution khi code.`
-      - **Không block** — nhưng **BẮT BUỘC** chạy DNA-RELOAD (bước 2a trong Pha 3).
+      - **Không block** — micro-loop Pha 3 (SP1b) đã mang `dna_slice` vào context mỗi task qua
+        TASK_HANDOFF, nên rủi ro Context Dilution được khử ở tầng cấu trúc thay vì nghi thức reload.
 
 ---
 
@@ -305,23 +306,12 @@ Mục tiêu: dùng OpenSpec để áp dụng spec đã được chấp thuận v
    - “Spec này dự kiến sẽ chạm vào: …”
    - “Các loại thay đổi chính: …”
 
-2a. **[DNA-RELOAD — BẮT BUỘC]** Trước khi sinh bất kỳ đoạn code nào:
-    > Gate này chống Mode Switching — kéo DNA/conventions về recency window ngay trước khi code.
-    > Kết hợp với Session Boundary (Lớp 1) tạo "sandwich defense": rule ở đầu (bootstrap) + cuối (re-read) context.
-    - **READ**: `.knowledge-layer/long-term/author-dna.yaml`
-      - Focus: `hard_principles` (HP-1..HP-11) + `complexity_thresholds` + `style_preferences` liên quan
-    - **READ**: `.knowledge-layer/long-term/conventions.yaml` (nếu tồn tại, `status: approved`)
-    - Ghi checkpoint vào AGENT_TRANSPARENCY:
-      ```
-      [DNA-RELOAD] Re-read DNA + conventions trước Pha 3.
-      HP loaded: HP-1 (Chain of Responsibility), HP-2 (Template Method), HP-5 (Factory boundary),
-                 HP-6 (Zero nesting), HP-7 (No else), HP-8 (SOLID), HP-9 (Config-driven),
-                 HP-10 (Post-impl review), HP-11 (Bản chất nghiệp vụ)
-      Thresholds: max_nesting=1, max_method_branches=3, max_lines=30, early_return=required
-      Conventions: <loaded|not_found|draft_skipped>
-      ```
-    - **Nếu DNA-RELOAD chưa ghi** → R-Guard-2 checkpoint (đã có) sẽ reject từng artifact.
-      DNA-RELOAD là gate cho **TOÀN BỘ pha**, R-Guard-2 là gate cho **từng artifact**.
+2a. **[DNA-RELOAD — NGHỈ HƯU ở SP1b]** Nghi thức re-read DNA cho cả pha trước khi code đã được
+    thay bằng **cấu trúc**: micro-loop (bước 5) lắp `dna_slice` (HP liên quan + `complexity_thresholds`
+    + style liên quan) vào `TASK_HANDOFF` của **từng task**, nên DNA luôn ở recency window của executor
+    khi sinh code — đúng task, đúng lúc, không phụ thuộc agent tự nhớ reload.
+    > "Sandwich defense" vẫn còn nhưng đổi dạng: rule ở đầu (bootstrap) + rule trong handoff mỗi task (cấu trúc).
+    > R-Guard-2 (gate per-artifact) vẫn áp dụng cho executor; rule cơ học giờ do mechanical gate SP1a chặn deterministic.
 
 3. **[M1 — Spec Validation]** Chạy `spec-validator` trước khi apply:
    - Gọi `spec-validator.pre_apply_gate(spec_path, requirement_path)`:
@@ -333,10 +323,21 @@ Mục tiêu: dùng OpenSpec để áp dụng spec đã được chấp thuận v
 4. Hỏi **xác nhận cuối cùng**:
    - Nêu rõ đây là bước sẽ đề nghị thay đổi code theo spec.
    - Nếu user muốn, có thể giới hạn phạm vi (chỉ generate patch, không apply; hoặc chỉ apply một phần).
-5. Khi user đồng ý:
-   - Gọi lệnh apply của OpenSpec (tuỳ convention, ví dụ `/opsx:apply`):
-     - Tuân thủ mode an toàn nếu có (dry-run, diff-only, PR-only…).
-6. Sau khi apply:
+5. Khi user đồng ý — **Orchestrate micro-loop (SP1b)** (`.agent/tools/microloop-orchestrator/`):
+   a. topo-sort task của spec `tasks.md` (base class trước) → `.knowledge-layer/active/microloop/TASK_QUEUE.md`.
+   b. Đọc tier từ `.agent/profiles/execution-mode.yaml` (`subagent` | `fresh-session` | `inline-reload`).
+   c. Loop mỗi task tuần tự (state bền vững trong TASK_QUEUE — resume được nếu session bị cắt):
+      - Lắp `TASK_HANDOFF` = `dna_slice` + spec slice + snapshot slice + 1 task + tóm tắt file đã ghi.
+      - dispatch executor (`.agent/procedures/executor.md`) → executor đọc file cũ TỪ DISK, sinh code
+        CHỈ task này, ghi `TASK_RESULT`.
+      - **Mechanical gate (SP1a)** chạy ruleset trên file vừa ghi: FAIL → feedback executor fix (≤2 vòng);
+        vẫn FAIL → task `blocked`, dừng loop, hỏi user.
+      - PASS → **semantic surface-check** (spec-validator §6 phần semantic, trên DIFF 1 task) → mark `[x]`
+        task trong `tasks.md` + `TASK_QUEUE` done → task kế.
+   d. Hết task → **extraction review** (`.agent/procedures/reviewer.md`) trên TẤT CẢ file mới →
+      `EXTRACTION_REPORT` (HP-10/11 = FLAG_AND_WARN) → trình user quyết định refactor/archive.
+   - Tuân thủ mode an toàn nếu có (dry-run, diff-only, PR-only…).
+6. Sau khi micro-loop xong:
    - Chạy `spec-validator.post_apply_verify(spec_path, changed_files)` — ghi kết quả vào AGENT_TRANSPARENCY.
    - Nếu có diff/PR, thông báo lại link hoặc danh sách file thay đổi.
    - Đề nghị bước tiếp theo:
@@ -359,7 +360,8 @@ Mục tiêu: dùng OpenSpec để áp dụng spec đã được chấp thuận v
    - Tham chiếu protocol đầy đủ: `.agent/procedures/token-tracking.md`.
 
 8. **[POST-PHASE SELF-CHECK — Pha 3]** Trước khi gọi knowledge-curator archive:
-   - `[ ]` DNA-RELOAD checkpoint đã ghi vào AGENT_TRANSPARENCY (bước 2a).
+   - `[ ]` Micro-loop hoàn tất: mọi task trong `TASK_QUEUE` = `done` (không còn `pending`/`blocked`).
+   - `[ ]` Extraction review đã chạy, `EXTRACTION_REPORT` đã trình user.
    - `[ ]` Code changes / diff / PR đã được tóm tắt cho user.
    - `[ ]` AGENT_TRANSPARENCY.md có `phase_state: applying` → đã cập nhật thành `completed`.
    - `[ ]` TOKEN_LOG.md đã ghi TỔNG TASK.
