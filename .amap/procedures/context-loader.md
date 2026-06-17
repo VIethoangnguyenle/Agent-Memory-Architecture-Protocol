@@ -86,7 +86,7 @@ Nếu section không tìm thấy trong conventions.yaml → load toàn bộ file
 > 4. Nếu user chưa cleanup sau 2 phiên: nhắc lại mỗi bootstrap cho đến khi xử lý.
 >
 > **Không được** dùng nội dung từ KI file để code nếu nội dung đó mâu thuẫn với `.amap/knowledge/`.
-> Lý do: incident 2026-06-08 — KI `factory-rules.md` không có DNA judgment layer → agent sinh code sai pattern.
+> Lý do: KI external (vd một file `*-rules.md` do tool runtime sinh ra) thường không có DNA judgment layer → agent có thể sinh code sai pattern nếu dựa vào đó.
 
 ---
 
