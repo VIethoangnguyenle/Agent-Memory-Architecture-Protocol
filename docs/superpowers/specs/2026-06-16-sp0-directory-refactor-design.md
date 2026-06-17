@@ -2,7 +2,7 @@
 
 > Ngày: 2026-06-16 · Sub-project 0 của chương trình AMAP v4.
 > Phụ thuộc: không (đây là nền móng). Unblock: SP1, SP4.
-> Nguồn: phiên brainstorming 2026-06-16 ([AMAP-v3-assessment.md](../AMAP-v3-assessment.md)).
+> Nguồn: phiên brainstorming 2026-06-16 ([AMAP-v3-assessment.md](../../AMAP-v3-assessment.md)).
 
 ---
 

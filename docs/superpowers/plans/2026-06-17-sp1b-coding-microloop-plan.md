@@ -8,7 +8,7 @@
 
 **Tech Stack:** Python 3.12, pyyaml, jsonschema, pytest. Follows SP1a tool patterns (`.agent/tools/rule-projector/`): argparse CLI, dict-based data, `sys.path.insert` test imports, fixtures in `tests/fixtures/`.
 
-**Source spec:** [docs/specs/2026-06-17-sp1b-coding-microloop-design.md](../specs/2026-06-17-sp1b-coding-microloop-design.md)
+**Source spec:** [docs/superpowers/specs/2026-06-17-sp1b-coding-microloop-design.md](../specs/2026-06-17-sp1b-coding-microloop-design.md)
 
 ---
 

@@ -3,7 +3,7 @@
 > Ngày: 2026-06-17 · Sub-project 1b của chương trình AMAP v4 (Increment 2 trong assessment §6).
 > Phụ thuộc: SP1a (đã xong — mechanical gate là tầng dưới của loop), SP0 (`.agent/profiles/` reserved).
 > Unblock: SP1c (Qdrant index cho snapshot slice), SP2 (tool-capability adapter).
-> Nguồn: [AMAP-v3-assessment.md](../AMAP-v3-assessment.md) §3–7 + brainstorming 2026-06-17.
+> Nguồn: [AMAP-v3-assessment.md](../../AMAP-v3-assessment.md) §3–7 + brainstorming 2026-06-17.
 
 ---
 

@@ -8,7 +8,7 @@
 
 **Tech Stack:** Python 3.11+, PyYAML, jsonschema, pytest. Output consumed by Checkstyle (Java side).
 
-**Spec:** [docs/specs/2026-06-17-sp1a-mechanical-enforcement-design.md](../specs/2026-06-17-sp1a-mechanical-enforcement-design.md)
+**Spec:** [docs/superpowers/specs/2026-06-17-sp1a-mechanical-enforcement-design.md](../specs/2026-06-17-sp1a-mechanical-enforcement-design.md)
 
 ---
 
@@ -41,7 +41,7 @@ mkdir -p .agent/tools/rule-projector/backends .agent/tools/rule-projector/tests/
 cd .agent/tools/rule-projector
 touch __init__.py backends/__init__.py tests/__init__.py generated/.gitkeep tests/fixtures/.gitkeep
 printf 'pyyaml>=6.0\njsonschema>=4.0\npytest>=7.0\n' > requirements.txt
-printf '# rule-projector\n\nDNA + conventions → IR (neutral JSON) → checkstyle.generated.xml.\nSee docs/specs/2026-06-17-sp1a-mechanical-enforcement-design.md\n\nRun: `python projector.py --dna <path> --conventions <path> --out generated/`\nTest: `python -m pytest tests/ -v`\n' > README.md
+printf '# rule-projector\n\nDNA + conventions → IR (neutral JSON) → checkstyle.generated.xml.\nSee docs/superpowers/specs/2026-06-17-sp1a-mechanical-enforcement-design.md\n\nRun: `python projector.py --dna <path> --conventions <path> --out generated/`\nTest: `python -m pytest tests/ -v`\n' > README.md
 cd -
 ```
 

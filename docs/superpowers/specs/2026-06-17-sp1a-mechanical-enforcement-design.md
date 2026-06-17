@@ -3,7 +3,7 @@
 > Ngày: 2026-06-17 · Sub-project 1a của chương trình AMAP v4 (tách từ SP1).
 > Phụ thuộc: SP0 (đã xong — `.knowledge-layer/long-term/`, `.agent/tools/` reserved).
 > Unblock: SP1b (coding micro-loop dùng gate này làm tầng dưới).
-> Nguồn: brainstorming 2026-06-16/17 ([AMAP-v3-assessment.md](../AMAP-v3-assessment.md) §4).
+> Nguồn: brainstorming 2026-06-16/17 ([AMAP-v3-assessment.md](../../AMAP-v3-assessment.md) §4).
 
 ---
 
