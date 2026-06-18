@@ -7,6 +7,6 @@ execution_mode: inline-reload
 max_retries: 2
 gate:
   # Path to the SP1a generated ruleset at the target project.
-  checkstyle_xml: ".amap/tools/rule-projector/generated/checkstyle.generated.xml"
+  checkstyle_xml: "{{ platform.framework_root }}/tools/rule-projector/generated/checkstyle.generated.xml"
   # Command template; {xml} and {files} are substituted. Empty in AMAP repo (no Java).
   command: "checkstyle -c {xml} {files}"

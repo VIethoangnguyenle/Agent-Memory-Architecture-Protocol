@@ -12,9 +12,9 @@ Các chế độ sử dụng:
 - `/task spec <ticket-id-or-link>` → Pha 2: sinh spec (propose).
 - `/task apply <ticket-id>`        → Pha 3: apply spec vào code.
 
-Trước khi kết thúc mỗi pha quan trọng, hãy cập nhật `.amap/knowledge/active/AGENT_TRANSPARENCY.md`.
+Trước khi kết thúc mỗi pha quan trọng, hãy cập nhật `{{ platform.framework_root }}/knowledge/active/AGENT_TRANSPARENCY.md`.
 
-> **Path convention**: Tất cả file context tuân theo quy ước trong `.amap/rules/RULES.md` section "Path Convention".
+> **Path convention**: Tất cả file context tuân theo quy ước trong `{{ platform.framework_root }}/rules/RULES.md` section "Path Convention".
 
 ---
 
@@ -22,18 +22,18 @@ Trước khi kết thúc mỗi pha quan trọng, hãy cập nhật `.amap/knowle
 
 Trước khi bắt đầu bất kỳ nhánh nào, luôn chạy bước bootstrap:
 
-1. Kiểm tra `.amap/knowledge/active/REQUIREMENT.md`:
+1. Kiểm tra `{{ platform.framework_root }}/knowledge/active/REQUIREMENT.md`:
    - Nếu file có nội dung thật (không chỉ là template trống) → hỏi user:
      > "Active context đang có dữ liệu từ task trước. Reset cho task mới hay giữ lại?"
    - Nếu user chọn reset hoặc file là template trống → giữ nguyên skeleton.
-2. Tương tự cho `.amap/knowledge/active/EXPLORE_CONTEXT.md`.
-3. Reset `.amap/knowledge/active/AGENT_TRANSPARENCY.md`:
+2. Tương tự cho `{{ platform.framework_root }}/knowledge/active/EXPLORE_CONTEXT.md`.
+3. Reset `{{ platform.framework_root }}/knowledge/active/AGENT_TRANSPARENCY.md`:
    - Ghi mới với task/ticket ID hiện tại.
-   - Đánh dấu `[x] {{ platform.config_entry_point }}` và `[x] .amap/rules/RULES.md` nếu đã đọc.
+   - Đánh dấu `[x] {{ platform.config_entry_point }}` và `[x] {{ platform.framework_root }}/rules/RULES.md` nếu đã đọc.
    - Ghi vào "Lịch sử pha": `Bootstrap | <thời điểm> | Task: <input>`.
 
-4. Tạo hoặc reset `.amap/knowledge/active/TOKEN_LOG.md`:
-   - Nếu chưa tồn tại: tạo từ template `.amap/knowledge/templates/TOKEN_LOG.tpl.md`.
+4. Tạo hoặc reset `{{ platform.framework_root }}/knowledge/active/TOKEN_LOG.md`:
+   - Nếu chưa tồn tại: tạo từ template `{{ platform.framework_root }}/knowledge/templates/TOKEN_LOG.tpl.md`.
    - Điền: ticket-id (hoặc "unknown" nếu IDEA_ONLY), timestamp bắt đầu, model name (nếu biết).
    - Ghi bootstrap token estimate vào section "Bootstrap".
 
@@ -51,14 +51,14 @@ Từ giá trị `<ý-tưởng-hoặc-link>`, phân loại:
 
 Sau khi nhận diện:
 
-- Cập nhật `.amap/knowledge/active/AGENT_TRANSPARENCY.md` mục "Nguồn đã đọc" với loại input tương ứng.
+- Cập nhật `{{ platform.framework_root }}/knowledge/active/AGENT_TRANSPARENCY.md` mục "Nguồn đã đọc" với loại input tương ứng.
 - Ghi lại raw input (ý tưởng, link) để trace.
 
 ---
 
 ### 1.2 Nhánh IDEA_ONLY — Ideation
 
-1. Tạo file `ideation-*.md` trong `.amap/knowledge/active/ideation/` theo template:
+1. Tạo file `ideation-*.md` trong `{{ platform.framework_root }}/knowledge/active/ideation/` theo template:
    - Ghi:
      - Tóm tắt ý tưởng.
      - Động lực (tại sao muốn làm).
@@ -73,7 +73,7 @@ Sau khi nhận diện:
 4. Cập nhật lại `ideation-*.md` với:
    - Scope đề xuất.
    - AC đề xuất (chưa phải commit cuối cùng).
-5. Cập nhật `.amap/knowledge/active/AGENT_TRANSPARENCY.md`:
+5. Cập nhật `{{ platform.framework_root }}/knowledge/active/AGENT_TRANSPARENCY.md`:
    - Đánh dấu đã tạo/ cập nhật file ideation.
 6. Gợi ý user:
    - Tạo ticket chính thức (Jira/…).
@@ -84,11 +84,11 @@ Sau khi nhận diện:
 ### 1.3 Nhánh HAS_DOC_ONLY — Có tài liệu, chưa có ticket
 
 1. Gọi skill `spec-extract`:
-   - Trích nội dung có cấu trúc từ tài liệu vào `.amap/knowledge/active/REQUIREMENT.md`.
+   - Trích nội dung có cấu trúc từ tài liệu vào `{{ platform.framework_root }}/knowledge/active/REQUIREMENT.md`.
    - Ghi rõ nguồn tài liệu (URL, tên trang).
 2. Kiểm tra Độ tin cậy do `spec-extract` gán:
    - Nếu **THẤP**:
-     - Ghi cảnh báo vào `.amap/knowledge/active/AGENT_TRANSPARENCY.md`.
+     - Ghi cảnh báo vào `{{ platform.framework_root }}/knowledge/active/AGENT_TRANSPARENCY.md`.
      - Thông báo cho user rằng tài liệu chưa đủ tin cậy để đi tiếp (architecture/spec/implementation).
      - Dừng pipeline tại đây cho tới khi tài liệu được cập nhật.
    - Nếu **CAO/TRUNG BÌNH**:
@@ -103,13 +103,13 @@ Sau khi nhận diện:
 
 1. Gọi `requirement-analyst`:
    - Đọc toàn bộ ticket + tài liệu liên kết.
-   - Chuẩn hoá `.amap/knowledge/active/REQUIREMENT.md` với context, As-is/To-be, scope, AC, giả định, vấn đề yêu cầu.
+   - Chuẩn hoá `{{ platform.framework_root }}/knowledge/active/REQUIREMENT.md` với context, As-is/To-be, scope, AC, giả định, vấn đề yêu cầu.
 2. Nếu requirement chạm tới dữ liệu:
    - Gọi `db-explorer`:
      - Khám phá tầng database liên quan (schema, constraint, trigger/procedure…).
-     - Cập nhật section "Tầng Database (db-explorer)" trong `.amap/knowledge/active/EXPLORE_CONTEXT.md`.
+     - Cập nhật section "Tầng Database (db-explorer)" trong `{{ platform.framework_root }}/knowledge/active/EXPLORE_CONTEXT.md`.
 3. Gọi `codebase-explorer`:
-   - Đọc `.amap/knowledge/active/REQUIREMENT.md`, map yêu cầu → module/service/file.
+   - Đọc `{{ platform.framework_root }}/knowledge/active/REQUIREMENT.md`, map yêu cầu → module/service/file.
    - **[GATE] Kiểm tra trạng thái KG graph trước bất kỳ tool nào khác** (theo R-Tool-5b):
      - Gọi `{{ tools.graph_stats }}` (KG MCP Server) để xem graph có tồn tại và đủ mới không.
      - Nếu **graph OK** → dùng KG tools làm nguồn chính:
@@ -122,10 +122,10 @@ Sau khi nhận diện:
        - Trong lúc chờ, dùng Socraticode/search/grep với Độ tin cậy thấp hơn.
    - Nếu cần câu hỏi open-ended → dùng `/understand-chat` (secondary).
    - Bổ sung bằng Socraticode cho semantic search khi KG fuzzy search chưa đủ.
-   - Cập nhật section "Kiến trúc code hiện tại (codebase-explorer)" trong `.amap/knowledge/active/EXPLORE_CONTEXT.md`.
+   - Cập nhật section "Kiến trúc code hiện tại (codebase-explorer)" trong `{{ platform.framework_root }}/knowledge/active/EXPLORE_CONTEXT.md`.
    - **Ghi kèm node_id** cho mỗi component quan trọng → cho phép architecture-reviewer dùng `{{ tools.read_file }}(id)` sau.
 4. Gọi `architecture-reviewer`:
-   - Đối chiếu `.amap/knowledge/active/REQUIREMENT.md` + `.amap/knowledge/active/EXPLORE_CONTEXT.md` + `.amap/knowledge/long-term/knowledge-snapshot.md`.
+   - Đối chiếu `{{ platform.framework_root }}/knowledge/active/REQUIREMENT.md` + `{{ platform.framework_root }}/knowledge/active/EXPLORE_CONTEXT.md` + `{{ platform.framework_root }}/knowledge/long-term/knowledge-snapshot.md`.
    - Nếu EXPLORE_CONTEXT có node IDs → dùng KG tools (`{{ tools.find_blast_radius }}`, `{{ tools.read_file }}`, `{{ tools.get_dependencies }}`) để verify.
    - Đánh giá:
      - Điểm align với kiến trúc hiện tại.
@@ -161,12 +161,12 @@ Sau khi nhận diện:
    - **Tuỳ chọn khi**: Độ tin cậy = CAO và task_type = feature / fixbug / refactor.
    - Nội dung explore:
      - Tóm tắt lại hiểu biết hiện tại cho user:
-       - `.amap/knowledge/active/REQUIREMENT.md`.
-       - Bối cảnh code + DB từ `.amap/knowledge/active/EXPLORE_CONTEXT.md`.
+       - `{{ platform.framework_root }}/knowledge/active/REQUIREMENT.md`.
+       - Bối cảnh code + DB từ `{{ platform.framework_root }}/knowledge/active/EXPLORE_CONTEXT.md`.
        - Các rủi ro kiến trúc chính.
      - Cho phép user đặt câu hỏi, refine thêm trước khi sang Pha 2.
    - Ghi vào AGENT_TRANSPARENCY: `[H2] opsx-explore: {required|optional} — lý do: {confidence level hoặc task_type}`
-6. Cập nhật `.amap/knowledge/active/AGENT_TRANSPARENCY.md`:
+6. Cập nhật `{{ platform.framework_root }}/knowledge/active/AGENT_TRANSPARENCY.md`:
    - Nguồn đã đọc (ticket, tài liệu, code/DB).
    - Skill/tool đã gọi thành công:
      - requirement-analyst, db-explorer, codebase-explorer, architecture-reviewer.
@@ -183,15 +183,15 @@ Sau khi nhận diện:
      - Thiếu KG graph / thiếu quyền DB / thiếu codebase-access.
    - Độ tin cậy tổng quan sau Pha 1.
 
-7. Ghi token checkpoint vào `.amap/knowledge/active/TOKEN_LOG.md`:
+7. Ghi token checkpoint vào `{{ platform.framework_root }}/knowledge/active/TOKEN_LOG.md`:
    - Điền timestamp kết thúc Pha 1.
    - Estimate token Pha 1: input (files đọc + tool calls) + output (REQUIREMENT + EXPLORE_CONTEXT + AGENT_TRANSPARENCY).
    - Liệt kê tool calls đáng chú ý ({{ tools.read_file }} nhiều lần, tài liệu dài...).
    - Cập nhật dòng "Pha 1" trong bảng Tóm tắt.
    - Nếu tổng Pha 1 > 50,000 tokens estimate: ghi cảnh báo vào section "Cảnh báo".
-   - Tham chiếu protocol đầy đủ: `.amap/procedures/token-tracking.md`.
+   - Tham chiếu protocol đầy đủ: `{{ platform.framework_root }}/procedures/token-tracking.md`.
 
-8. **Đánh dấu Pha 1 hoàn thành** vào `.amap/knowledge/active/AGENT_TRANSPARENCY.md`:
+8. **Đánh dấu Pha 1 hoàn thành** vào `{{ platform.framework_root }}/knowledge/active/AGENT_TRANSPARENCY.md`:
    - Thêm dòng vào section "Lịch sử pha": `Pha 1 DONE | <timestamp> | REQUIREMENT + EXPLORE_CONTEXT đã ghi`
    - Cập nhật `phase_state: phase-1-done` trong block `## Phase State`.
    - Ghi rõ ticket_id (hoặc "HAS_DOC_ONLY / IDEA_ONLY" nếu không có ticket).
@@ -211,7 +211,7 @@ Sau khi nhận diện:
 10. **[SESSION-BOUNDARY — Pha 1]** Sau khi POST-PHASE SELF-CHECK pass:
     - Thông báo user:
       > "Pha 1 hoàn thành. **Vui lòng mở session mới** để chạy `/task spec`.
-      > Context đã lưu đầy đủ vào `.amap/knowledge/active/`.
+      > Context đã lưu đầy đủ vào `{{ platform.framework_root }}/knowledge/active/`.
       > Session mới sẽ Bootstrap fresh — rule/DNA ở top-of-mind, tránh Context Dilution."
     - Nếu user tiếp tục trong cùng session (gọi `/task spec` ngay):
       - Ghi WARN vào AGENT_TRANSPARENCY: `[SESSION-BOUNDARY] Tiếp tục cùng session sau Pha 1 — rủi ro Context Dilution.`
@@ -229,13 +229,13 @@ Mục tiêu: dùng OpenSpec để sinh **spec kỹ thuật** dựa trên REQUIRE
 > - **BẮT BUỘC** phải gọi quy trình OpenSpec (`/opsx-propose` hoặc sử dụng skill `openspec-propose`) để sinh bộ artifact chuẩn (`proposal.md`, `design.md`, `spec.md`, `tasks.md`) lưu vào `openspec/changes/<change-id>/`.
 
 1. Định vị context theo ticket:
-   - Đọc `.amap/knowledge/active/REQUIREMENT.md` tương ứng ticket.
-   - Đọc `.amap/knowledge/active/EXPLORE_CONTEXT.md` (tầng DB + code liên quan).
+   - Đọc `{{ platform.framework_root }}/knowledge/active/REQUIREMENT.md` tương ứng ticket.
+   - Đọc `{{ platform.framework_root }}/knowledge/active/EXPLORE_CONTEXT.md` (tầng DB + code liên quan).
 2. Tóm tắt nhanh cho user:
    - Bối cảnh business.
    - Kiến trúc hiện tại chạm tới yêu cầu.
    - Rủi ro chính (nếu có) từ architecture-reviewer.
-3. Cập nhật `.amap/knowledge/active/AGENT_TRANSPARENCY.md`:
+3. Cập nhật `{{ platform.framework_root }}/knowledge/active/AGENT_TRANSPARENCY.md`:
    - Đánh dấu đã vào Pha 2 (`/task spec`).
    - Ghi nguồn đã đọc.
 4. Hỏi user confirm — **bắt buộc, không được skip**:
@@ -262,17 +262,17 @@ Mục tiêu: dùng OpenSpec để sinh **spec kỹ thuật** dựa trên REQUIRE
 6. Thông báo:
    - Đường dẫn hoặc tên file spec.
    - Nhắc user review, cho feedback (có thể lặp lại `/opsx:propose` nếu cần refine).
-7. Cập nhật `.amap/knowledge/active/AGENT_TRANSPARENCY.md`:
+7. Cập nhật `{{ platform.framework_root }}/knowledge/active/AGENT_TRANSPARENCY.md`:
    - Ghi rõ:
      - Đã sinh spec cho ticket nào.
      - File spec tương ứng.
      - Độ tin cậy (dựa trên chất lượng REQUIREMENT + context).
 
-8. Ghi token checkpoint vào `.amap/knowledge/active/TOKEN_LOG.md`:
+8. Ghi token checkpoint vào `{{ platform.framework_root }}/knowledge/active/TOKEN_LOG.md`:
    - Điền timestamp kết thúc Pha 2.
    - Estimate token Pha 2: input (REQUIREMENT + EXPLORE_CONTEXT + OpenSpec instructions) + output (spec file).
    - Cập nhật dòng "Pha 2" trong bảng Tóm tắt.
-   - Tham chiếu protocol đầy đủ: `.amap/procedures/token-tracking.md`.
+   - Tham chiếu protocol đầy đủ: `{{ platform.framework_root }}/procedures/token-tracking.md`.
 
 9. **[POST-PHASE SELF-CHECK — Pha 2]** Trước khi báo "Pha 2 xong" với user:
    - `[ ]` spec file tồn tại trong `openspec/changes/<change-id>/`.
@@ -338,7 +338,7 @@ Mục tiêu: dùng OpenSpec để áp dụng spec đã được chấp thuận v
    c. Run Contract Lane sequentially:
       - Assemble `TASK_HANDOFF.<node-id>.md` with Knowledge Pack slice, DNA slice, convention slice,
         architecture boundary, allowed/read-only files, and feedback if retrying.
-      - Dispatch executor by `.amap/profiles/execution-mode.yaml`.
+      - Dispatch executor by `{{ platform.framework_root }}/profiles/execution-mode.yaml`.
       - Run mechanical gate + semantic surface-check.
       - On PASS, generate/freeze `CONTRACT_SNAPSHOT.<node-id>.md` with contract_version.
       - On FAIL after max retries, mark node `blocked` and stop for user decision.
@@ -358,7 +358,7 @@ Mục tiêu: dùng OpenSpec để áp dụng spec đã được chấp thuận v
       - Run compile/typecheck/tests when available.
       - Run spec-validator post checks, including contract_version and allowed-file checks.
       - Run extraction review against all changed files and present `EXTRACTION_REPORT.md` to user.
-   g. Persist state in `.amap/knowledge/active/microloop/` so Pha 3 can resume after session truncation.
+   g. Persist state in `{{ platform.framework_root }}/knowledge/active/microloop/` so Pha 3 can resume after session truncation.
 6. Sau khi micro-loop xong:
    - Chạy `spec-validator.post_apply_verify(spec_path, changed_files)` — ghi kết quả vào AGENT_TRANSPARENCY.
    - Nếu có diff/PR, thông báo lại link hoặc danh sách file thay đổi.
@@ -366,7 +366,7 @@ Mục tiêu: dùng OpenSpec để áp dụng spec đã được chấp thuận v
      - Review code.
      - Update test.
      - Triển khai / release, v.v. (ở mức gợi ý, không ép).
-7. Cập nhật `.amap/knowledge/active/AGENT_TRANSPARENCY.md`:
+7. Cập nhật `{{ platform.framework_root }}/knowledge/active/AGENT_TRANSPARENCY.md`:
    - Đánh dấu:
      - Đã chạy `/task apply`.
      - Code đã được chỉnh theo spec (ở mức đề xuất/patch/PR).
@@ -374,12 +374,12 @@ Mục tiêu: dùng OpenSpec để áp dụng spec đã được chấp thuận v
      - Spec nào đã apply.
      - Bất kỳ hạn chế nào (ví dụ: apply một phần, lỗi khi apply, cần manual follow-up).
 
-7. Ghi token checkpoint CUỐI TASK vào `.amap/knowledge/active/TOKEN_LOG.md`:
+7. Ghi token checkpoint CUỐI TASK vào `{{ platform.framework_root }}/knowledge/active/TOKEN_LOG.md`:
    - Điền timestamp kết thúc Pha 3.
    - Estimate token Pha 3: input (spec + codebase context) + output (code changes).
    - Cập nhật dòng "Pha 3" và dòng **TỔNG TASK** trong bảng Tóm tắt.
    - Đây là lần ghi cuối trước khi `knowledge-curator` archive TOKEN_LOG.md.
-   - Tham chiếu protocol đầy đủ: `.amap/procedures/token-tracking.md`.
+   - Tham chiếu protocol đầy đủ: `{{ platform.framework_root }}/procedures/token-tracking.md`.
 
 8. **[POST-PHASE SELF-CHECK — Pha 3]** Trước khi gọi knowledge-curator archive:
    - `[ ]` Micro-loop hoàn tất: mọi task trong `TASK_QUEUE` = `done` (không còn `pending`/`blocked`).
@@ -412,7 +412,7 @@ Mục tiêu: dùng OpenSpec để áp dụng spec đã được chấp thuận v
   - Không encode domain nghiệp vụ cụ thể vào workflow.
   - Chỉ nói về ticket, tài liệu, DB, codebase, spec, kiến trúc.
 - Luôn trung thực về trạng thái:
-  - Nếu thiếu UA, thiếu DB access, thiếu code access → phải được phản ánh rõ trong `.amap/knowledge/active/AGENT_TRANSPARENCY.md` và trong Độ tin cậy của mọi kết luận.
+  - Nếu thiếu UA, thiếu DB access, thiếu code access → phải được phản ánh rõ trong `{{ platform.framework_root }}/knowledge/active/AGENT_TRANSPARENCY.md` và trong Độ tin cậy của mọi kết luận.
 
 ---
 
@@ -422,19 +422,19 @@ Sau khi `/task apply` Pha 3 hoàn thành thành công:
 
 ```
 1. Gọi knowledge-curator.archive_active_context(ticket_id):
-   - Lưu toàn bộ active/ vào .amap/knowledge/archive/{ticket_id}/
+   - Lưu toàn bộ active/ vào {{ platform.framework_root }}/knowledge/archive/{ticket_id}/
 
 2. Gọi knowledge-curator.update_knowledge_snapshot(discoveries):
    - Trích discoveries từ EXPLORE_CONTEXT.md:
      - Các table/column mới phát hiện
      - Modules/services đã map
      - Business rules đã xác nhận
-   - Cập nhật .amap/knowledge/long-term/knowledge-snapshot.md
+   - Cập nhật {{ platform.framework_root }}/knowledge/long-term/knowledge-snapshot.md
 
 3. Gọi knowledge-curator.reset_active_context():
    - Reset active/ về skeleton sạch
 
-4. Cập nhật .amap/knowledge/active/AGENT_TRANSPARENCY.md (mới, sau reset):
+4. Cập nhật {{ platform.framework_root }}/knowledge/active/AGENT_TRANSPARENCY.md (mới, sau reset):
    - Ghi: "Task {ticket_id} completed and archived at {timestamp}"
    - Mark: [x] knowledge-curator: archive + update_snapshot + reset
 
@@ -449,6 +449,6 @@ Sau khi `/task apply` Pha 3 hoàn thành thành công:
 ## 6. Path Convention
 
 > Path canonical cho tất cả file context được định nghĩa tại một nơi duy nhất:
-> **`.amap/rules/RULES.md` — Section 12, R-Path-1**
+> **`{{ platform.framework_root }}/rules/RULES.md` — Section 12, R-Path-1**
 >
 > Không duplicate bảng path ở đây. Khi cần tra cứu path, đọc RULES.md.

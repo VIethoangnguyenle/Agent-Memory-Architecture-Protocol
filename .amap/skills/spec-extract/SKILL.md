@@ -12,7 +12,7 @@ description: >
 
 ## 1. Mục tiêu
 
-- Biến 1 (hoặc nhiều) tài liệu dạng tự do (wiki, Confluence, PRD, SRS, ghi chú…) thành **khối yêu cầu có cấu trúc** trong `.amap/knowledge/active/REQUIREMENT.md`.
+- Biến 1 (hoặc nhiều) tài liệu dạng tự do (wiki, Confluence, PRD, SRS, ghi chú…) thành **khối yêu cầu có cấu trúc** trong `{{ platform.framework_root }}/knowledge/active/REQUIREMENT.md`.
 - Không copy-paste nguyên văn, mà rút ra và chuẩn hoá thành:
   - Tác nhân (actor), use case, mục tiêu.
   - Luồng chính và luồng lỗi ở mức business.
@@ -65,7 +65,7 @@ Không dùng `spec-extract` cho:
 
 ### Output
 
-Cập nhật `.amap/knowledge/active/REQUIREMENT.md`:
+Cập nhật `{{ platform.framework_root }}/knowledge/active/REQUIREMENT.md`:
 
 - Thêm section (hoặc cập nhật) kiểu:
 
@@ -257,12 +257,12 @@ Từ nội dung thu được:
 
 ### Bước 8 — Merge vào REQUIREMENT.md
 
-1. Nếu `.amap/knowledge/active/REQUIREMENT.md` **chưa có**:
+1. Nếu `{{ platform.framework_root }}/knowledge/active/REQUIREMENT.md` **chưa có**:
 
    - Tạo skeleton mới với các section chuẩn (metadata, context, As-is/To-be, Scope…).
    - Đổ phần trích từ tài liệu vào các section phù hợp (đặc biệt là “Yêu cầu nghiệp vụ trích từ tài liệu”).
 
-2. Nếu `.amap/knowledge/active/REQUIREMENT.md` **đã có** (ví dụ sau `requirement-analyst`):
+2. Nếu `{{ platform.framework_root }}/knowledge/active/REQUIREMENT.md` **đã có** (ví dụ sau `requirement-analyst`):
 
    - **Không xoá** phần đã có từ ticket.
    - Merge theo nguyên tắc:
@@ -332,7 +332,7 @@ Nếu THẤP:
 
 ## 5. Cập nhật AGENT_TRANSPARENCY
 
-Trong `.amap/knowledge/active/AGENT_TRANSPARENCY.md`:
+Trong `{{ platform.framework_root }}/knowledge/active/AGENT_TRANSPARENCY.md`:
 
 - Đánh dấu:
   - `[x] spec-extract`

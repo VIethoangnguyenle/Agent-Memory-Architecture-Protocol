@@ -13,10 +13,10 @@ metadata:
   version: "1.0"
   generatedBy: "1.2.0"
 pre_conditions:
-  - file: .amap/knowledge/active/REQUIREMENT.md
+  - file: "{{ platform.framework_root }}/knowledge/active/REQUIREMENT.md"
     condition: not_skeleton
     on_fail: "ABORT — chạy requirement-analyst trước"
-  - file: .amap/knowledge/active/EXPLORE_CONTEXT.md
+  - file: "{{ platform.framework_root }}/knowledge/active/EXPLORE_CONTEXT.md"
     condition: not_skeleton
     on_fail: "WARN — EXPLORE_CONTEXT thiếu, spec sẽ có Độ tin cậy THẤP"
   - phase: pha-1
@@ -68,9 +68,9 @@ When ready to implement, run /opsx:apply
 0. **Load knowledge-layer context (nếu tồn tại)**
 
    Trước khi tạo change, kiểm tra và đọc context từ pipeline `/task`:
-   - `.amap/knowledge/active/REQUIREMENT.md` → dùng làm input cho proposal (what & why).
-   - `.amap/knowledge/active/EXPLORE_CONTEXT.md` → dùng làm input cho design (how).
-   - `.amap/knowledge/long-term/knowledge-snapshot.md` → bối cảnh hệ thống tổng quan.
+   - `{{ platform.framework_root }}/knowledge/active/REQUIREMENT.md` → dùng làm input cho proposal (what & why).
+   - `{{ platform.framework_root }}/knowledge/active/EXPLORE_CONTEXT.md` → dùng làm input cho design (how).
+   - `{{ platform.framework_root }}/knowledge/long-term/knowledge-snapshot.md` → bối cảnh hệ thống tổng quan.
 
    Nếu các file này có nội dung (không chỉ là template trống):
    - Dùng chúng để populate `proposal.md`, `design.md` thay vì hỏi user từ đầu.

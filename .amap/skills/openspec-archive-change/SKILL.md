@@ -154,14 +154,14 @@ Sau khi archive change trong OpenSpec (`openspec archive --change "<name>"`), **
 FUNCTION sync_with_knowledge_curator(change_name, ticket_id):
   1. Xác định ticket_id từ change metadata hoặc hỏi user
   2. Gọi knowledge-curator.archive_active_context(ticket_id, status="completed")
-     → Đồng bộ .amap/knowledge/active/ → .amap/knowledge/archive/{ticket_id}/
+     → Đồng bộ {{ platform.framework_root }}/knowledge/active/ → {{ platform.framework_root }}/knowledge/archive/{ticket_id}/
   3. Gọi knowledge-curator.update_knowledge_snapshot(discoveries)
      → Cập nhật snapshot với phát hiện từ task vừa xong
   4. Gọi knowledge-curator.reset_active_context()
      → Reset active/ cho task mới
   5. Ghi vào AGENT_TRANSPARENCY mới:
      "[L2] OpenSpec change '{change_name}' archived và knowledge-curator đã sync.
-      Archive: .amap/knowledge/archive/{ticket_id}/"
+      Archive: {{ platform.framework_root }}/knowledge/archive/{ticket_id}/"
 
 TRIGGER:
   - Tự động suggest sau khi `openspec archive` thành công.

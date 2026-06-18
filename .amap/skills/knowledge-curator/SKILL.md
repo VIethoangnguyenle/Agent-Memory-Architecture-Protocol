@@ -12,9 +12,9 @@ description: >
 
 ## 1. Mục tiêu
 
-- **Archive** context đã hoàn thành vào `.amap/knowledge/archive/{ticket-id}/` sau khi task xong.
-- **Reset** `.amap/knowledge/active/` về template skeleton sạch sẵn sàng cho task mới.
-- **Cập nhật** `.amap/knowledge/long-term/knowledge-snapshot.md` với phát hiện mới từ task vừa hoàn thành.
+- **Archive** context đã hoàn thành vào `{{ platform.framework_root }}/knowledge/archive/{ticket-id}/` sau khi task xong.
+- **Reset** `{{ platform.framework_root }}/knowledge/active/` về template skeleton sạch sẵn sàng cho task mới.
+- **Cập nhật** `{{ platform.framework_root }}/knowledge/long-term/knowledge-snapshot.md` với phát hiện mới từ task vừa hoàn thành.
 - **Rotate** archive khi quá nhiều (giữ N tickets gần nhất, nén/log các ticket cũ hơn).
 
 Skill này là **lifecycle manager** — không sinh requirement, không review kiến trúc.
@@ -56,7 +56,7 @@ PRE-CHECK (theo R-Guard-1):
      → WARN: "phase_state chưa là `completed` — xác nhận apply đã xong chưa?"
   3. Nếu phase_state = `blocked-by-arch` | `blocked-by-data`:
      → ABORT: "Task đang bị BLOCK — không thể archive cho đến khi block được resolve"
-   4. Kiểm tra `.amap/knowledge/active/TOKEN_LOG.md` tồn tại và có nội dung (không chỉ template):
+   4. Kiểm tra `{{ platform.framework_root }}/knowledge/active/TOKEN_LOG.md` tồn tại và có nội dung (không chỉ template):
       → Nếu KHÔNG tồn tại hoặc chỉ là skeleton:
          WARN: "TOKEN_LOG.md chưa được ghi. Tạo retroactively (estimate từ AGENT_TRANSPARENCY) trước khi archive."
          Ghi cảnh báo vào AGENT_TRANSPARENCY: "[TOKEN-LOG-MISSING] TOKEN_LOG không tồn tại lúc archive."
@@ -69,13 +69,13 @@ Status meanings:
   cancelled  ← Bỏ giữa chừng, không tiếp tục. KHÔNG update snapshot.
 
 STEPS:
-1. Tạo thư mục: .amap/knowledge/archive/{ticket_id}/
+1. Tạo thư mục: {{ platform.framework_root }}/knowledge/archive/{ticket_id}/
 2. Copy:
-   - .amap/knowledge/active/REQUIREMENT.md      → archive/{ticket_id}/REQUIREMENT.md
-   - .amap/knowledge/active/EXPLORE_CONTEXT.md  → archive/{ticket_id}/EXPLORE_CONTEXT.md
-   - .amap/knowledge/active/AGENT_TRANSPARENCY.md → archive/{ticket_id}/AGENT_TRANSPARENCY.md
-   - .amap/knowledge/active/TOKEN_LOG.md        → archive/{ticket_id}/TOKEN_LOG.md (nếu có)
-   - .amap/knowledge/active/ideation/           → archive/{ticket_id}/ideation/ (nếu có)
+   - {{ platform.framework_root }}/knowledge/active/REQUIREMENT.md      → archive/{ticket_id}/REQUIREMENT.md
+   - {{ platform.framework_root }}/knowledge/active/EXPLORE_CONTEXT.md  → archive/{ticket_id}/EXPLORE_CONTEXT.md
+   - {{ platform.framework_root }}/knowledge/active/AGENT_TRANSPARENCY.md → archive/{ticket_id}/AGENT_TRANSPARENCY.md
+   - {{ platform.framework_root }}/knowledge/active/TOKEN_LOG.md        → archive/{ticket_id}/TOKEN_LOG.md (nếu có)
+   - {{ platform.framework_root }}/knowledge/active/ideation/           → archive/{ticket_id}/ideation/ (nếu có)
 3. Tạo archive/{ticket_id}/ARCHIVE_META.md:
    - ticket_id: {ticket_id}
    - archived_at: <timestamp>
@@ -89,20 +89,20 @@ STEPS:
    → tiếp tục chạy update_knowledge_snapshot(discoveries)
    ELSE:
    → bỏ qua update_knowledge_snapshot (context chưa hoàn chỉnh)
-6. REPORT: "Archived ticket {ticket_id} [{status}] to .amap/knowledge/archive/{ticket_id}/"
+6. REPORT: "Archived ticket {ticket_id} [{status}] to {{ platform.framework_root }}/knowledge/archive/{ticket_id}/"
 ```
 
 ### 3.2 `reset_active_context()`
 
 ```
 INPUT:  none
-OUTPUT: .amap/knowledge/active/ được reset về template skeleton
+OUTPUT: {{ platform.framework_root }}/knowledge/active/ được reset về template skeleton
 
 STEPS:
 1. Đọc template từ:
-   - .amap/knowledge/templates/REQUIREMENT.tpl.md (nếu có) → copy → active/REQUIREMENT.md
-   - .amap/knowledge/templates/EXPLORE_CONTEXT.tpl.md → copy → active/EXPLORE_CONTEXT.md
-   - .amap/knowledge/templates/AGENT_TRANSPARENCY.tpl.md → copy → active/AGENT_TRANSPARENCY.md
+   - {{ platform.framework_root }}/knowledge/templates/REQUIREMENT.tpl.md (nếu có) → copy → active/REQUIREMENT.md
+   - {{ platform.framework_root }}/knowledge/templates/EXPLORE_CONTEXT.tpl.md → copy → active/EXPLORE_CONTEXT.md
+   - {{ platform.framework_root }}/knowledge/templates/AGENT_TRANSPARENCY.tpl.md → copy → active/AGENT_TRANSPARENCY.md
 2. Nếu template .tpl.md không tồn tại:
    → Tạo file trống với skeleton tối thiểu (chỉ có header section)
 3. Xoá toàn bộ file trong active/ideation/ (trừ .gitkeep nếu có)
@@ -117,7 +117,7 @@ STEPS:
 ```
 INPUT:  discoveries — list các phát hiện từ task vừa hoàn thành
         (trích từ EXPLORE_CONTEXT.md và AGENT_TRANSPARENCY.md)
-OUTPUT: .amap/knowledge/long-term/knowledge-snapshot.md được cập nhật
+OUTPUT: {{ platform.framework_root }}/knowledge/long-term/knowledge-snapshot.md được cập nhật
 
 STEPS:
 1. Đọc EXPLORE_CONTEXT.md + AGENT_TRANSPARENCY.md của task vừa xong
@@ -166,7 +166,7 @@ Mỗi discovery rơi vào đúng một trong các bucket:
 
 - Sau bất kỳ thay đổi DNA nào được approve (REDIRECT → author-dna đã commit), gọi rule-projector
   để regenerate ruleset:
-  `python3 .amap/tools/rule-projector/projector.py --dna <dna> --conventions <conv> --out generated/`
+  `python3 {{ platform.framework_root }}/tools/rule-projector/projector.py --dna <dna> --conventions <conv> --out generated/`
 - Git pre-commit sync-check là backstop — nếu quên regenerate, hook sẽ chặn commit khi ruleset out-of-sync.
 
 **Ví dụ áp dụng:**
@@ -218,7 +218,7 @@ FOR EACH entry trong snapshot có status:active:
 
 ```
 INPUT:  ticket_id — ticket muốn restore
-OUTPUT: .amap/knowledge/active/ được điền lại từ archive
+OUTPUT: {{ platform.framework_root }}/knowledge/active/ được điền lại từ archive
 
 STEPS:
 1. Kiểm tra archive/{ticket_id}/ tồn tại
@@ -242,12 +242,12 @@ INPUT:  keep_n — số lượng tickets archive muốn giữ lại (default: 20
 OUTPUT: archive cũ được nén/log, giữ lại N tickets gần nhất
 
 STEPS:
-1. LIST tất cả thư mục trong .amap/knowledge/archive/ → sort by date DESC
+1. LIST tất cả thư mục trong {{ platform.framework_root }}/knowledge/archive/ → sort by date DESC
 2. Nếu count > keep_n:
    tickets_to_rotate = list[keep_n:]
    FOR EACH ticket in tickets_to_rotate:
      a. Đọc ARCHIVE_META.md → lấy summary
-     b. Append vào .amap/knowledge/archive/ARCHIVE_LOG.md:
+     b. Append vào {{ platform.framework_root }}/knowledge/archive/ARCHIVE_LOG.md:
         - ticket_id, archived_at, status, summary
      c. XOÁ thư mục archive/{ticket_id}/
 3. REPORT: "Rotated {n} old tickets to ARCHIVE_LOG.md. Keeping {keep_n} most recent."
@@ -257,10 +257,10 @@ STEPS:
 
 ## Đầu ra
 
-- **Thư mục archive**: `.amap/knowledge/archive/{ticket-id}/` — context task đã hoàn thành.
-- **Cập nhật**: `.amap/knowledge/long-term/knowledge-snapshot.md` — phát hiện mới từ task.
-- **Reset**: `.amap/knowledge/active/` — về template skeleton sẵn sàng task mới.
-- **Log**: `.amap/knowledge/active/AGENT_TRANSPARENCY.md` — ghi lại hành động archive.
+- **Thư mục archive**: `{{ platform.framework_root }}/knowledge/archive/{ticket-id}/` — context task đã hoàn thành.
+- **Cập nhật**: `{{ platform.framework_root }}/knowledge/long-term/knowledge-snapshot.md` — phát hiện mới từ task.
+- **Reset**: `{{ platform.framework_root }}/knowledge/active/` — về template skeleton sẵn sàng task mới.
+- **Log**: `{{ platform.framework_root }}/knowledge/active/AGENT_TRANSPARENCY.md` — ghi lại hành động archive.
 
 ---
 
@@ -295,7 +295,7 @@ triển khai theo giai đoạn (R-Tool-6), và graduation trigger.
 
 ## 5. Cập nhật AGENT_TRANSPARENCY
 
-Trong `.amap/knowledge/active/AGENT_TRANSPARENCY.md`:
+Trong `{{ platform.framework_root }}/knowledge/active/AGENT_TRANSPARENCY.md`:
 
 - Ghi lại mỗi action đã thực hiện:
   - `[x] knowledge-curator: archive_active_context({ticket_id})`
@@ -368,7 +368,7 @@ Trong knowledge-snapshot.md, thêm section (nếu cần):
 
 | Repo | Snapshot path | Verified | Quan hệ |
 |------|--------------|----------|---------|
-| (ví dụ: shared-lib) | (ví dụ: ../shared-lib/.amap/knowledge/long-term/knowledge-snapshot.md) | (YYYY-MM) | (upstream dependency) |
+| (ví dụ: shared-lib) | (ví dụ: ../shared-lib/{{ platform.framework_root }}/knowledge/long-term/knowledge-snapshot.md) | (YYYY-MM) | (upstream dependency) |
 ```
 
 **Quy tắc:**

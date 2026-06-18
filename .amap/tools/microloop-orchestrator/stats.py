@@ -10,7 +10,7 @@ import sys
 from pathlib import Path
 from collections import Counter
 
-DEFAULT_LOG = ".amap/knowledge/long-term/outcome-log.yaml"
+DEFAULT_LOG = "{{ platform.framework_root }}/knowledge/long-term/outcome-log.yaml"
 PRUNE_THRESHOLD = 5  # silent N ticket liên tiếp → candidate prune
 
 

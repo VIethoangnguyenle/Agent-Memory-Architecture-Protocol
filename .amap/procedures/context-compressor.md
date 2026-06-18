@@ -59,7 +59,7 @@ FUNCTION compress_context_mode_b():
   2. Với mỗi file lớn (> 5K tokens):
      a. Tạo pointer reference:
         POINTER = {
-          "file": ".amap/knowledge/active/EXPLORE_CONTEXT.md",
+          "file": "{{ platform.framework_root }}/knowledge/active/EXPLORE_CONTEXT.md",
           "summary": "<2-3 câu tóm tắt nội dung>",
           "key_sections": ["Tầng Database", "Module X", "BLOCKER: Y"],
           "read_on_demand": true

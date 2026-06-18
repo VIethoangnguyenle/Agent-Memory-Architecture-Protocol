@@ -1,18 +1,18 @@
-# .amap/knowledge — Working Memory cho Agent
+# {{ platform.framework_root }}/knowledge — Working Memory cho Agent
 
 > **Setup note**: Sau khi unzip, chạy lệnh sau để đảm bảo 2 file mới được track bởi git:
 > ```bash
-> git add .amap/knowledge/templates/TOKEN_LOG.tpl.md .amap/procedures/token-tracking.md
+> git add {{ platform.framework_root }}/knowledge/templates/TOKEN_LOG.tpl.md {{ platform.framework_root }}/procedures/token-tracking.md
 > ```
 
 
 ## Mục đích
 
-`.amap/knowledge` là **bộ nhớ phân tầng (memory hierarchy)** của agent trong flow:
+`{{ platform.framework_root }}/knowledge` là **bộ nhớ phân tầng (memory hierarchy)** của agent trong flow:
 
 > **Ideation → Requirement → Architecture → Spec → Apply**
 
-Mọi skill và workflow trong `.amap/` đọc/ghi context thông qua thư mục này.
+Mọi skill và workflow trong `{{ platform.framework_root }}/` đọc/ghi context thông qua thư mục này.
 
 Bộ nhớ được chia làm 4 tầng:
 
@@ -26,7 +26,7 @@ Bộ nhớ được chia làm 4 tầng:
 ## Cấu trúc
 
 ```
-.amap/knowledge/
+{{ platform.framework_root }}/knowledge/
 ├── README.md                 ← File này
 ├── active/                   ← Working memory — context ĐANG DÙNG cho task hiện tại
 │   ├── REQUIREMENT.md         ← Yêu cầu chuẩn hoá
@@ -59,17 +59,17 @@ Bộ nhớ được chia làm 4 tầng:
 
 ## Quy ước path
 
-Tất cả path được quy ước tại `.amap/rules/RULES.md`, section "Path Convention".
+Tất cả path được quy ước tại `{{ platform.framework_root }}/rules/RULES.md`, section "Path Convention".
 
 Tóm tắt nhanh:
 
 | File | Path đầy đủ |
 |------|-------------|
-| REQUIREMENT | `.amap/knowledge/active/REQUIREMENT.md` |
-| EXPLORE_CONTEXT | `.amap/knowledge/active/EXPLORE_CONTEXT.md` |
-| AGENT_TRANSPARENCY | `.amap/knowledge/active/AGENT_TRANSPARENCY.md` |
-| Knowledge Snapshot | `.amap/knowledge/long-term/knowledge-snapshot.md` |
-| Ideation | `.amap/knowledge/active/ideation/ideation-*.md` |
+| REQUIREMENT | `{{ platform.framework_root }}/knowledge/active/REQUIREMENT.md` |
+| EXPLORE_CONTEXT | `{{ platform.framework_root }}/knowledge/active/EXPLORE_CONTEXT.md` |
+| AGENT_TRANSPARENCY | `{{ platform.framework_root }}/knowledge/active/AGENT_TRANSPARENCY.md` |
+| Knowledge Snapshot | `{{ platform.framework_root }}/knowledge/long-term/knowledge-snapshot.md` |
+| Ideation | `{{ platform.framework_root }}/knowledge/active/ideation/ideation-*.md` |
 
 ---
 

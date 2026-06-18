@@ -84,8 +84,8 @@ Dấu hiệu ghi SAI level: entry author-dna phải liệt kê tên bảng/cột
    - Nếu principle vừa ghi là **mechanically checkable** (map được sang `ir_rule` — xem
      `author-dna-builder/references/check-spec-mapping.md`): emit luôn `mechanically_checkable: true`
      + `check_spec`, rồi chạy rule-projector regenerate ruleset ngay trong phiên (SP1a §3.2 — active path):
-     `python3 .amap/tools/rule-projector/projector.py --dna <dna> --conventions <conv> --out generated/`
-     → `python3 .amap/tools/rule-projector/backends/checkstyle.py --ir generated/rules.json --out generated/checkstyle.generated.xml`
+     `python3 {{ platform.framework_root }}/tools/rule-projector/projector.py --dna <dna> --conventions <conv> --out generated/`
+     → `python3 {{ platform.framework_root }}/tools/rule-projector/backends/checkstyle.py --ir generated/rules.json --out generated/checkstyle.generated.xml`
 3. **Không được defer** sang phiên sau — teaching moment phải capture ngay trong phiên.
 4. **Nếu user từ chối**: ghi WARN vào AGENT_TRANSPARENCY:
    "[R-DNA-7] Teaching moment chưa capture: `{principle}`. Có thể mất sau phiên này."
@@ -102,9 +102,9 @@ Khi bootstrap phát hiện external KI (vd: Cursor rules, `.cursorrules`, Antigr
 
 1. **Bắt buộc** WARN trong bootstrap report.
 2. **Bắt buộc** đề xuất action cleanup cụ thể:
-   "Replace nội dung `{ki_file}` bằng: `# Xem .amap/knowledge/long-term/conventions.yaml + author-dna.yaml`"
+   "Replace nội dung `{ki_file}` bằng: `# Xem {{ platform.framework_root }}/knowledge/long-term/conventions.yaml + author-dna.yaml`"
 3. **Bắt buộc** ghi `[R-KI-1] KI cleanup pending: {path}` vào AGENT_TRANSPARENCY.
-4. Nếu KI file duplicate conventions/DNA: **từ chối dùng KI file đó trong phiên** — chỉ dùng `.amap/knowledge/`.
+4. Nếu KI file duplicate conventions/DNA: **từ chối dùng KI file đó trong phiên** — chỉ dùng `{{ platform.framework_root }}/knowledge/`.
 5. Nhắc lại mỗi bootstrap cho đến khi cleanup xong.
 
 Không được dùng "khuyến nghị" hay "có thể" — đây là hard enforcement.

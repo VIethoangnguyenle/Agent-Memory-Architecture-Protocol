@@ -1,4 +1,4 @@
-# .amap/tools/
+# {{ platform.framework_root }}/tools/
 
 Executable tooling cho AMAP.
 
@@ -14,10 +14,10 @@ author-dna.yaml + conventions.yaml
    → hooks/pre-commit.sh (sync-check + checkstyle), cài bằng install.sh
 ```
 
-- **Run**: `python3 .amap/tools/rule-projector/projector.py --dna <dna> --conventions <conv> --out <dir>`
-  rồi `python3 .amap/tools/rule-projector/backends/checkstyle.py --ir <dir>/rules.json --out <dir>/checkstyle.generated.xml`
-- **Test**: `python3 -m pytest .amap/tools/rule-projector/tests/ -v`
-- **Cài vào dự án Java**: `.amap/tools/rule-projector/install.sh <project_root> <dna_path> <conv_path>`
+- **Run**: `python3 {{ platform.framework_root }}/tools/rule-projector/projector.py --dna <dna> --conventions <conv> --out <dir>`
+  rồi `python3 {{ platform.framework_root }}/tools/rule-projector/backends/checkstyle.py --ir <dir>/rules.json --out <dir>/checkstyle.generated.xml`
+- **Test**: `python3 -m pytest {{ platform.framework_root }}/tools/rule-projector/tests/ -v`
+- **Cài vào dự án Java**: `{{ platform.framework_root }}/tools/rule-projector/install.sh <project_root> <dna_path> <conv_path>`
 
 Chi tiết: [docs/specs/2026-06-17-sp1a-mechanical-enforcement-design.md](../../docs/specs/2026-06-17-sp1a-mechanical-enforcement-design.md)
 
@@ -32,9 +32,9 @@ tasks.md → topo-sort → TASK_QUEUE → per-task: TASK_HANDOFF → executor �
    → semantic surface-check → mark done → next ; hết task → extraction review → EXTRACTION_REPORT
 ```
 
-- **Tier** khai báo ở `.amap/profiles/execution-mode.yaml`: `subagent` (Claude) ·
+- **Tier** khai báo ở `{{ platform.framework_root }}/profiles/execution-mode.yaml`: `subagent` (Claude) ·
   `fresh-session` (Cursor/Antigravity) · `inline-reload` (fallback, luôn chạy được).
-- **Test**: `python3 -m pytest .amap/tools/microloop-orchestrator/tests/ -v`
+- **Test**: `python3 -m pytest {{ platform.framework_root }}/tools/microloop-orchestrator/tests/ -v`
 
 Chi tiết: [docs/specs/2026-06-17-sp1b-coding-microloop-design.md](../../docs/specs/2026-06-17-sp1b-coding-microloop-design.md)
 

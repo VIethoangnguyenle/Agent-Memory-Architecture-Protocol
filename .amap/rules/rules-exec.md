@@ -9,7 +9,7 @@
 ### [CRITICAL] R-Data-1: PII & bí mật
 
 - Không được log/copy dữ liệu nhạy cảm (PII, credential, token…) vào:
-  - `.amap/knowledge/active/REQUIREMENT.md`, `.amap/knowledge/active/EXPLORE_CONTEXT.md`, `.amap/knowledge/active/AGENT_TRANSPARENCY.md`.
+  - `{{ platform.framework_root }}/knowledge/active/REQUIREMENT.md`, `{{ platform.framework_root }}/knowledge/active/EXPLORE_CONTEXT.md`, `{{ platform.framework_root }}/knowledge/active/AGENT_TRANSPARENCY.md`.
 - Nếu tool trả về data nghi là PII:
   - Chỉ tóm tắt pattern, không lưu raw record.
 
@@ -50,7 +50,7 @@
 ### [CRITICAL] R-Exec-1: Giới hạn vòng lặp & tool call
 
 - Mỗi lượt `/task` có giới hạn mềm về số tool call. Nếu vượt:
-  - Agent nên dừng, ghi vào `.amap/knowledge/active/AGENT_TRANSPARENCY.md` và hỏi user.
+  - Agent nên dừng, ghi vào `{{ platform.framework_root }}/knowledge/active/AGENT_TRANSPARENCY.md` và hỏi user.
 
 ### [REFERENCE] R-Exec-2: Thời gian chạy
 
@@ -102,7 +102,7 @@ Trong Pha 3 Hybrid Contract DAG:
 ### [CRITICAL] R-Exec-4: TOKEN_LOG checkpoint bắt buộc
 
 - Trước khi báo hoàn thành bất kỳ pha nào (Pha 1/2/3), agent **PHẢI**:
-  - Ghi checkpoint vào `.amap/knowledge/active/TOKEN_LOG.md` (timestamp + token estimate).
+  - Ghi checkpoint vào `{{ platform.framework_root }}/knowledge/active/TOKEN_LOG.md` (timestamp + token estimate).
   - Cập nhật bảng Tóm tắt tương ứng pha đó.
 - Nếu TOKEN_LOG.md chưa tồn tại khi bắt đầu Pha 1:
   - Tạo từ template, điền ticket-id, timestamp bắt đầu, model name.
@@ -118,12 +118,12 @@ Trong Pha 3 Hybrid Contract DAG:
 ### [CRITICAL] R-Obs-1: AGENT_TRANSPARENCY bắt buộc
 
 - Sau mỗi pha quan trọng (`/task` Pha 1/2/3, `/idea-to-task`):
-  - Phải cập nhật `.amap/knowledge/active/AGENT_TRANSPARENCY.md` (nguồn đã đọc, tool đã gọi, cảnh báo, độ tin cậy).
+  - Phải cập nhật `{{ platform.framework_root }}/knowledge/active/AGENT_TRANSPARENCY.md` (nguồn đã đọc, tool đã gọi, cảnh báo, độ tin cậy).
 
 ### [CRITICAL] R-Obs-2: Log vi phạm rule
 
 - Nếu có ý định vi phạm rule:
   - Không thực thi.
-  - Ghi lại trong `.amap/knowledge/active/AGENT_TRANSPARENCY.md` (ý định, ID rule, cách xử lý).
+  - Ghi lại trong `{{ platform.framework_root }}/knowledge/active/AGENT_TRANSPARENCY.md` (ý định, ID rule, cách xử lý).
 
 ---

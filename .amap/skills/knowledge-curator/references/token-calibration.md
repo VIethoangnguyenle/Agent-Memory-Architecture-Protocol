@@ -19,7 +19,7 @@ FUNCTION calibrate_token_estimates(ticket_id):
      - So sánh: estimate vs actual cho từng pha
      - Tính ratio: actual / estimate
 
-  3. Cập nhật calibration note vào .amap/knowledge/templates/TOKEN_LOG.tpl.md:
+  3. Cập nhật calibration note vào {{ platform.framework_root }}/knowledge/templates/TOKEN_LOG.tpl.md:
      - Section "Calibration History":
        | ticket_id | pha | estimate | actual | ratio | note |
      - Ghi average ratio sau 3+ tickets

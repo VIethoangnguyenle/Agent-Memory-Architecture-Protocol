@@ -7,7 +7,7 @@ description: >
   KHÔNG dùng cho: sinh spec mới (→ openspec-propose),
   review kiến trúc (→ architecture-reviewer), chuẩn hoá yêu cầu (→ requirement-analyst).
 pre_conditions:
-  - file: .amap/knowledge/active/REQUIREMENT.md
+  - file: "{{ platform.framework_root }}/knowledge/active/REQUIREMENT.md"
     condition: not_skeleton
     on_fail: "ABORT — không có REQUIREMENT để validate spec"
   - phase: pha-2
@@ -51,7 +51,7 @@ Skill này là **quality gate** — không sinh spec, không sửa code.
 ```
 INPUT:
   spec_path       — đường dẫn tới spec file (openspec/changes/<change-id>/)
-  requirement_path — .amap/knowledge/active/REQUIREMENT.md
+  requirement_path — {{ platform.framework_root }}/knowledge/active/REQUIREMENT.md
 
 STEPS:
 1. Đọc spec artifacts: proposal.md, design.md, spec.md, tasks.md (tuỳ cái nào tồn tại)
@@ -157,7 +157,7 @@ RESULT:
 
 ```
 INPUT:
-  contract_dag_path — .amap/knowledge/active/microloop/CONTRACT_DAG.md
+  contract_dag_path — {{ platform.framework_root }}/knowledge/active/microloop/CONTRACT_DAG.md
   changed_files     — danh sách file đã thay đổi
 
 STEPS:
@@ -234,7 +234,7 @@ Ghi sau mỗi lần chạy:
 - **Báo cáo AC coverage**: `{n_covered}/{n_total}` AC được cover.
 - **Kết quả post-apply verify**: `OK` hoặc danh sách mismatch.
 - **Kết quả Contract DAG check**: `PASS` hoặc `BLOCK` — xác nhận không còn stale node, contract mismatch, hoặc unresolved request.
-- **Cập nhật**: `.amap/knowledge/active/AGENT_TRANSPARENCY.md` — ghi lại kết quả mỗi lần chạy.
+- **Cập nhật**: `{{ platform.framework_root }}/knowledge/active/AGENT_TRANSPARENCY.md` — ghi lại kết quả mỗi lần chạy.
 
 ---
 

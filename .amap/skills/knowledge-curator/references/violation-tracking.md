@@ -21,7 +21,7 @@ STEPS:
 2. Với mỗi violation tìm thấy:
    a. Đọc violation_pattern từ description (normalize về dạng slug)
       Ví dụ: "skip confirm step" → pattern_id = "skip-confirm-step"
-   b. Kiểm tra .amap/knowledge/long-term/knowledge-snapshot.md
+   b. Kiểm tra {{ platform.framework_root }}/knowledge/long-term/knowledge-snapshot.md
       section "[M3] Violation Pattern Tracking":
       - Nếu pattern_id đã tồn tại:
         → Tăng "Lần xảy ra" += 1

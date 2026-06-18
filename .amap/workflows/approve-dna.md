@@ -14,7 +14,7 @@ Workflow này chỉ chạy khi user đã:
 ## Bước 1 — Validate file
 
 ```
-CHECK: .amap/knowledge/long-term/author-dna.draft.yaml tồn tại?
+CHECK: {{ platform.framework_root }}/knowledge/long-term/author-dna.draft.yaml tồn tại?
   → Không tồn tại: ABORT
     "author-dna.draft.yaml không tìm thấy. Chạy /dna-scan trước."
 
@@ -46,7 +46,7 @@ CHECK: Tất cả exemplar node_id còn tồn tại trong code exploration?
 ## Bước 2 — Cross-check với conventions.yaml
 
 ```
-READ: .amap/knowledge/long-term/conventions.yaml
+READ: {{ platform.framework_root }}/knowledge/long-term/conventions.yaml
   → Nếu không tồn tại: SKIP bước này, ghi WARN vào AGENT_TRANSPARENCY.
 
 FOR EACH principle trong author-dna.draft.yaml:
@@ -78,7 +78,7 @@ FOR EACH principle trong author-dna.draft.yaml:
 
 3. Backup draft:
    Tạo author-dna.draft.{YYYYMMDD-HHMMSS}.yaml.bak
-   → Giữ trong .amap/knowledge/long-term/ làm audit trail
+   → Giữ trong {{ platform.framework_root }}/knowledge/long-term/ làm audit trail
    → Không nạp vào context (context-loader bỏ qua *.bak)
 ```
 
@@ -91,10 +91,10 @@ CHECK: author-dna.yaml có principle nào mechanically_checkable: true?
   → CÓ:
     "🔧 DNA chứa {n} principle có thể enforce cơ học.
      Regenerate ruleset để gate SP1a áp dụng rules mới?
-     Chạy: python3 .amap/tools/rule-projector/projector.py
-              --dna .amap/knowledge/long-term/author-dna.yaml
-              --conventions .amap/knowledge/long-term/conventions.yaml
-              --out .amap/tools/rule-projector/generated/"
+     Chạy: python3 {{ platform.framework_root }}/tools/rule-projector/projector.py
+              --dna {{ platform.framework_root }}/knowledge/long-term/author-dna.yaml
+              --conventions {{ platform.framework_root }}/knowledge/long-term/conventions.yaml
+              --out {{ platform.framework_root }}/tools/rule-projector/generated/"
     → Nếu user đồng ý: chạy command trên.
     → Nếu user skip: ghi WARN — rules cũ vẫn active, DNA mới chưa enforce.
 
@@ -107,7 +107,7 @@ CHECK: author-dna.yaml có principle nào mechanically_checkable: true?
 ## Bước 5 — Cập nhật AGENT_TRANSPARENCY
 
 ```
-APPEND vào .amap/knowledge/active/AGENT_TRANSPARENCY.md:
+APPEND vào {{ platform.framework_root }}/knowledge/active/AGENT_TRANSPARENCY.md:
 
   [x] /approve-dna: author-dna.yaml committed
   - Approved at: {timestamp}

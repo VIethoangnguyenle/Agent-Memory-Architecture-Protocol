@@ -6,11 +6,11 @@ PROJECT_ROOT="${1:?usage: install.sh <project_root> <dna_path> <conv_path>}"
 DNA_PATH="${2:?dna_path required}"
 CONV_PATH="${3:?conv_path required}"
 HERE=$(cd "$(dirname "$0")" && pwd)
-RULESET_PATH="$PROJECT_ROOT/.amap/tools/rule-projector/generated/checkstyle.generated.xml"
+RULESET_PATH="$PROJECT_ROOT/{{ platform.framework_root }}/tools/rule-projector/generated/checkstyle.generated.xml"
 
 # 1. Generate ruleset
-python3 "$HERE/projector.py" --dna "$DNA_PATH" --conventions "$CONV_PATH" --out "$PROJECT_ROOT/.amap/tools/rule-projector/generated"
-python3 "$HERE/backends/checkstyle.py" --ir "$PROJECT_ROOT/.amap/tools/rule-projector/generated/rules.json" --out "$RULESET_PATH"
+python3 "$HERE/projector.py" --dna "$DNA_PATH" --conventions "$CONV_PATH" --out "$PROJECT_ROOT/{{ platform.framework_root }}/tools/rule-projector/generated"
+python3 "$HERE/backends/checkstyle.py" --ir "$PROJECT_ROOT/{{ platform.framework_root }}/tools/rule-projector/generated/rules.json" --out "$RULESET_PATH"
 
 # 2. Install hook with config baked in
 HOOK="$PROJECT_ROOT/.git/hooks/pre-commit"

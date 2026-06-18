@@ -6,7 +6,7 @@ description: Chuyển kết quả ideation thành draft ticket + gợi ý chạy
 
 Dùng khi:
 
-- Đã có file `ideation-*.md` trong `.amap/knowledge/active/ideation/` với phần **“Đề xuất scope task”** và AC gợi ý tương đối rõ.
+- Đã có file `ideation-*.md` trong `{{ platform.framework_root }}/knowledge/active/ideation/` với phần **“Đề xuất scope task”** và AC gợi ý tương đối rõ.
 - User muốn biến ý tưởng đã được mổ xẻ thành **task chính thức** trong hệ thống ticket (Jira/…).
 
 Mục tiêu:
@@ -37,7 +37,7 @@ Mục tiêu:
   - Ticket được tạo tự động (trả về key/URL).
 - Cập nhật file ideation (tuỳ chọn) với:
   - Thông tin ticket đã tạo (id/key, thời gian).
-- Cập nhật `.amap/knowledge/active/AGENT_TRANSPARENCY.md`:
+- Cập nhật `{{ platform.framework_root }}/knowledge/active/AGENT_TRANSPARENCY.md`:
   - Đã chuyển hoá ideation nào → ticket nào.
 
 ---
@@ -47,7 +47,7 @@ Mục tiêu:
 ### Bước 1 — Chọn file ideation
 
 1. Nếu user cung cấp tên/slug:
-   - Tìm file khớp nhất trong `.amap/knowledge/active/ideation/`.
+   - Tìm file khớp nhất trong `{{ platform.framework_root }}/knowledge/active/ideation/`.
    - Nếu có nhiều match gần giống, hỏi user chọn.
 2. Nếu user không chỉ rõ:
    - Liệt kê một vài file ideation **gần đây nhất**:
@@ -181,7 +181,7 @@ Kết quả cuối là 1 draft ở dạng text, có thể:
 
 ### 7. Cập nhật AGENT_TRANSPARENCY
 
-Trong `.amap/knowledge/active/AGENT_TRANSPARENCY.md`:
+Trong `{{ platform.framework_root }}/knowledge/active/AGENT_TRANSPARENCY.md`:
 
 - Ghi rằng đã chạy `/idea-to-task`.
 - Nêu:
@@ -205,7 +205,7 @@ Khi `/idea-to-task` được gọi hoặc khi bootstrap liệt kê ideation file
 
 ```
 FUNCTION check_ideation_expiry():
-  FOR EACH file IN .amap/knowledge/active/ideation/ideation-*.md:
+  FOR EACH file IN {{ platform.framework_root }}/knowledge/active/ideation/ideation-*.md:
     1. Đọc frontmatter: created_at, ideation_expiry, status
     2. Nếu status = "converted" hoặc "archived": bỏ qua
     3. Nếu today > ideation_expiry VÀ status = "active":
@@ -225,9 +225,9 @@ FUNCTION check_ideation_expiry():
 FUNCTION auto_archive_expired_ideation(filename):
   IF user chọn [A] hoặc không phản hồi sau 30 ngày thêm:
     1. Đọc file ideation
-    2. Append vào .amap/knowledge/archive/ARCHIVE_LOG.md:
+    2. Append vào {{ platform.framework_root }}/knowledge/archive/ARCHIVE_LOG.md:
        | {filename} | {created_at} | {ideation_expiry} | expired | {tóm tắt 1 câu} |
-    3. Xoá file khỏi .amap/knowledge/active/ideation/
+    3. Xoá file khỏi {{ platform.framework_root }}/knowledge/active/ideation/
     4. Ghi vào AGENT_TRANSPARENCY:
        "[M4-ARCHIVE] {filename} đã được auto-archive do hết hạn."
 ```

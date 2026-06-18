@@ -58,58 +58,58 @@ plugins:
     type: rule
     source: rules/RULES.md
     template: false
-    output: .amap/rules/RULES.md
+    output: "{{ platform.framework_root }}/rules/RULES.md"
 
   - name: rules-flow
     type: rule
     source: rules/rules-flow.md
     template: false
-    output: .amap/rules/rules-flow.md
+    output: "{{ platform.framework_root }}/rules/rules-flow.md"
 
   - name: rules-tool
     type: rule
     source: rules/rules-tool.md
     template: false
-    output: .amap/rules/rules-tool.md
+    output: "{{ platform.framework_root }}/rules/rules-tool.md"
 
   - name: rules-exec
     type: rule
     source: rules/rules-exec.md
     template: false
-    output: .amap/rules/rules-exec.md
+    output: "{{ platform.framework_root }}/rules/rules-exec.md"
 
   - name: rules-knowledge
     type: rule
     source: rules/rules-knowledge.md
     template: false
-    output: .amap/rules/rules-knowledge.md
+    output: "{{ platform.framework_root }}/rules/rules-knowledge.md"
 
   - name: rules-guard
     type: rule
     source: rules/rules-guard.md
     template: false
-    output: .amap/rules/rules-guard.md
+    output: "{{ platform.framework_root }}/rules/rules-guard.md"
 
   # ─── SKILLS ───
   - name: requirement-analyst
     type: skill
     source: skills/requirement-analyst/
     template: false
-    output: .amap/skills/requirement-analyst/
+    output: "{{ platform.framework_root }}/skills/requirement-analyst/"
     copy_dir: true
 
   - name: spec-extract
     type: skill
     source: skills/spec-extract/
     template: false
-    output: .amap/skills/spec-extract/
+    output: "{{ platform.framework_root }}/skills/spec-extract/"
     copy_dir: true
 
   - name: db-explorer
     type: skill
     source: skills/db-explorer/
     template: false
-    output: .amap/skills/db-explorer/
+    output: "{{ platform.framework_root }}/skills/db-explorer/"
     copy_dir: true
     requires_capability: db_access
 
@@ -117,7 +117,7 @@ plugins:
     type: skill
     source: skills/codebase-explorer/
     template: false
-    output: .amap/skills/codebase-explorer/
+    output: "{{ platform.framework_root }}/skills/codebase-explorer/"
     copy_dir: true
     requires_capability: code_exploration
 
@@ -125,70 +125,70 @@ plugins:
     type: skill
     source: skills/architecture-reviewer/
     template: false
-    output: .amap/skills/architecture-reviewer/
+    output: "{{ platform.framework_root }}/skills/architecture-reviewer/"
     copy_dir: true
 
   - name: knowledge-curator
     type: skill
     source: skills/knowledge-curator/
     template: false
-    output: .amap/skills/knowledge-curator/
+    output: "{{ platform.framework_root }}/skills/knowledge-curator/"
     copy_dir: true
 
   - name: convention-intelligence-builder
     type: skill
     source: skills/convention-intelligence-builder/
     template: false
-    output: .amap/skills/convention-intelligence-builder/
+    output: "{{ platform.framework_root }}/skills/convention-intelligence-builder/"
     copy_dir: true
 
   - name: author-dna-builder
     type: skill
     source: skills/author-dna-builder/
     template: false
-    output: .amap/skills/author-dna-builder/
+    output: "{{ platform.framework_root }}/skills/author-dna-builder/"
     copy_dir: true
 
   - name: spec-validator
     type: skill
     source: skills/spec-validator/
     template: false
-    output: .amap/skills/spec-validator/
+    output: "{{ platform.framework_root }}/skills/spec-validator/"
     copy_dir: true
 
   - name: document-writer
     type: skill
     source: skills/document-writer/
     template: false
-    output: .amap/skills/document-writer/
+    output: "{{ platform.framework_root }}/skills/document-writer/"
     copy_dir: true
 
   - name: infra-tdd
     type: skill
     source: skills/infra-tdd/
     template: false
-    output: .amap/skills/infra-tdd/
+    output: "{{ platform.framework_root }}/skills/infra-tdd/"
     copy_dir: true
 
   - name: openspec-explore
     type: skill
     source: skills/openspec-explore/
     template: false
-    output: .amap/skills/openspec-explore/
+    output: "{{ platform.framework_root }}/skills/openspec-explore/"
     copy_dir: true
 
   - name: openspec-propose
     type: skill
     source: skills/openspec-propose/
     template: false
-    output: .amap/skills/openspec-propose/
+    output: "{{ platform.framework_root }}/skills/openspec-propose/"
     copy_dir: true
 
   - name: openspec-archive-change
     type: skill
     source: skills/openspec-archive-change/
     template: false
-    output: .amap/skills/openspec-archive-change/
+    output: "{{ platform.framework_root }}/skills/openspec-archive-change/"
     copy_dir: true
 
   # ─── WORKFLOWS ───
@@ -196,114 +196,114 @@ plugins:
     type: workflow
     source: workflows/task.md
     template: false
-    output: .amap/workflows/task.md
+    output: "{{ platform.framework_root }}/workflows/task.md"
 
   - name: workflow-idea-to-task
     type: workflow
     source: workflows/idea-to-task.md
     template: false
-    output: .amap/workflows/idea-to-task.md
+    output: "{{ platform.framework_root }}/workflows/idea-to-task.md"
 
   - name: workflow-index-source
     type: workflow
     source: workflows/index-source.md
     template: false
-    output: .amap/workflows/index-source.md
+    output: "{{ platform.framework_root }}/workflows/index-source.md"
     requires_capability: code_exploration
 
   - name: workflow-opsx-explore
     type: workflow
     source: workflows/opsx-explore.md
     template: false
-    output: .amap/workflows/opsx-explore.md
+    output: "{{ platform.framework_root }}/workflows/opsx-explore.md"
 
   - name: workflow-opsx-propose
     type: workflow
     source: workflows/opsx-propose.md
     template: false
-    output: .amap/workflows/opsx-propose.md
+    output: "{{ platform.framework_root }}/workflows/opsx-propose.md"
 
   - name: workflow-opsx-apply
     type: workflow
     source: workflows/opsx-apply.md
     template: false
-    output: .amap/workflows/opsx-apply.md
+    output: "{{ platform.framework_root }}/workflows/opsx-apply.md"
 
   - name: workflow-opsx-archive
     type: workflow
     source: workflows/opsx-archive.md
     template: false
-    output: .amap/workflows/opsx-archive.md
+    output: "{{ platform.framework_root }}/workflows/opsx-archive.md"
 
   - name: workflow-approve-conventions
     type: workflow
     source: workflows/approve-conventions.md
     template: false
-    output: .amap/workflows/approve-conventions.md
+    output: "{{ platform.framework_root }}/workflows/approve-conventions.md"
 
   - name: workflow-tdd
     type: workflow
     source: workflows/tdd.md
     template: false
-    output: .amap/workflows/tdd.md
+    output: "{{ platform.framework_root }}/workflows/tdd.md"
 
   # ─── PROCEDURES ───
   - name: bootstrap
     type: procedure
     source: procedures/bootstrap.md
     template: false
-    output: .amap/procedures/bootstrap.md
+    output: "{{ platform.framework_root }}/procedures/bootstrap.md"
 
   - name: context-loader
     type: procedure
     source: procedures/context-loader.md
     template: false
-    output: .amap/procedures/context-loader.md
+    output: "{{ platform.framework_root }}/procedures/context-loader.md"
 
   - name: context-compressor
     type: procedure
     source: procedures/context-compressor.md
     template: false
-    output: .amap/procedures/context-compressor.md
+    output: "{{ platform.framework_root }}/procedures/context-compressor.md"
 
   - name: token-tracking
     type: procedure
     source: procedures/token-tracking.md
     template: false
-    output: .amap/procedures/token-tracking.md
+    output: "{{ platform.framework_root }}/procedures/token-tracking.md"
 
   - name: executor
     type: procedure
     source: procedures/executor.md
     template: false
-    output: .amap/procedures/executor.md
+    output: "{{ platform.framework_root }}/procedures/executor.md"
 
   - name: reviewer
     type: procedure
     source: procedures/reviewer.md
     template: false
-    output: .amap/procedures/reviewer.md
+    output: "{{ platform.framework_root }}/procedures/reviewer.md"
 
   # ─── TOOLS ───
   - name: rule-projector
     type: tool
     source: tools/rule-projector/
     template: false
-    output: .amap/tools/rule-projector/
+    output: "{{ platform.framework_root }}/tools/rule-projector/"
     copy_dir: true
 
   - name: microloop-orchestrator
     type: tool
     source: tools/microloop-orchestrator/
     template: false
-    output: .amap/tools/microloop-orchestrator/
+    output: "{{ platform.framework_root }}/tools/microloop-orchestrator/"
     copy_dir: true
 
   - name: skill-lint
     type: tool
     source: tools/skill-lint/
     template: false
-    output: .amap/tools/skill-lint/
+    output: "{{ platform.framework_root }}/tools/skill-lint/"
     copy_dir: true
 
   # ─── KNOWLEDGE LAYER TEMPLATES ───
@@ -311,14 +311,14 @@ plugins:
     type: template
     source: knowledge-templates/
     template: false
-    output: .amap/knowledge/templates/
+    output: "{{ platform.framework_root }}/knowledge/templates/"
     copy_dir: true
 
   - name: knowledge-active-skeleton
     type: template
     source: knowledge-active/
     template: false
-    output: .amap/knowledge/active/
+    output: "{{ platform.framework_root }}/knowledge/active/"
     copy_dir: true
     ownership: user
 
@@ -326,6 +326,6 @@ plugins:
     type: template
     source: knowledge-long-term/
     template: false
-    output: .amap/knowledge/long-term/
+    output: "{{ platform.framework_root }}/knowledge/long-term/"
     copy_dir: true
     ownership: user

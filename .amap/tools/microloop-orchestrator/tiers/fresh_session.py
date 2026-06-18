@@ -6,6 +6,6 @@ run the executor procedure against the handoff. Clean context via session bounda
 
 def dispatch(handoff_path, result_path):
     return (
-        f"OPEN A NEW SESSION/CONTEXT and run .amap/procedures/executor.md against "
+        f"OPEN A NEW SESSION/CONTEXT and run {{ platform.framework_root }}/procedures/executor.md against "
         f"{handoff_path}. The executor writes its outcome to {result_path}."
     )

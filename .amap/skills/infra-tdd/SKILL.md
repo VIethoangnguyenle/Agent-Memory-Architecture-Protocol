@@ -94,7 +94,7 @@ QUY TẮC: KHÔNG dùng thuật ngữ kỹ thuật — viết cho người khôn
 
 #### T1 — Chiến lược
 ```
-PHẢI ĐỌC: .amap/knowledge/long-term/knowledge-snapshot.md
+PHẢI ĐỌC: {{ platform.framework_root }}/knowledge/long-term/knowledge-snapshot.md
 PHẢI GỌI: codebase-explorer → map module liên quan trong hệ thống
 PHẢI GỌI: {{ tools.search_code }} → tìm component hiện tại và pain points
 NẾU CÓ: Tài liệu/ticket/incident → spec-extract hoặc đọc trực tiếp

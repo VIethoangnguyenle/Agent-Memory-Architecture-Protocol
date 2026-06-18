@@ -15,7 +15,7 @@ Standalone workflow — không qua `/task` flow. Kích hoạt skill `infra-tdd` 
 
 ### Bước 1 — Load Skill
 ```
-READ: .amap/skills/infra-tdd/SKILL.md
+READ: {{ platform.framework_root }}/skills/infra-tdd/SKILL.md
 ```
 Đọc skill instructions và tuân thủ Knowledge-First Protocol.
 
@@ -27,7 +27,7 @@ Hỏi user hoặc đọc từ context:
 
 ### Bước 3 — Tạo TDD
 ```
-COPY: .amap/skills/infra-tdd/assets/TDD_TEMPLATE.md → docs/tdd/<module>-TDD.md
+COPY: {{ platform.framework_root }}/skills/infra-tdd/assets/TDD_TEMPLATE.md → docs/tdd/<module>-TDD.md
 ```
 Điền từng tầng theo thứ tự T1 → T2 → T3 → T4.
 
@@ -35,14 +35,14 @@ COPY: .amap/skills/infra-tdd/assets/TDD_TEMPLATE.md → docs/tdd/<module>-TDD.md
 
 ### Bước 4 — Socratic Deep-Dive
 ```
-READ: .amap/skills/infra-tdd/references/socratic-deep-dive.md
+READ: {{ platform.framework_root }}/skills/infra-tdd/references/socratic-deep-dive.md
 ```
 Chạy deep-dive cho mỗi quyết định non-trivial trong T3.
 
 ### Bước 5 — Viết ADR
 ```
-READ: .amap/skills/infra-tdd/references/adr-guide.md
-COPY: .amap/skills/infra-tdd/assets/ADR_TEMPLATE.md → docs/tdd/<module>-adr/NNNN-title.md
+READ: {{ platform.framework_root }}/skills/infra-tdd/references/adr-guide.md
+COPY: {{ platform.framework_root }}/skills/infra-tdd/assets/ADR_TEMPLATE.md → docs/tdd/<module>-adr/NNNN-title.md
 ```
 Một ADR per quyết định. Link từ T3 trong TDD.
 

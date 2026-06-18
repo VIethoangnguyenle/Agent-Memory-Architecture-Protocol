@@ -4,7 +4,7 @@
 
 ## Full YAML Template
 
-Ghi ra `.amap/knowledge/long-term/conventions.draft.yaml`:
+Ghi ra `{{ platform.framework_root }}/knowledge/long-term/conventions.draft.yaml`:
 
 ```yaml
 # conventions.draft.yaml
@@ -168,7 +168,7 @@ EXCEPTIONS phát hiện ({n}):
 NEEDS REVIEW ({n} câu hỏi):
   ❓ {pattern} — {lý do cần xác nhận}
 
-→ File đã được ghi tại: .amap/knowledge/long-term/conventions.draft.yaml
+→ File đã được ghi tại: {{ platform.framework_root }}/knowledge/long-term/conventions.draft.yaml
 → Mở file, review và edit trực tiếp trong IDE.
 → Khi xong: chạy /approve-conventions để commit chính thức.
 ```

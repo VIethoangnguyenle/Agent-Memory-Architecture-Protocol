@@ -9,14 +9,14 @@
 
 ```
 CHECK {{ platform.config_entry_point }}        → không có: ABORT "Repo chưa cấu hình Agent Memory Architecture."
-CHECK .amap/rules/RULES.md → không có: WARN, tiếp tục với guardrails mặc định
+CHECK {{ platform.framework_root }}/rules/RULES.md → không có: WARN, tiếp tục với guardrails mặc định
 READ: {{ platform.config_entry_point }}
-READ: .amap/rules/RULES.md              ← manifest + index
-READ: .amap/rules/rules-flow.md         ← flow constraints
-READ: .amap/rules/rules-tool.md         ← tool permissions
-READ: .amap/rules/rules-exec.md         ← data/arch/cost/obs
-READ: .amap/rules/rules-knowledge.md    ← knowledge lifecycle + path
-READ: .amap/rules/rules-guard.md        ← pre-invoke guards (đọc SAU cùng)
+READ: {{ platform.framework_root }}/rules/RULES.md              ← manifest + index
+READ: {{ platform.framework_root }}/rules/rules-flow.md         ← flow constraints
+READ: {{ platform.framework_root }}/rules/rules-tool.md         ← tool permissions
+READ: {{ platform.framework_root }}/rules/rules-exec.md         ← data/arch/cost/obs
+READ: {{ platform.framework_root }}/rules/rules-knowledge.md    ← knowledge lifecycle + path
+READ: {{ platform.framework_root }}/rules/rules-guard.md        ← pre-invoke guards (đọc SAU cùng)
 ```
 Logou
 ### PHASE 0.5 — External KI Conflict Check
@@ -30,20 +30,20 @@ DETECT external KI:
   - .cursorrules
   - .github/copilot-instructions.md
   - ~/.gemini/antigravity/knowledge/
-  - Bất kỳ file nào có tên *-rules.md hoặc *-ki.md ngoài .amap/
+  - Bất kỳ file nào có tên *-rules.md hoặc *-ki.md ngoài {{ platform.framework_root }}/
 
 IF external KI detected:
   1. WARN bắt buộc trong bootstrap report:
      "⚠️ [R-KI-1] External KI detected: {path}
-      SOURCE OF TRUTH = .amap/knowledge/ — KI chỉ được dùng làm pointer.
-      Nếu KI mâu thuẫn với .amap/knowledge/: LUÔN ưu tiên .amap/knowledge/."
+      SOURCE OF TRUTH = {{ platform.framework_root }}/knowledge/ — KI chỉ được dùng làm pointer.
+      Nếu KI mâu thuẫn với {{ platform.framework_root }}/knowledge/: LUÔN ưu tiên {{ platform.framework_root }}/knowledge/."
   2. Ghi vào AGENT_TRANSPARENCY:
      "[R-KI-1] KI conflict pending cleanup: {path}"
   3. Đề xuất action trong bootstrap report:
      "→ Action: Replace nội dung {ki_file} bằng pointer:
-        `# Xem .amap/knowledge/long-term/conventions.yaml + author-dna.yaml`"
+        `# Xem {{ platform.framework_root }}/knowledge/long-term/conventions.yaml + author-dna.yaml`"
   4. Nếu phát hiện KI file duplicate conventions/DNA:
-     **Từ chối dùng KI file đó trong phiên này** — chỉ dùng .amap/knowledge/.
+     **Từ chối dùng KI file đó trong phiên này** — chỉ dùng {{ platform.framework_root }}/knowledge/.
 
 IF external KI NOT detected:
   → tiếp tục bình thường
@@ -51,7 +51,7 @@ IF external KI NOT detected:
 
 **Lý do**: Một class lỗi đã quan sát được — agent dựa vào KI external (vd một file `*-rules.md` do tool
 runtime sinh ra: không version-controlled, không có DNA judgment layer) thay vì
-`.amap/knowledge/long-term/conventions.yaml`. External KI tạo ảo giác "đã đủ context" trong khi thiếu
+`{{ platform.framework_root }}/knowledge/long-term/conventions.yaml`. External KI tạo ảo giác "đã đủ context" trong khi thiếu
 hoàn toàn judgment layer.
 
 **Periodic re-scan**: Ngoài bootstrap, cũng chạy scan này khi:
@@ -63,7 +63,7 @@ hoàn toàn judgment layer.
 ## PHASE 1 — Skill Discovery
 
 ```
-READ .amap/skills/skill-index.yaml
+READ {{ platform.framework_root }}/skills/skill-index.yaml
   EXTRACT: YAML frontmatter (name, description, trigger_conditions) của các skill
   KHÔNG ĐỌC: full instruction body — defer đến khi trigger condition match
   REGISTER vào skill-registry (in-memory): {name, description, triggers}
@@ -77,9 +77,9 @@ READ .amap/skills/skill-index.yaml
 ## PHASE 2 — Workflow Discovery
 
 ```
-READ .amap/workflows/task.md          → /task
-READ .amap/workflows/idea-to-task.md  → /idea-to-task
-READ .amap/workflows/index-source.md  → /index-source (optional)
+READ {{ platform.framework_root }}/workflows/task.md          → /task
+READ {{ platform.framework_root }}/workflows/idea-to-task.md  → /idea-to-task
+READ {{ platform.framework_root }}/workflows/index-source.md  → /index-source (optional)
 ```
 
 ---
@@ -96,7 +96,7 @@ DETECT resume context:
   THEN → đây là phiên RESUME (không phải task mới)
 
 IF RESUME:
-  1. BẮT BUỘC re-read .amap/workflows/task.md để nạp lại toàn bộ CRITICAL blocks
+  1. BẮT BUỘC re-read {{ platform.framework_root }}/workflows/task.md để nạp lại toàn bộ CRITICAL blocks
      (đặc biệt: CRITICAL block ở đầu Section 2 — OpenSpec requirement)
   2. Xác định pha hiện tại từ AGENT_TRANSPARENCY (tìm dòng "Pha X DONE" trong section "Lịch sử pha"):
      - Có `Pha 1 DONE`, chưa có `Pha 2 DONE` → đang chờ `/task spec`
@@ -124,14 +124,14 @@ Nạp file theo thứ tự ưu tiên. Logic đầy đủ: `context-loader.md`.
 
 | Priority | Path | Điều kiện nạp | Nếu thiếu |
 |----------|------|--------------|-----------|
-| P1 | `.amap/knowledge/active/REQUIREMENT.md` | Tồn tại + không phải skeleton | status = "empty" |
-| P1 | `.amap/knowledge/active/EXPLORE_CONTEXT.md` | Tồn tại + không phải skeleton | status = "empty" |
-| P1 | `.amap/knowledge/active/AGENT_TRANSPARENCY.md` | Tồn tại | bỏ qua |
-| P2 | `.amap/knowledge/active/ideation/ideation-*.md` | Tất cả file .md | danh sách rỗng |
-| P2 | `.amap/knowledge/long-term/knowledge-snapshot.md` | Luôn nạp nếu tồn tại | **BLOCK** — ghi vào bootstrap report: "⛔ knowledge-snapshot.md MISSING — độ tin cậy kiến trúc = KHÔNG XÁC ĐỊNH. Chạy `/index-source` để tạo." |
-| P2 | `.amap/knowledge/long-term/conventions.yaml` | status=approved | **BLOCK** — như hiện tại |
-| P2 | `.amap/knowledge/long-term/author-dna.yaml` | status=approved | **BLOCK** — như hiện tại |
-| P4 | `.amap/knowledge/archive/` | Chỉ khi P1 trống | đọc metadata của ≤10 ticket gần nhất |
+| P1 | `{{ platform.framework_root }}/knowledge/active/REQUIREMENT.md` | Tồn tại + không phải skeleton | status = "empty" |
+| P1 | `{{ platform.framework_root }}/knowledge/active/EXPLORE_CONTEXT.md` | Tồn tại + không phải skeleton | status = "empty" |
+| P1 | `{{ platform.framework_root }}/knowledge/active/AGENT_TRANSPARENCY.md` | Tồn tại | bỏ qua |
+| P2 | `{{ platform.framework_root }}/knowledge/active/ideation/ideation-*.md` | Tất cả file .md | danh sách rỗng |
+| P2 | `{{ platform.framework_root }}/knowledge/long-term/knowledge-snapshot.md` | Luôn nạp nếu tồn tại | **BLOCK** — ghi vào bootstrap report: "⛔ knowledge-snapshot.md MISSING — độ tin cậy kiến trúc = KHÔNG XÁC ĐỊNH. Chạy `/index-source` để tạo." |
+| P2 | `{{ platform.framework_root }}/knowledge/long-term/conventions.yaml` | status=approved | **BLOCK** — như hiện tại |
+| P2 | `{{ platform.framework_root }}/knowledge/long-term/author-dna.yaml` | status=approved | **BLOCK** — như hiện tại |
+| P4 | `{{ platform.framework_root }}/knowledge/archive/` | Chỉ khi P1 trống | đọc metadata của ≤10 ticket gần nhất |
 
 **Skeleton detection**: File là template skeleton nếu chứa `<!-- TODO: fill in -->` hoặc độ dài < 200 ký tự.
 
@@ -176,7 +176,7 @@ Format (Giới hạn dưới 5 dòng):
 >   Nếu snapshot MISSING: ghi `🗺️ Snapshot: MISSING ⛔` và hạ confidence kiến trúc = KHÔNG XÁC ĐỊNH.
 > Nếu KHÔNG ghi các dòng này = R-Guard-1 sẽ block các skill downstream.
 
-Sau đó ghi vào `.amap/knowledge/active/AGENT_TRANSPARENCY.md` — section Bootstrap:
+Sau đó ghi vào `{{ platform.framework_root }}/knowledge/active/AGENT_TRANSPARENCY.md` — section Bootstrap:
 
 ```
 - Timestamp, {{ platform.config_entry_point }} [x], RULES.md [x], Skills loaded [list], Workflows [list]

@@ -35,7 +35,9 @@ fi
 PY="$VENV/bin/python"
 
 # Route to update if AMAP already installed, else init.
-if [ -f "$TARGET/.amap/resolved-config.yaml" ]; then
+if [ -f "$TARGET/.agents/resolved-config.yaml" ] || \
+   [ -f "$TARGET/.claude/resolved-config.yaml" ] || \
+   [ -f "$TARGET/.amap/resolved-config.yaml" ]; then
   echo "→ Existing AMAP install detected — updating."
   ( cd "$AMAP_ROOT" && "$PY" -m cli.amap update --target "$TARGET" )
 else

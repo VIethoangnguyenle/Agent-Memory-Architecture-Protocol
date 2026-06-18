@@ -58,11 +58,20 @@ def get_ownership(plugin: dict) -> str:
     return plugin.get("ownership", "framework")
 
 
+def resolved_config_candidates(target: Path) -> List[Path]:
+    """Return supported resolved-config locations in preference order."""
+    return [
+        target / ".agents" / "resolved-config.yaml",
+        target / ".claude" / "resolved-config.yaml",
+        target / ".amap" / "resolved-config.yaml",
+    ]
+
+
 def generate_resolved_config(
-    target_dir: Path, platform_name: str, selected_mcps: List[str], language: str
+    target_dir: Path, platform, selected_mcps: List[str], language: str
 ) -> None:
-    """Write .amap/resolved-config.yaml recording the init/reconfigure choices."""
-    config_path = target_dir / ".amap" / "resolved-config.yaml"
+    """Write resolved-config.yaml under the platform's framework root."""
+    config_path = target_dir / platform.framework_root / "resolved-config.yaml"
     config_path.parent.mkdir(parents=True, exist_ok=True)
     with open(config_path, "w", encoding="utf-8") as f:
         f.write("# AMAP Resolved Configuration\n")
@@ -70,7 +79,8 @@ def generate_resolved_config(
         f.write("# The adapter layer is pre-resolved — no runtime lookup needed.\n\n")
         yaml.dump(
             {"resolved": {
-                "platform": platform_name,
+                "platform": platform.name,
+                "framework_root": platform.framework_root,
                 "mcps": selected_mcps,
                 "language": language,
                 "framework_version": "3.0",
@@ -79,11 +89,7 @@ def generate_resolved_config(
         )
 
 
-def load_resolved_config(target: Path) -> Optional[dict]:
-    """Load .amap/resolved-config.yaml's 'resolved' section, or None if missing/invalid."""
-    config_path = target / ".amap" / "resolved-config.yaml"
-    if not config_path.exists():
-        return None
+def _read_resolved_config(config_path: Path) -> Optional[dict]:
     try:
         with open(config_path, "r", encoding="utf-8") as f:
             data = yaml.safe_load(f)
@@ -93,6 +99,37 @@ def load_resolved_config(target: Path) -> Optional[dict]:
     if not isinstance(resolved, dict):
         return None
     return resolved
+
+
+def load_resolved_config(target: Path) -> Optional[dict]:
+    """Load resolved config from native or legacy roots."""
+    from cli.platforms import get_platform
+
+    valid = []
+    for config_path in resolved_config_candidates(target):
+        if not config_path.exists():
+            continue
+        resolved = _read_resolved_config(config_path)
+        if resolved is None:
+            continue
+        platform_key = resolved.get("platform", "generic")
+        try:
+            expected_root = get_platform(platform_key).framework_root
+        except ValueError:
+            expected_root = ".amap"
+        resolved.setdefault("framework_root", expected_root)
+        resolved["_config_path"] = str(config_path)
+        valid.append(resolved)
+
+    if not valid:
+        return None
+
+    for resolved in valid:
+        path = Path(resolved["_config_path"])
+        if path.parent.as_posix().endswith(resolved["framework_root"]):
+            return resolved
+
+    return valid[0]
 
 
 def scaffold_plugin(

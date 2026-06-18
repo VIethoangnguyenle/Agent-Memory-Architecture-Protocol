@@ -9,17 +9,17 @@ skills:
       KHÔNG dùng cho: chuẩn hoá yêu cầu (→ requirement-analyst),
       khám phá code chi tiết (→ codebase-explorer), validate spec đã sinh (→ spec-validator).
     pre_conditions:
-      - file: .amap/knowledge/active/REQUIREMENT.md
+      - file: "{{ platform.framework_root }}/knowledge/active/REQUIREMENT.md"
         condition: not_skeleton
         on_fail: "ABORT — chạy requirement-analyst trước"
-      - file: .amap/knowledge/active/EXPLORE_CONTEXT.md
+      - file: "{{ platform.framework_root }}/knowledge/active/EXPLORE_CONTEXT.md"
         condition: not_skeleton
         on_fail: "WARN — EXPLORE_CONTEXT thiếu, độ tin cậy kiến trúc sẽ là TRUNG BÌNH — cân nhắc chạy db-explorer / codebase-explorer trước"
-      - file: .amap/knowledge/long-term/conventions.yaml
+      - file: "{{ platform.framework_root }}/knowledge/long-term/conventions.yaml"
         condition: exists
         on_fail: "WARN — conventions.yaml chưa có, đánh giá boundary không đầy đủ"
         load_scope: full  # override selective loading — arch-reviewer cần toàn bộ design_patterns
-      - file: .amap/knowledge/long-term/author-dna.yaml
+      - file: "{{ platform.framework_root }}/knowledge/long-term/author-dna.yaml"
         condition: exists
         on_fail: "WARN — author-dna.yaml chưa có, hard principles không được áp dụng"
         load_scope: hard_principles+complexity_thresholds  # pattern_preferences không cần ở Pha 1
@@ -44,10 +44,10 @@ skills:
       KHÔNG dùng cho: khám phá DB schema (→ db-explorer),
       review kiến trúc/rủi ro (→ architecture-reviewer), sinh spec (→ openspec-propose).
     pre_conditions:
-      - file: .amap/knowledge/active/REQUIREMENT.md
+      - file: "{{ platform.framework_root }}/knowledge/active/REQUIREMENT.md"
         condition: not_skeleton
         on_fail: "ABORT — chạy requirement-analyst trước"
-      - file: .amap/knowledge/active/EXPLORE_CONTEXT.md
+      - file: "{{ platform.framework_root }}/knowledge/active/EXPLORE_CONTEXT.md"
         condition: exists
         on_fail: "WARN — EXPLORE_CONTEXT chưa có, tạo skeleton trước khi ghi"
   -
@@ -68,7 +68,7 @@ skills:
       KHÔNG dùng cho: khám phá code/module (→ codebase-explorer),
       review kiến trúc tổng thể (→ architecture-reviewer), viết tài liệu (→ document-writer).
     pre_conditions:
-      - file: .amap/knowledge/active/REQUIREMENT.md
+      - file: "{{ platform.framework_root }}/knowledge/active/REQUIREMENT.md"
         condition: not_skeleton
         on_fail: "ABORT — chạy requirement-analyst trước"
       - tool: db-remote
@@ -148,10 +148,10 @@ skills:
       version: "1.0"
       generatedBy: "1.2.0"
     pre_conditions:
-      - file: .amap/knowledge/active/REQUIREMENT.md
+      - file: "{{ platform.framework_root }}/knowledge/active/REQUIREMENT.md"
         condition: not_skeleton
         on_fail: "ABORT — chạy requirement-analyst trước"
-      - file: .amap/knowledge/active/EXPLORE_CONTEXT.md
+      - file: "{{ platform.framework_root }}/knowledge/active/EXPLORE_CONTEXT.md"
         condition: not_skeleton
         on_fail: "WARN — EXPLORE_CONTEXT thiếu, spec sẽ có Độ tin cậy THẤP"
       - phase: pha-1
@@ -167,7 +167,7 @@ skills:
       extract từ wiki/Confluence dài nhiều trang (→ spec-extract),
       review kiến trúc hoặc đánh giá rủi ro (→ architecture-reviewer).
     pre_conditions:
-      - file: .amap/knowledge/active/AGENT_TRANSPARENCY.md
+      - file: "{{ platform.framework_root }}/knowledge/active/AGENT_TRANSPARENCY.md"
         condition: exists
         on_fail: "ABORT — bootstrap chưa chạy, gọi `/task` trước"
       - input: ticket_id_or_doc_url
@@ -190,7 +190,7 @@ skills:
       KHÔNG dùng cho: sinh spec mới (→ openspec-propose),
       review kiến trúc (→ architecture-reviewer), chuẩn hoá yêu cầu (→ requirement-analyst).
     pre_conditions:
-      - file: .amap/knowledge/active/REQUIREMENT.md
+      - file: "{{ platform.framework_root }}/knowledge/active/REQUIREMENT.md"
         condition: not_skeleton
         on_fail: "ABORT — không có REQUIREMENT để validate spec"
       - phase: pha-2

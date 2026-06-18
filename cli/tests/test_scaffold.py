@@ -4,8 +4,10 @@ import pytest
 from jinja2 import TemplateSyntaxError
 
 from cli.scaffold import (
+    generate_resolved_config,
     load_manifest,
     load_resolved_config,
+    resolved_config_candidates,
     has_capability,
     get_ownership,
     resolve_source_path,
@@ -80,13 +82,56 @@ def _write_resolved_config(target, content):
     config_path.write_text(content, encoding="utf-8")
 
 
+def test_resolved_config_candidates_include_native_and_legacy_roots(tmp_path):
+    candidates = [p.relative_to(tmp_path).as_posix() for p in resolved_config_candidates(tmp_path)]
+    assert candidates == [
+        ".agents/resolved-config.yaml",
+        ".claude/resolved-config.yaml",
+        ".amap/resolved-config.yaml",
+    ]
+
+
+def test_generate_resolved_config_uses_platform_framework_root(tmp_path):
+    from cli.platforms import get_platform
+
+    platform = get_platform("antigravity")
+    generate_resolved_config(tmp_path, platform, ["socraticode"], "python")
+
+    config = tmp_path / ".agents" / "resolved-config.yaml"
+    assert config.exists()
+    assert not (tmp_path / ".amap").exists()
+    body = config.read_text(encoding="utf-8")
+    assert "platform: antigravity" in body
+    assert "framework_root: .agents" in body
+
+
+def test_load_resolved_config_reads_agents_config(tmp_path):
+    config = tmp_path / ".agents" / "resolved-config.yaml"
+    config.parent.mkdir(parents=True)
+    config.write_text(
+        "resolved:\n"
+        "  platform: antigravity\n"
+        "  framework_root: .agents\n"
+        "  mcps: [socraticode]\n"
+        "  language: python\n",
+        encoding="utf-8",
+    )
+
+    resolved = load_resolved_config(tmp_path)
+    assert resolved["platform"] == "antigravity"
+    assert resolved["framework_root"] == ".agents"
+
+
 def test_load_resolved_config_returns_dict_when_valid(tmp_path):
     _write_resolved_config(
         tmp_path,
         "resolved:\n  platform: claude-code\n  mcps: []\n  language: python\n",
     )
     resolved = load_resolved_config(tmp_path)
-    assert resolved == {"platform": "claude-code", "mcps": [], "language": "python"}
+    assert resolved["platform"] == "claude-code"
+    assert resolved["mcps"] == []
+    assert resolved["language"] == "python"
+    assert resolved["framework_root"] == ".claude"
 
 
 def test_load_resolved_config_returns_none_when_missing(tmp_path):
@@ -113,6 +158,17 @@ def test_load_resolved_config_returns_none_when_malformed_yaml(tmp_path):
     assert load_resolved_config(tmp_path) is None
 
 
+def test_load_resolved_config_reads_legacy_amap_config(tmp_path):
+    _write_resolved_config(
+        tmp_path,
+        "resolved:\n  platform: generic\n  mcps: []\n  language: python\n",
+    )
+
+    resolved = load_resolved_config(tmp_path)
+    assert resolved["platform"] == "generic"
+    assert resolved["framework_root"] == ".amap"
+
+
 def test_verify_no_unresolved_flags_offending_py_file(tmp_path):
     # .py is not in scaffold's single-file render allowlist, but the
     # renderer's copy_and_render_directory does render .py files — so the
@@ -126,10 +182,8 @@ def test_verify_no_unresolved_flags_offending_py_file(tmp_path):
     assert offending in offenders
 
 
-def test_verify_no_unresolved_flags_suffixless_entry_point(tmp_path):
-    # .cursorrules has an empty suffix and would escape a suffix-only
-    # scan — but it is a real platform entry point and must be checked.
-    offending = tmp_path / ".cursorrules"
+def test_verify_no_unresolved_flags_platform_entry_point(tmp_path):
+    offending = tmp_path / "AGENTS.md"
     offending.write_text("rules {{ platform.config_entry_point }}\n", encoding="utf-8")
 
     offenders = verify_no_unresolved(tmp_path)
@@ -279,4 +333,3 @@ def test_scaffold_native_skill_exports_ignores_non_skill_workflow_plugins(tmp_pa
     stats = scaffold_native_skill_exports(plugins, tmp_path, platform, verbose=False)
 
     assert stats == {"exported": 0, "skipped": 0}
-

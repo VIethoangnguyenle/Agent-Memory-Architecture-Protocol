@@ -23,6 +23,12 @@ from cli.scaffold import (
 )
 
 
+def warn_legacy_amap(target: Path, platform) -> None:
+    legacy = target / ".amap"
+    if platform.framework_root != ".amap" and legacy.exists():
+        print(f"  ⚠️  legacy .amap remains at {legacy}; not removed automatically.")
+
+
 def run_update(target_dir: str, amap_root: Optional[str] = None, reconfigure: bool = False) -> None:
     """Re-render framework files into an existing AMAP project."""
     target = Path(target_dir).resolve()
@@ -46,6 +52,7 @@ def run_update(target_dir: str, amap_root: Optional[str] = None, reconfigure: bo
         language = resolved.get("language", "other")
 
     platform = get_platform(platform_key)
+    framework_root = resolved.get("framework_root", platform.framework_root)
     context = platform.build_render_context(selected_mcps, language)
     jinja_env = create_renderer(str(amap))
 
@@ -70,7 +77,7 @@ def run_update(target_dir: str, amap_root: Optional[str] = None, reconfigure: bo
         shutil.rmtree(staging, ignore_errors=True)
 
     if reconfigure:
-        generate_resolved_config(target, platform_key, selected_mcps, language)
+        generate_resolved_config(target, platform, selected_mcps, language)
         # Remove stale entry-point files left by the previous platform.
         current_entry = platform.config_entry_point
         for key in PLATFORMS:
@@ -80,17 +87,13 @@ def run_update(target_dir: str, amap_root: Optional[str] = None, reconfigure: bo
                 if stale.exists():
                     stale.unlink()
                     print(f"  🗑️  Removed stale entry point: {other_entry}")
-        # Remove stale native skill/workflow export dirs left by the previous
-        # platform. Scoped to exactly other_export["dir"] (e.g. ".claude/skills"),
-        # never the parent dotdir (".claude/"), which may hold unrelated user
-        # content (this repo's own .claude/settings.local.json, for example).
-        current_export = platform.native_skill_export
-        for key in PLATFORMS:
-            other_export = get_platform(key).native_skill_export
-            if other_export and other_export != current_export:
-                stale_dir = target / other_export["dir"]
-                if stale_dir.exists():
-                    shutil.rmtree(stale_dir)
-                    print(f"  🗑️  Removed stale native export dir: {other_export['dir']}")
+        for root in [".agents", ".claude", ".amap"]:
+            root_path = target / root
+            if root != platform.framework_root and root_path.exists():
+                print(f"  ⚠️  stale framework root detected: {root_path}")
+    else:
+        framework_root = resolved.get("framework_root", framework_root)
+
+    warn_legacy_amap(target, platform)
 
     print(f"\n  ✅ Updated {count} framework files. User files preserved.\n")

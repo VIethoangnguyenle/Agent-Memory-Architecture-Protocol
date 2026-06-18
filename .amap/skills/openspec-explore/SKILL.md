@@ -123,9 +123,9 @@ This tells you:
 ### Check knowledge-layer context
 
 Ngoài `openspec list`, cũng kiểm tra context từ pipeline `/task`:
-- `.amap/knowledge/active/REQUIREMENT.md` — yêu cầu đã chuẩn hoá.
-- `.amap/knowledge/active/EXPLORE_CONTEXT.md` — bối cảnh DB + code + kiến trúc.
-- `.amap/knowledge/long-term/knowledge-snapshot.md` — tổng quan hệ thống.
+- `{{ platform.framework_root }}/knowledge/active/REQUIREMENT.md` — yêu cầu đã chuẩn hoá.
+- `{{ platform.framework_root }}/knowledge/active/EXPLORE_CONTEXT.md` — bối cảnh DB + code + kiến trúc.
+- `{{ platform.framework_root }}/knowledge/long-term/knowledge-snapshot.md` — tổng quan hệ thống.
 
 Nếu có nội dung → dùng làm bối cảnh khi explore, giúp cuộc thảo luận bám sát thực tế hệ thống.
 

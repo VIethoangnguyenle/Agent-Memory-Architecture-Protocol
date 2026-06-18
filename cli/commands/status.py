@@ -42,17 +42,22 @@ def run_status(target_dir: str) -> None:
         mcps = resolved.get("mcps", [])
         language = resolved.get("language", "unknown")
         version = resolved.get("framework_version", "unknown")
+        framework_root = resolved.get("framework_root", get_platform(platform).framework_root)
 
         print(f"  🔧 Framework: AMAP v{version}")
         print(f"  🔌 Platform:  {platform}")
         print(f"  📦 MCPs:      {', '.join(mcps) if mcps else 'none'}")
         print(f"  💬 Language:  {language}")
+        print(f"  🧭 Root:      {framework_root}")
     else:
         print(f"  ⚠️  No resolved-config.yaml — may be a legacy installation")
         print(f"     Run: amap init --target {target}")
+        framework_root = ".amap"
+
+    root = target / framework_root
 
     # ─── Skills ───
-    skills_dir = target / ".amap" / "skills"
+    skills_dir = root / "skills"
     if skills_dir.is_dir():
         skills = sorted([d.name for d in skills_dir.iterdir() if d.is_dir()])
         print(f"\n  🧠 Skills ({len(skills)}):")
@@ -60,7 +65,7 @@ def run_status(target_dir: str) -> None:
             print(f"     • {s}")
 
     # ─── Workflows ───
-    workflows_dir = target / ".amap" / "workflows"
+    workflows_dir = root / "workflows"
     if workflows_dir.is_dir():
         wfs = sorted([f.stem for f in workflows_dir.iterdir() if f.is_file() and f.suffix == ".md"])
         print(f"\n  📋 Workflows ({len(wfs)}):")
@@ -68,8 +73,8 @@ def run_status(target_dir: str) -> None:
             print(f"     • /{w}")
 
     # ─── Knowledge layer ───
-    kl_active = target / ".amap/knowledge" / "active"
-    kl_archive = target / ".amap/knowledge" / "archive"
+    kl_active = root / "knowledge" / "active"
+    kl_archive = root / "knowledge" / "archive"
 
     if kl_active.is_dir():
         req = kl_active / "REQUIREMENT.md"
@@ -81,8 +86,8 @@ def run_status(target_dir: str) -> None:
         print(f"  📦 Archive: {len(tickets)} tickets")
 
     # ─── Author DNA ───
-    dna = target / ".amap/knowledge" / "long-term" / "author-dna.yaml"
-    dna_draft = target / ".amap/knowledge" / "long-term" / "author-dna.draft.yaml"
+    dna = root / "knowledge" / "long-term" / "author-dna.yaml"
+    dna_draft = root / "knowledge" / "long-term" / "author-dna.draft.yaml"
     if dna.exists():
         print(f"  🧬 Author DNA: approved")
     elif dna_draft.exists():

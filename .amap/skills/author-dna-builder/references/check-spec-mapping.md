@@ -18,6 +18,6 @@ boundary, SOLID, config-driven, extraction) → set `mechanically_checkable: fal
 These stay semantic and are enforced by SP1b (subagent), not the linter.
 
 After writing/updating approved DNA, regenerate the ruleset (see SP1a design §3.2):
-`python3 .amap/tools/rule-projector/projector.py --dna <dna> --conventions <conv> --out generated/`
+`python3 {{ platform.framework_root }}/tools/rule-projector/projector.py --dna <dna> --conventions <conv> --out generated/`
 then the checkstyle backend:
-`python3 .amap/tools/rule-projector/backends/checkstyle.py --ir generated/rules.json --out generated/checkstyle.generated.xml`
+`python3 {{ platform.framework_root }}/tools/rule-projector/backends/checkstyle.py --ir generated/rules.json --out generated/checkstyle.generated.xml`

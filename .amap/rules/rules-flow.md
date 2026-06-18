@@ -22,7 +22,7 @@
 
 ### [CRITICAL] R-Flow-3: User workflow rules > agent system defaults
 
-- Khi workflow trong repo (`.amap/workflows/*.md`) có chỉ thị rõ ràng (đặc biệt là `[CRITICAL]` block),
+- Khi workflow trong repo (`{{ platform.framework_root }}/workflows/*.md`) có chỉ thị rõ ràng (đặc biệt là `[CRITICAL]` block),
   **ưu tiên tuyệt đối hơn** mọi hành vi mặc định của agent runtime (planning mode, artifact generation,
   file output convention của agent runtime, vd Claude, Cursor, Gemini, Antigravity, v.v.).
 - Cụ thể:
@@ -57,7 +57,7 @@
 ### [CRITICAL] R-Spec-1: Spec chỉ dựa trên REQUIREMENT + context
 
 - Khi sinh spec, chỉ được dùng thông tin từ:
-  - `.amap/knowledge/active/REQUIREMENT.md`, `.amap/knowledge/active/EXPLORE_CONTEXT.md`, `.amap/knowledge/long-term/knowledge-snapshot.md`, code/DB đã explore.
+  - `{{ platform.framework_root }}/knowledge/active/REQUIREMENT.md`, `{{ platform.framework_root }}/knowledge/active/EXPLORE_CONTEXT.md`, `{{ platform.framework_root }}/knowledge/long-term/knowledge-snapshot.md`, code/DB đã explore.
 
 ### [CRITICAL] R-Spec-2: Không tự động “fix” requirement
 

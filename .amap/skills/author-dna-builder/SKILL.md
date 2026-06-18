@@ -157,7 +157,7 @@ Default enforcement nếu không hỏi: `FLAG_AND_WARN`.
 Sau interview, agent tổng hợp thành file:
 
 ```
-GENERATE: .amap/knowledge/long-term/author-dna.draft.yaml
+GENERATE: {{ platform.framework_root }}/knowledge/long-term/author-dna.draft.yaml
 
 FOR EACH confirmed hypothesis:
   → Encode vào section phù hợp (hard_principles / style_preferences / creative_overrides)
@@ -194,7 +194,7 @@ Sau khi DNA được approve (/approve-dna), regenerate ruleset qua rule-project
 **Sau khi sinh draft:**
 
 ```
-"author-dna.draft.yaml đã được tạo tại .amap/knowledge/templates/.
+"author-dna.draft.yaml đã được tạo tại {{ platform.framework_root }}/knowledge/templates/.
 Anh mở file, đọc lại toàn bộ — chỉnh trực tiếp nếu cần.
 Khi sẵn sàng: /approve-dna để commit chính thức."
 ```
@@ -258,9 +258,9 @@ Tự động gợi ý re-validation khi DNA stale (>90 ngày hoặc 2+ refactor 
 
 ## Đầu ra
 
-- **File chính**: `.amap/knowledge/long-term/author-dna.draft.yaml` — bản nháp DNA chờ user review.
-- **Sau `/approve-dna`**: `.amap/knowledge/long-term/author-dna.yaml` — bản chính thức (approved).
-- **Cập nhật**: `.amap/knowledge/active/AGENT_TRANSPARENCY.md` — ghi lại kết quả scan + interview.
+- **File chính**: `{{ platform.framework_root }}/knowledge/long-term/author-dna.draft.yaml` — bản nháp DNA chờ user review.
+- **Sau `/approve-dna`**: `{{ platform.framework_root }}/knowledge/long-term/author-dna.yaml` — bản chính thức (approved).
+- **Cập nhật**: `{{ platform.framework_root }}/knowledge/active/AGENT_TRANSPARENCY.md` — ghi lại kết quả scan + interview.
 
 ---
 

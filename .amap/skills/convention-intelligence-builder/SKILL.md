@@ -13,7 +13,7 @@ description: >
 
 ## 1. Mục tiêu
 
-Extract **implicit conventions** từ codebase thực tế — không phải generic best practice — và đưa chúng vào `.amap/knowledge/long-term/conventions.yaml` để agent dùng khi sinh spec và code.
+Extract **implicit conventions** từ codebase thực tế — không phải generic best practice — và đưa chúng vào `{{ platform.framework_root }}/knowledge/long-term/conventions.yaml` để agent dùng khi sinh spec và code.
 
 Hai nguồn được scan đồng thời qua UA Knowledge Graph:
 - **Project codebase** (`PROJECT_ROOTS`) — convention project-native, có thể có exception có lý do.
@@ -111,7 +111,7 @@ FOR EACH pattern category:
 
 ### Bước 4 — Sinh conventions.draft.yaml
 
-Ghi ra `.amap/knowledge/long-term/conventions.draft.yaml` với 7 sections:
+Ghi ra `{{ platform.framework_root }}/knowledge/long-term/conventions.draft.yaml` với 7 sections:
 Naming Conventions, Package Structure, Design Patterns, Upstream Constraints,
 Test Conventions, Exceptions & Inconsistencies, Needs Review.
 
@@ -142,9 +142,9 @@ Scan chỉ files changed since last scan. Fallback to full scan nếu >20% files
 
 ## Đầu ra
 
-- **File chính**: `.amap/knowledge/long-term/conventions.draft.yaml` — bản nháp chờ user review.
-- **Sau `/approve-conventions`**: `.amap/knowledge/long-term/conventions.yaml` — bản chính thức (approved).
-- **Cập nhật**: `.amap/knowledge/active/AGENT_TRANSPARENCY.md` — ghi lại kết quả scan.
+- **File chính**: `{{ platform.framework_root }}/knowledge/long-term/conventions.draft.yaml` — bản nháp chờ user review.
+- **Sau `/approve-conventions`**: `{{ platform.framework_root }}/knowledge/long-term/conventions.yaml` — bản chính thức (approved).
+- **Cập nhật**: `{{ platform.framework_root }}/knowledge/active/AGENT_TRANSPARENCY.md` — ghi lại kết quả scan.
 
 ---
 

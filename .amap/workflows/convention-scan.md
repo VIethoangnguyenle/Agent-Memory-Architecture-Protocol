@@ -60,7 +60,7 @@ INVOKE: convention-intelligence-builder
     3. Sinh conventions.draft.yaml
     4. Summary Report
 
-  CHI TIẾT LOGIC: Xem .amap/skills/convention-intelligence-builder/SKILL.md
+  CHI TIẾT LOGIC: Xem {{ platform.framework_root }}/skills/convention-intelligence-builder/SKILL.md
 ```
 
 ---
@@ -70,7 +70,7 @@ INVOKE: convention-intelligence-builder
 ```
 SAU KHI skill hoàn thành:
 
-VERIFY: .amap/knowledge/long-term/conventions.draft.yaml tồn tại?
+VERIFY: {{ platform.framework_root }}/knowledge/long-term/conventions.draft.yaml tồn tại?
   → Không: ERROR "Scan hoàn thành nhưng draft không được tạo. Kiểm tra log."
   → Có: tiếp tục
 
@@ -83,7 +83,7 @@ HIỂN THỊ cho user:
    • {n} upstream constraints
    • {n} exceptions/inconsistencies cần review
 
-   📄 Draft: .amap/knowledge/long-term/conventions.draft.yaml
+   📄 Draft: {{ platform.framework_root }}/knowledge/long-term/conventions.draft.yaml
    → Mở file trong IDE, review + edit trực tiếp.
    → Khi sẵn sàng: /approve-conventions để commit chính thức."
 ```
@@ -93,7 +93,7 @@ HIỂN THỊ cho user:
 ## Bước 3 — Cập nhật AGENT_TRANSPARENCY
 
 ```
-APPEND vào .amap/knowledge/active/AGENT_TRANSPARENCY.md:
+APPEND vào {{ platform.framework_root }}/knowledge/active/AGENT_TRANSPARENCY.md:
   [x] /convention-scan: scan hoàn thành
   - Mode: {full | update | rebuild}
   - Patterns: {n} high, {n} medium, {n} low

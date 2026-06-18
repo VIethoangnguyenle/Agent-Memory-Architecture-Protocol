@@ -7,7 +7,7 @@ description: >
   KHÔNG dùng cho: khám phá code/module (→ codebase-explorer),
   review kiến trúc tổng thể (→ architecture-reviewer), viết tài liệu (→ document-writer).
 pre_conditions:
-  - file: .amap/knowledge/active/REQUIREMENT.md
+  - file: "{{ platform.framework_root }}/knowledge/active/REQUIREMENT.md"
     condition: not_skeleton
     on_fail: "ABORT — chạy requirement-analyst trước"
   - tool: db-remote
@@ -64,10 +64,10 @@ Dùng `db-explorer` khi:
 
 ## 3. Input
 
-- `.amap/knowledge/active/REQUIREMENT.md`:
+- `{{ platform.framework_root }}/knowledge/active/REQUIREMENT.md`:
   - Entity/khái niệm dữ liệu chính.
   - Luồng xử lý chạm tới dữ liệu.
-- (Tuỳ chọn) `.amap/knowledge/active/EXPLORE_CONTEXT.md` và `.amap/knowledge/long-term/knowledge-snapshot.md`:
+- (Tuỳ chọn) `{{ platform.framework_root }}/knowledge/active/EXPLORE_CONTEXT.md` và `{{ platform.framework_root }}/knowledge/long-term/knowledge-snapshot.md`:
   - Thông tin database đã từng được khám phá.
 - Khả năng truy cập database qua MCP `db-remote` (hoặc provider tương tự):
   - Ít nhất phải có quyền **đọc metadata** (schema, catalog, system views).
@@ -99,7 +99,7 @@ Tên lệnh cụ thể (`list_databases`, `sql_list_tables`, `mongo_list_collect
 
 ## 5. Output
 
-Cập nhật `.amap/knowledge/active/EXPLORE_CONTEXT.md` với section:
+Cập nhật `{{ platform.framework_root }}/knowledge/active/EXPLORE_CONTEXT.md` với section:
 
 ```md
 ### Tầng Database (db-explorer)
@@ -137,10 +137,10 @@ Ngoài ra:
 
 ### Bước 1 — Chuẩn bị từ REQUIREMENT
 
-1. Từ `.amap/knowledge/active/REQUIREMENT.md`, trích ra:
+1. Từ `{{ platform.framework_root }}/knowledge/active/REQUIREMENT.md`, trích ra:
    - Entity dữ liệu chính (ví dụ: “đơn hàng”, “giao dịch”, “tài liệu”…).
    - Hành động liên quan tới dữ liệu (tạo, cập nhật trạng thái, ghi log, tổng hợp báo cáo…).
-2. Ghi danh sách entity/hành động này vào một subsection tạm trong `.amap/knowledge/active/EXPLORE_CONTEXT.md` để dùng làm từ khoá khi tìm kiếm trong DB.
+2. Ghi danh sách entity/hành động này vào một subsection tạm trong `{{ platform.framework_root }}/knowledge/active/EXPLORE_CONTEXT.md` để dùng làm từ khoá khi tìm kiếm trong DB.
 
 ---
 
@@ -149,10 +149,10 @@ Ngoài ra:
 1. Dùng MCP `db-remote` để:
    - Liệt kê database / schema / namespace sẵn có.
 2. Kết hợp với:
-   - `.amap/knowledge/long-term/knowledge-snapshot.md` (nếu có).
+   - `{{ platform.framework_root }}/knowledge/long-term/knowledge-snapshot.md` (nếu có).
    - Tên/ghi chú của database/schema.
 3. Chọn ra tập database/schema **nhiều khả năng liên quan** đến requirement.
-4. Ghi vào `.amap/knowledge/active/EXPLORE_CONTEXT.md` một bảng ngắn:
+4. Ghi vào `{{ platform.framework_root }}/knowledge/active/EXPLORE_CONTEXT.md` một bảng ngắn:
    - Tên database/schema.
    - Loại (OLTP/OLAP nếu nhận định được).
    - Mức độ liên quan (cao / vừa / thấp).
@@ -245,7 +245,7 @@ Ghi nhận những cơ chế này nếu chúng ảnh hưởng tới requirement.
 
 ### Bước 6 — Map phát hiện vào EXPLORE_CONTEXT
 
-Trong `.amap/knowledge/active/EXPLORE_CONTEXT.md`, cập nhật section:
+Trong `{{ platform.framework_root }}/knowledge/active/EXPLORE_CONTEXT.md`, cập nhật section:
 
 ```md
 ### Tầng Database (db-explorer)
@@ -285,7 +285,7 @@ Nếu có các tình huống đặc biệt:
 
 ## 7. Cập nhật AGENT_TRANSPARENCY
 
-Trong `.amap/knowledge/active/AGENT_TRANSPARENCY.md`:
+Trong `{{ platform.framework_root }}/knowledge/active/AGENT_TRANSPARENCY.md`:
 
 - Đánh dấu:
   - `[x] db-explorer`

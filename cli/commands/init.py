@@ -17,14 +17,18 @@ from cli.scaffold import (
 )
 
 
-def prompt_choice(message: str, choices: List[str], default: int = 0) -> str:
-    """Interactive single-choice prompt."""
+def prompt_single_checkbox(message: str, choices: List[str], default: int = 0) -> str:
+    """Interactive single-select prompt displayed as checkbox-style choices.
+
+    The fallback input remains numeric to keep tests and plain terminals
+    deterministic.
+    """
     print(f"\n{message}")
     for i, choice in enumerate(choices):
-        marker = "❯" if i == default else " "
-        print(f"  {marker} [{i + 1}] {choice}")
+        marker = "x" if i == default else " "
+        print(f"  [{marker}] [{i + 1}] {choice}")
     while True:
-        raw = input(f"\nChọn (1-{len(choices)}) [{default + 1}]: ").strip()
+        raw = input(f"\nChọn một mục (1-{len(choices)}) [{default + 1}]: ").strip()
         if not raw:
             return choices[default]
         try:
@@ -36,11 +40,11 @@ def prompt_choice(message: str, choices: List[str], default: int = 0) -> str:
         print(f"  ⚠️  Chọn số từ 1 đến {len(choices)}")
 
 
-def prompt_multi(message: str, choices: List[dict]) -> List[str]:
-    """Interactive multi-choice prompt. Each choice has 'key' and 'display'."""
+def prompt_multi_checkbox(message: str, choices: List[dict]) -> List[str]:
+    """Interactive multi-select prompt displayed as checkbox-style choices."""
     print(f"\n{message}")
     for i, choice in enumerate(choices):
-        print(f"  [{i + 1}] {choice['display']}")
+        print(f"  [ ] [{i + 1}] {choice['display']}")
     print("\nNhập số thứ tự, cách bởi dấu phẩy (vd: 1,2) hoặc Enter để bỏ qua:")
     raw = input("> ").strip()
     if not raw:
@@ -63,15 +67,15 @@ def gather_choices(manifest: dict) -> Tuple[str, List[str], str]:
 
     platform_keys = list(PLATFORMS.keys())
     platform_choices = [get_platform(k).display_name for k in platform_keys]
-    chosen_display = prompt_choice("Chọn agent platform:", platform_choices)
+    chosen_display = prompt_single_checkbox("Chọn agent platform:", platform_choices)
     platform_key = platform_keys[platform_choices.index(chosen_display)]
     print(f"\n  ✅ Platform: {get_platform(platform_key).display_name}")
 
     mcp_choices = [{"key": k, "display": v["display"]} for k, v in mcp_capabilities.items()]
-    selected_mcps = prompt_multi("MCP servers có sẵn:", mcp_choices)
+    selected_mcps = prompt_multi_checkbox("MCP servers có sẵn:", mcp_choices)
     print(f"  ✅ MCPs: {', '.join(selected_mcps) or 'none'}")
 
-    language = prompt_choice("Ngôn ngữ chính của project:", languages)
+    language = prompt_single_checkbox("Ngôn ngữ chính của project:", languages)
     print(f"  ✅ Language: {language}")
     return platform_key, selected_mcps, language
 
@@ -119,7 +123,7 @@ def run_init(target_dir: str, amap_root: Optional[str] = None) -> None:
     finally:
         shutil.rmtree(staging, ignore_errors=True)
 
-    generate_resolved_config(target, platform_key, selected_mcps, language)
+    generate_resolved_config(target, platform, selected_mcps, language)
 
     total = stats["rendered"] + stats["copied"] + stats["dirs"]
     print(f"\n{'═' * 50}")
@@ -127,6 +131,6 @@ def run_init(target_dir: str, amap_root: Optional[str] = None) -> None:
     print(f"  {total} plugins installed, {stats['skipped']} skipped")
     print(f"{'═' * 50}")
     print("\n  Next steps:")
-    print("  1. Customize .amap/knowledge/long-term/persona.yaml")
+    print(f"  1. Customize {platform.framework_root}/knowledge/long-term/persona.yaml")
     print("  2. Run /dna-scan to build author DNA")
     print("  3. Start your first task: /task <ticket-or-idea>\n")

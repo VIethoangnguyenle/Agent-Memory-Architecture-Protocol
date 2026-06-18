@@ -7,17 +7,17 @@ description: >
   KHÔNG dùng cho: chuẩn hoá yêu cầu (→ requirement-analyst),
   khám phá code chi tiết (→ codebase-explorer), validate spec đã sinh (→ spec-validator).
 pre_conditions:
-  - file: .amap/knowledge/active/REQUIREMENT.md
+  - file: "{{ platform.framework_root }}/knowledge/active/REQUIREMENT.md"
     condition: not_skeleton
     on_fail: "ABORT — chạy requirement-analyst trước"
-  - file: .amap/knowledge/active/EXPLORE_CONTEXT.md
+  - file: "{{ platform.framework_root }}/knowledge/active/EXPLORE_CONTEXT.md"
     condition: not_skeleton
     on_fail: "WARN — EXPLORE_CONTEXT thiếu, độ tin cậy kiến trúc sẽ là TRUNG BÌNH — cân nhắc chạy db-explorer / codebase-explorer trước"
-  - file: .amap/knowledge/long-term/conventions.yaml
+  - file: "{{ platform.framework_root }}/knowledge/long-term/conventions.yaml"
     condition: exists
     on_fail: "WARN — conventions.yaml chưa có, đánh giá boundary không đầy đủ"
     load_scope: full  # override selective loading — arch-reviewer cần toàn bộ design_patterns
-  - file: .amap/knowledge/long-term/author-dna.yaml
+  - file: "{{ platform.framework_root }}/knowledge/long-term/author-dna.yaml"
     condition: exists
     on_fail: "WARN — author-dna.yaml chưa có, hard principles không được áp dụng"
     load_scope: hard_principles+complexity_thresholds  # pattern_preferences không cần ở Pha 1
@@ -63,15 +63,15 @@ Kích hoạt `architecture-reviewer` khi:
 
 ## 3. Input
 
-- `.amap/knowledge/active/REQUIREMENT.md`:
+- `{{ platform.framework_root }}/knowledge/active/REQUIREMENT.md`:
   - Business context, As-is / To-be, Scope, AC.
-- `.amap/knowledge/active/EXPLORE_CONTEXT.md`:
+- `{{ platform.framework_root }}/knowledge/active/EXPLORE_CONTEXT.md`:
   - Thông tin từ `db-explorer` (tầng database).
   - Thông tin từ `codebase-explorer` (tầng code, module, entrypoint).
   - Các ghi chú kiến trúc hiện có (nếu đã được cập nhật trước đó).
-- `.amap/knowledge/long-term/knowledge-snapshot.md` (nếu có):
+- `{{ platform.framework_root }}/knowledge/long-term/knowledge-snapshot.md` (nếu có):
   - Bức tranh tổng thể kiến trúc hệ thống, các hệ thống phụ thuộc.
-- `.amap/knowledge/active/AGENT_TRANSPARENCY.md`:
+- `{{ platform.framework_root }}/knowledge/active/AGENT_TRANSPARENCY.md`:
   - Trạng thái tool/skill đã chạy:
     - UA (`/understand`, `/understand-chat`).
     - `db-explorer`.
@@ -82,7 +82,7 @@ Kích hoạt `architecture-reviewer` khi:
 
 ## 4. Output
 
-Cập nhật `.amap/knowledge/active/EXPLORE_CONTEXT.md` với section:
+Cập nhật `{{ platform.framework_root }}/knowledge/active/EXPLORE_CONTEXT.md` với section:
 
 ```md
 ### Đánh giá kiến trúc cho yêu cầu hiện tại (architecture-reviewer)
@@ -143,7 +143,7 @@ Dựa vào `AGENT_TRANSPARENCY` + thực tế tool:
 
 ### Bước 1 — Kiểm tra trạng thái tool & thiết lập “khung tin cậy”
 
-1. Đọc `.amap/knowledge/active/AGENT_TRANSPARENCY.md`:
+1. Đọc `{{ platform.framework_root }}/knowledge/active/AGENT_TRANSPARENCY.md`:
    - `db-explorer`: đã chạy chưa? trên DB nào? có hạn chế quyền không?
    - `codebase-explorer`: đã chạy chưa? đã map được entrypoint/module chính chưa?
    - UA:
@@ -158,7 +158,7 @@ Dựa vào `AGENT_TRANSPARENCY` + thực tế tool:
 
 ### Bước 2 — Tóm tắt kiến trúc hiện tại liên quan tới yêu cầu
 
-1. Từ `.amap/knowledge/active/EXPLORE_CONTEXT.md` + `.amap/knowledge/long-term/knowledge-snapshot.md`:
+1. Từ `{{ platform.framework_root }}/knowledge/active/EXPLORE_CONTEXT.md` + `{{ platform.framework_root }}/knowledge/long-term/knowledge-snapshot.md`:
    - Xác định:
      - Service/module chính xử lý use case.
      - Integration (API, message, job nền…) liên quan.
@@ -174,7 +174,7 @@ Dựa vào `AGENT_TRANSPARENCY` + thực tế tool:
 
 ### Bước 3 — Đối chiếu flow As-is / To-be với kiến trúc hiện tại
 
-1. Dựa trên As-is / To-be trong `.amap/knowledge/active/REQUIREMENT.md`:
+1. Dựa trên As-is / To-be trong `{{ platform.framework_root }}/knowledge/active/REQUIREMENT.md`:
    - Flow hiện tại đang đi qua những component nào.
    - Flow To-be dự kiến đi thêm hoặc thay đổi component nào.
 2. Nếu có identifiers từ EXPLORE_CONTEXT:
@@ -251,7 +251,7 @@ Không cần thiết kế NFR chi tiết, chỉ nêu concern để spec/implemen
 
 ### Bước 7 — Tổng hợp đánh giá & gợi ý hướng xử lý
 
-1. Trong `.amap/knowledge/active/EXPLORE_CONTEXT.md` (section `Đánh giá kiến trúc`), ghi:
+1. Trong `{{ platform.framework_root }}/knowledge/active/EXPLORE_CONTEXT.md` (section `Đánh giá kiến trúc`), ghi:
 
    - **Điểm phù hợp**:
      - Các phần của yêu cầu tận dụng tốt kiến trúc hiện tại.
@@ -271,7 +271,7 @@ Không cần thiết kế NFR chi tiết, chỉ nêu concern để spec/implemen
 
 ## 7. Cập nhật AGENT_TRANSPARENCY
 
-Trong `.amap/knowledge/active/AGENT_TRANSPARENCY.md`:
+Trong `{{ platform.framework_root }}/knowledge/active/AGENT_TRANSPARENCY.md`:
 
 - Đánh dấu:
   - `[x] architecture-reviewer`
@@ -323,7 +323,7 @@ SUGGEST infra-tdd:
   3. Ghi vào AGENT_TRANSPARENCY:
      "[M5-INFRA-TDD] Đề xuất TDD vì: {lý do}. User cần confirm."
   4. Không tự động chạy `/tdd` — chỉ đề xuất.
-  5. Nếu user đồng ý → điều hướng sang workflow `.amap/workflows/tdd.md`
+  5. Nếu user đồng ý → điều hướng sang workflow `{{ platform.framework_root }}/workflows/tdd.md`
   6. Nếu user từ chối → tiếp tục flow bình thường, ghi "TDD declined by user"
 ```
 

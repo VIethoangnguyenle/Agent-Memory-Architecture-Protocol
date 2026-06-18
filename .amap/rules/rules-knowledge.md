@@ -39,20 +39,20 @@
 
 ### [CRITICAL] R-Path-1: Quy ước đường dẫn bắt buộc (v2.0)
 
-Tất cả file context cho task hiện tại nằm ở `.amap/knowledge/active/`.
-Tất cả template nằm ở `.amap/knowledge/templates/`.
-Archive theo ticket nằm ở `.amap/knowledge/archive/{ticket-id}/`.
-Agent infrastructure (skills, workflows, scripts, rules) nằm ở `.amap/`.
+Tất cả file context cho task hiện tại nằm ở `{{ platform.framework_root }}/knowledge/active/`.
+Tất cả template nằm ở `{{ platform.framework_root }}/knowledge/templates/`.
+Archive theo ticket nằm ở `{{ platform.framework_root }}/knowledge/archive/{ticket-id}/`.
+Agent infrastructure (skills, workflows, scripts, rules) nằm ở `{{ platform.framework_root }}/`.
 
 | File | Path | Ai ghi | Ai đọc |
 |------|------|--------|--------|
-| REQUIREMENT | `.amap/knowledge/active/REQUIREMENT.md` | requirement-analyst, spec-extract | db-explorer, codebase-explorer, architecture-reviewer, openspec-propose |
-| EXPLORE_CONTEXT | `.amap/knowledge/active/EXPLORE_CONTEXT.md` | db-explorer, codebase-explorer, architecture-reviewer | architecture-reviewer, openspec-propose |
-| AGENT_TRANSPARENCY | `.amap/knowledge/active/AGENT_TRANSPARENCY.md` | Mọi skill + workflow | User, architecture-reviewer |
-| Knowledge Snapshot | `.amap/knowledge/long-term/knowledge-snapshot.md` | knowledge-curator (tích luỹ) | codebase-explorer, architecture-reviewer, bootstrap |
-| Ideation files | `.amap/knowledge/active/ideation/ideation-*.md` | /task (IDEA_ONLY) | /idea-to-task |
-| Archive | `.amap/knowledge/archive/{ticket-id}/` | knowledge-curator | bootstrap, context-loader |
-| Archive Log | `.amap/knowledge/archive/ARCHIVE_LOG.md` | knowledge-curator | bootstrap |
+| REQUIREMENT | `{{ platform.framework_root }}/knowledge/active/REQUIREMENT.md` | requirement-analyst, spec-extract | db-explorer, codebase-explorer, architecture-reviewer, openspec-propose |
+| EXPLORE_CONTEXT | `{{ platform.framework_root }}/knowledge/active/EXPLORE_CONTEXT.md` | db-explorer, codebase-explorer, architecture-reviewer | architecture-reviewer, openspec-propose |
+| AGENT_TRANSPARENCY | `{{ platform.framework_root }}/knowledge/active/AGENT_TRANSPARENCY.md` | Mọi skill + workflow | User, architecture-reviewer |
+| Knowledge Snapshot | `{{ platform.framework_root }}/knowledge/long-term/knowledge-snapshot.md` | knowledge-curator (tích luỹ) | codebase-explorer, architecture-reviewer, bootstrap |
+| Ideation files | `{{ platform.framework_root }}/knowledge/active/ideation/ideation-*.md` | /task (IDEA_ONLY) | /idea-to-task |
+| Archive | `{{ platform.framework_root }}/knowledge/archive/{ticket-id}/` | knowledge-curator | bootstrap, context-loader |
+| Archive Log | `{{ platform.framework_root }}/knowledge/archive/ARCHIVE_LOG.md` | knowledge-curator | bootstrap |
 
 ---
 
@@ -104,7 +104,7 @@ Agent infrastructure (skills, workflows, scripts, rules) nằm ở `.amap/`.
 
 ### [CRITICAL] R-Skill-1: Mọi SKILL.md phải tuân theo Hybrid Schema
 
-Mỗi file `SKILL.md` trong `.amap/skills/*/` **PHẢI** có:
+Mỗi file `SKILL.md` trong `{{ platform.framework_root }}/skills/*/` **PHẢI** có:
 
 **Frontmatter (YAML)**:
 - `name` (kebab-case, unique)
@@ -124,7 +124,7 @@ Mỗi file `SKILL.md` trong `.amap/skills/*/` **PHẢI** có:
 
 - Khi tạo skill mới hoặc sửa `SKILL.md`, **PHẢI** chạy lint trước khi commit:
   ```
-  python3 .amap/tools/skill-lint/validate_skills.py
+  python3 {{ platform.framework_root }}/tools/skill-lint/validate_skills.py
   ```
 - Kết quả phải là `PASS` cho skill đó. `FAIL` = không được merge.
 - Spec doc: `docs/specs/2026-06-17-sp2-skill-standardization-design.md`

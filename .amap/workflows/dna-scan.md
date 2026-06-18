@@ -53,7 +53,7 @@ CHECK 3: author-dna.yaml đã tồn tại?
 INVOKE: author-dna-builder
   Truyền:
     - scan_mode: full | add | update (từ Bước 0)
-    - conventions_path: .amap/knowledge/long-term/conventions.yaml (nếu có)
+    - conventions_path: {{ platform.framework_root }}/knowledge/long-term/conventions.yaml (nếu có)
 
   Skill thực hiện 4 giai đoạn:
     1. Code Evidence Scan (5 dimensions)
@@ -61,7 +61,7 @@ INVOKE: author-dna-builder
     3. Interview Protocol (interactive với user)
     4. Encode → author-dna.draft.yaml
 
-  CHI TIẾT LOGIC: Xem .amap/skills/author-dna-builder/SKILL.md
+  CHI TIẾT LOGIC: Xem {{ platform.framework_root }}/skills/author-dna-builder/SKILL.md
 ```
 
 > **Lưu ý:** Giai đoạn 3 (Interview) là INTERACTIVE — agent hỏi, user trả lời.
@@ -74,7 +74,7 @@ INVOKE: author-dna-builder
 ```
 SAU KHI skill hoàn thành (tất cả 4 giai đoạn):
 
-VERIFY: .amap/knowledge/long-term/author-dna.draft.yaml tồn tại?
+VERIFY: {{ platform.framework_root }}/knowledge/long-term/author-dna.draft.yaml tồn tại?
   → Không: ERROR "Scan + interview hoàn thành nhưng draft không được tạo."
   → Có: tiếp tục
 
@@ -88,7 +88,7 @@ HIỂN THỊ cho user:
    • Hard principles: {n} | Style preferences: {n} | Creative overrides: {n}
    • Mechanically checkable (SP1a): {n}/{total}
 
-   📄 Draft: .amap/knowledge/long-term/author-dna.draft.yaml
+   📄 Draft: {{ platform.framework_root }}/knowledge/long-term/author-dna.draft.yaml
    → Mở file trong IDE, review + chỉnh trực tiếp.
    → Khi sẵn sàng: /approve-dna để commit chính thức."
 ```
@@ -98,7 +98,7 @@ HIỂN THỊ cho user:
 ## Bước 3 — Cập nhật AGENT_TRANSPARENCY
 
 ```
-APPEND vào .amap/knowledge/active/AGENT_TRANSPARENCY.md:
+APPEND vào {{ platform.framework_root }}/knowledge/active/AGENT_TRANSPARENCY.md:
   [x] /dna-scan: scan + interview hoàn thành
   - Mode: {full | add | update}
   - Giai đoạn 1 (scan): {n} methods analyzed, {n} patterns found

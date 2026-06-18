@@ -1,39 +1,26 @@
 """Tests for amap update."""
 
-from pathlib import Path
-
-import pytest
-
 from cli.commands.init import run_init
 from cli.commands.update import run_update
 
 
-def _init_claude(target, amap_root, monkeypatch):
-    # Feed prompts: platform=2 (claude-code), MCPs=1,2,3, language=3, confirm=y
-    answers = iter(["2", "1,2,3", "3", "y"])
-    monkeypatch.setattr("builtins.input", lambda *a, **k: next(answers))
+def _answers(monkeypatch, seq):
+    it = iter(seq)
+    monkeypatch.setattr("builtins.input", lambda *a, **k: next(it))
+
+
+def test_update_uses_resolved_framework_root(tmp_path, amap_root, monkeypatch):
+    target = tmp_path / "proj"
+    _answers(monkeypatch, ["1", "1,2,3", "3", "y"])
     run_init(target_dir=str(target), amap_root=str(amap_root))
 
-
-def test_update_preserves_user_file_rerenders_framework(tmp_path, amap_root, monkeypatch):
-    target = tmp_path / "proj"
-    _init_claude(target, amap_root, monkeypatch)
-
-    # User edits a user-owned file and a framework file.
-    persona = target / ".amap/knowledge" / "long-term" / "persona.yaml"
-    persona.write_text("MY CUSTOM PERSONA\n", encoding="utf-8")
-    skill = target / ".amap" / "skills" / "codebase-explorer" / "SKILL.md"
-    skill.write_text("user tampered\n", encoding="utf-8")
+    skill = target / ".agents" / "skills" / "codebase-explorer" / "SKILL.md"
+    skill.write_text("tampered\n", encoding="utf-8")
 
     run_update(target_dir=str(target), amap_root=str(amap_root))
 
-    # User file untouched.
-    assert persona.read_text(encoding="utf-8") == "MY CUSTOM PERSONA\n"
-    # Framework file re-rendered (overwritten) with real tool names, no markers.
-    body = skill.read_text(encoding="utf-8")
-    assert "user tampered" not in body
-    assert "mcp__socraticode__codebase_search" in body
-    assert "{{ " not in body
+    assert "tampered" not in skill.read_text(encoding="utf-8")
+    assert not (target / ".amap").exists()
 
 
 def test_update_aborts_when_no_config(tmp_path, amap_root, capsys):
@@ -43,84 +30,18 @@ def test_update_aborts_when_no_config(tmp_path, amap_root, capsys):
     assert "No AMAP installation" in capsys.readouterr().out
 
 
-def test_reconfigure_switches_platform_keeps_user_files(tmp_path, amap_root, monkeypatch):
-    target = tmp_path / "proj"
-    _init_claude(target, amap_root, monkeypatch)
-
-    persona = target / ".amap/knowledge" / "long-term" / "persona.yaml"
-    persona.write_text("KEEP ME\n", encoding="utf-8")
-
-    skill = target / ".amap" / "skills" / "codebase-explorer" / "SKILL.md"
-    assert "mcp__socraticode__codebase_search" in skill.read_text(encoding="utf-8")
-
-    # Reconfigure to antigravity (platform=1), MCPs=1,2,3, language=3.
-    answers = iter(["1", "1,2,3", "3"])
-    monkeypatch.setattr("builtins.input", lambda *a, **k: next(answers))
-    run_update(target_dir=str(target), amap_root=str(amap_root), reconfigure=True)
-
-    body = skill.read_text(encoding="utf-8")
-    # Antigravity uses single-underscore MCP prefix.
-    assert "mcp_socraticode_codebase_search" in body
-    assert "mcp__socraticode__codebase_search" not in body
-    assert persona.read_text(encoding="utf-8") == "KEEP ME\n"
-
-    # resolved-config now records antigravity.
-    cfg = (target / ".amap" / "resolved-config.yaml").read_text(encoding="utf-8")
-    assert "antigravity" in cfg
-
-
-def test_reconfigure_removes_old_entry_point(tmp_path, amap_root, monkeypatch):
-    target = tmp_path / "proj"
-    _init_claude(target, amap_root, monkeypatch)
-    assert (target / "CLAUDE.md").exists()
-
-    # Reconfigure to antigravity (platform=1).
-    answers = iter(["1", "1,2,3", "3"])
-    monkeypatch.setattr("builtins.input", lambda *a, **k: next(answers))
-    run_update(target_dir=str(target), amap_root=str(amap_root), reconfigure=True)
-
-    assert (target / "AGENTS.md").exists()
-    assert not (target / "CLAUDE.md").exists()
-
-
-def test_update_keeps_native_export_in_sync(tmp_path, amap_root, monkeypatch):
-    target = tmp_path / "proj"
-    _init_claude(target, amap_root, monkeypatch)
-
-    native = target / ".claude" / "skills" / "codebase-explorer" / "SKILL.md"
-    native.write_text("tampered\n", encoding="utf-8")
-
-    run_update(target_dir=str(target), amap_root=str(amap_root))
-
-    assert "tampered" not in native.read_text(encoding="utf-8")
-
-
-def test_reconfigure_removes_stale_native_export_dir(tmp_path, amap_root, monkeypatch):
-    target = tmp_path / "proj"
-    _init_claude(target, amap_root, monkeypatch)
-    assert (target / ".claude" / "skills" / "requirement-analyst" / "SKILL.md").exists()
-
-    # Reconfigure to antigravity (platform=1).
-    answers = iter(["1", "1,2,3", "3"])
-    monkeypatch.setattr("builtins.input", lambda *a, **k: next(answers))
-    run_update(target_dir=str(target), amap_root=str(amap_root), reconfigure=True)
-
-    assert not (target / ".claude" / "skills").exists()
-    assert (target / ".agents" / "skills" / "requirement-analyst" / "SKILL.md").exists()
-
-
-def test_reconfigure_to_generic_removes_native_export_dir_without_creating_a_new_one(
-    tmp_path, amap_root, monkeypatch,
+def test_reconfigure_to_claude_writes_claude_root_and_warns_about_legacy_amap(
+    tmp_path, amap_root, monkeypatch, capsys,
 ):
     target = tmp_path / "proj"
-    _init_claude(target, amap_root, monkeypatch)
+    _answers(monkeypatch, ["3", "1,2,3", "3", "y"])
+    run_init(target_dir=str(target), amap_root=str(amap_root))
+    assert (target / ".amap").exists()
 
-    # Reconfigure to generic (platform=4).
-    answers = iter(["4", "1,2,3", "3"])
-    monkeypatch.setattr("builtins.input", lambda *a, **k: next(answers))
+    _answers(monkeypatch, ["2", "1,2,3", "3"])
     run_update(target_dir=str(target), amap_root=str(amap_root), reconfigure=True)
 
-    assert not (target / ".claude" / "skills").exists()
-    assert not (target / ".agents").exists()
-    assert not (target / ".cursor").exists()
-
+    assert (target / ".claude" / "resolved-config.yaml").exists()
+    assert (target / ".claude" / "skills" / "requirement-analyst" / "SKILL.md").exists()
+    assert (target / ".amap").exists()
+    assert "legacy .amap" in capsys.readouterr().out

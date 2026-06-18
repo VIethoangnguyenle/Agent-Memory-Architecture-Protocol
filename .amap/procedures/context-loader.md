@@ -17,15 +17,15 @@ Tránh tình trạng agent dùng context cũ của task khác.
 ┌─────────────────────────────────────────────────────────────────────────┐
 │ PRIORITY  │ PATH                                      │ Điều kiện nạp   │
 ├───────────┼───────────────────────────────────────────┼─────────────────┤
-│ P1 (cao)  │ .amap/knowledge/active/REQUIREMENT.md          │ Có nội dung thực│
-│ P1        │ .amap/knowledge/active/EXPLORE_CONTEXT.md      │ Có nội dung thực│
-│ P1        │ .amap/knowledge/active/AGENT_TRANSPARENCY.md   │ Luôn nạp nếu có │
-│ P1        │ .amap/knowledge/active/TOKEN_LOG.md             │ Luôn nạp nếu có │
-│ P2        │ .amap/knowledge/active/ideation/ideation-*.md  │ Tất cả file .md │
-│ P3 (tĩnh) │ .amap/knowledge/long-term/knowledge-snapshot.md│ Luôn nạp nếu có │
-│ P3 (tĩnh) │ .amap/knowledge/long-term/conventions.yaml     │ Chỉ khi status=approved│
-│ P3 (tĩnh) │ .amap/knowledge/long-term/author-dna.yaml      │ Chỉ khi status=approved│
-│ P4 (thấp) │ .amap/knowledge/archive/{ticket-id}/           │ Chỉ khi P1 trống│
+│ P1 (cao)  │ {{ platform.framework_root }}/knowledge/active/REQUIREMENT.md          │ Có nội dung thực│
+│ P1        │ {{ platform.framework_root }}/knowledge/active/EXPLORE_CONTEXT.md      │ Có nội dung thực│
+│ P1        │ {{ platform.framework_root }}/knowledge/active/AGENT_TRANSPARENCY.md   │ Luôn nạp nếu có │
+│ P1        │ {{ platform.framework_root }}/knowledge/active/TOKEN_LOG.md             │ Luôn nạp nếu có │
+│ P2        │ {{ platform.framework_root }}/knowledge/active/ideation/ideation-*.md  │ Tất cả file .md │
+│ P3 (tĩnh) │ {{ platform.framework_root }}/knowledge/long-term/knowledge-snapshot.md│ Luôn nạp nếu có │
+│ P3 (tĩnh) │ {{ platform.framework_root }}/knowledge/long-term/conventions.yaml     │ Chỉ khi status=approved│
+│ P3 (tĩnh) │ {{ platform.framework_root }}/knowledge/long-term/author-dna.yaml      │ Chỉ khi status=approved│
+│ P4 (thấp) │ {{ platform.framework_root }}/knowledge/archive/{ticket-id}/           │ Chỉ khi P1 trống│
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -81,11 +81,11 @@ Nếu section không tìm thấy trong conventions.yaml → load toàn bộ file
 > **Agent PHẢI** (không phải "khuyến nghị"):
 > 1. Trong phiên detect: WARN user ngay trong bootstrap report (PHASE 0.5).
 > 2. Đề xuất action cụ thể: "Replace nội dung `{ki_file}` bằng 1 dòng pointer:
->    `# Xem .amap/knowledge/long-term/conventions.yaml + author-dna.yaml`"
+>    `# Xem {{ platform.framework_root }}/knowledge/long-term/conventions.yaml + author-dna.yaml`"
 > 3. Ghi vào AGENT_TRANSPARENCY: "[R-KI-1] KI conflict detected: {path}. Cleanup pending."
 > 4. Nếu user chưa cleanup sau 2 phiên: nhắc lại mỗi bootstrap cho đến khi xử lý.
 >
-> **Không được** dùng nội dung từ KI file để code nếu nội dung đó mâu thuẫn với `.amap/knowledge/`.
+> **Không được** dùng nội dung từ KI file để code nếu nội dung đó mâu thuẫn với `{{ platform.framework_root }}/knowledge/`.
 > Lý do: KI external (vd một file `*-rules.md` do tool runtime sinh ra) thường không có DNA judgment layer → agent có thể sinh code sai pattern nếu dựa vào đó.
 
 ---
@@ -116,12 +116,12 @@ Nếu section không tìm thấy trong conventions.yaml → load toàn bộ file
 
 ```
 REQUIRED:
-  → .amap/knowledge/active/REQUIREMENT.md      (PHẢI có, nếu không: ABORT pha 2)
-  → .amap/knowledge/active/EXPLORE_CONTEXT.md  (PHẢI có, nếu không: WARN, hạ tin cậy)
+  → {{ platform.framework_root }}/knowledge/active/REQUIREMENT.md      (PHẢI có, nếu không: ABORT pha 2)
+  → {{ platform.framework_root }}/knowledge/active/EXPLORE_CONTEXT.md  (PHẢI có, nếu không: WARN, hạ tin cậy)
 
 OPTIONAL:
-  → .amap/knowledge/long-term/knowledge-snapshot.md
-  → .amap/knowledge/archive/{ticket-id}/       (nếu active context khác ticket)
+  → {{ platform.framework_root }}/knowledge/long-term/knowledge-snapshot.md
+  → {{ platform.framework_root }}/knowledge/archive/{ticket-id}/       (nếu active context khác ticket)
 ```
 
 ### Khi nhận `/task apply <ticket-id>`:
@@ -129,7 +129,7 @@ OPTIONAL:
 ```
 REQUIRED:
   → Spec file tương ứng ticket (trong thư mục spec/ hoặc được ghi trong AGENT_TRANSPARENCY)
-  → .amap/knowledge/active/REQUIREMENT.md
+  → {{ platform.framework_root }}/knowledge/active/REQUIREMENT.md
 
 VERIFICATION:
   → architecture-reviewer không đánh dấu BLOCKER
@@ -143,12 +143,12 @@ VERIFICATION:
 Khi có ticket-id cụ thể, context-loader tìm kiếm theo thứ tự:
 
 ```
-1. .amap/knowledge/active/REQUIREMENT.md
+1. {{ platform.framework_root }}/knowledge/active/REQUIREMENT.md
    → Kiểm tra metadata section có ticket_id khớp không
    → Nếu khớp: nạp và dùng
    → Nếu không khớp: cảnh báo "Active context thuộc ticket khác"
 
-2. .amap/knowledge/archive/{ticket-id}/REQUIREMENT.md
+2. {{ platform.framework_root }}/knowledge/archive/{ticket-id}/REQUIREMENT.md
    → Nếu tìm thấy: hỏi user có muốn restore không
    → Nếu restore: copy archive/{ticket-id}/* → active/
 
@@ -167,9 +167,9 @@ Agent có thể gọi context-loader tại bất kỳ điểm nào trong workflo
 
 ```
 FUNCTION rescan_active_context():
-  RE-READ: .amap/knowledge/active/REQUIREMENT.md
-  RE-READ: .amap/knowledge/active/EXPLORE_CONTEXT.md
-  RE-READ: .amap/knowledge/active/AGENT_TRANSPARENCY.md
+  RE-READ: {{ platform.framework_root }}/knowledge/active/REQUIREMENT.md
+  RE-READ: {{ platform.framework_root }}/knowledge/active/EXPLORE_CONTEXT.md
+  RE-READ: {{ platform.framework_root }}/knowledge/active/AGENT_TRANSPARENCY.md
   UPDATE: in-memory context state
   REPORT: "Context refreshed. Changes detected: [list nếu có]"
 ```
@@ -351,7 +351,7 @@ FUNCTION load_snapshot_filtered(requirement_md):
 
 ## [C1] Tích hợp Context Compressor
 
-context-loader tích hợp với `.amap/procedures/context-compressor.md` tại 2 điểm:
+context-loader tích hợp với `{{ platform.framework_root }}/procedures/context-compressor.md` tại 2 điểm:
 
 ### Điểm 1 — Sau khi tính tổng token
 

@@ -1,7 +1,7 @@
 # token-tracking.md — Protocol Ghi Token Usage Theo Pha
 
 > Agent đọc file này để biết cách ghi token consumption vào TOKEN_LOG.md.
-> TOKEN_LOG.md nằm trong `.amap/knowledge/active/` — được archive cùng context khi task xong.
+> TOKEN_LOG.md nằm trong `{{ platform.framework_root }}/knowledge/active/` — được archive cùng context khi task xong.
 
 ---
 
@@ -187,10 +187,10 @@ Agent PHẢI ghi rõ trong TOKEN_LOG.md:
 Khi `knowledge-curator.archive_active_context(ticket_id)` chạy:
 
 ```
-COPY: .amap/knowledge/active/TOKEN_LOG.md
-   → .amap/knowledge/archive/{ticket_id}/TOKEN_LOG.md
+COPY: {{ platform.framework_root }}/knowledge/active/TOKEN_LOG.md
+   → {{ platform.framework_root }}/knowledge/archive/{ticket_id}/TOKEN_LOG.md
 
-UPDATE: .amap/knowledge/archive/ARCHIVE_LOG.md
+UPDATE: {{ platform.framework_root }}/knowledge/archive/ARCHIVE_LOG.md
   Thêm cột token_total vào entry của ticket này:
   | {ticket_id} | {date} | {status} | {summary} | {token_total_estimate} |
 ```

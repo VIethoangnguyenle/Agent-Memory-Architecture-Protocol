@@ -1,6 +1,6 @@
 # Workflows — User-facing Shortcuts
 
-Đây là thư mục tham chiếu nhanh cho các workflow chính. Logic đầy đủ nằm trong `.amap/workflows/`.
+Đây là thư mục tham chiếu nhanh cho các workflow chính. Logic đầy đủ nằm trong `{{ platform.framework_root }}/workflows/`.
 
 ---
 
@@ -8,11 +8,11 @@
 
 | Lệnh | File định nghĩa | Mô tả |
 |------|----------------|-------|
-| `/task <input>` | `.amap/workflows/task.md` | Pha 1: Hiểu vấn đề, requirement, explore |
-| `/task spec <ticket>` | `.amap/workflows/task.md` | Pha 2: Sinh spec kỹ thuật |
-| `/task apply <ticket>` | `.amap/workflows/task.md` | Pha 3: Apply spec vào code |
-| `/idea-to-task` | `.amap/workflows/idea-to-task.md` | Chuyển ideation → draft ticket |
-| `/index-source` | `.amap/workflows/index-source.md` | Lập chỉ mục Socraticode |
+| `/task <input>` | `{{ platform.framework_root }}/workflows/task.md` | Pha 1: Hiểu vấn đề, requirement, explore |
+| `/task spec <ticket>` | `{{ platform.framework_root }}/workflows/task.md` | Pha 2: Sinh spec kỹ thuật |
+| `/task apply <ticket>` | `{{ platform.framework_root }}/workflows/task.md` | Pha 3: Apply spec vào code |
+| `/idea-to-task` | `{{ platform.framework_root }}/workflows/idea-to-task.md` | Chuyển ideation → draft ticket |
+| `/index-source` | `{{ platform.framework_root }}/workflows/index-source.md` | Lập chỉ mục Socraticode |
 
 ---
 

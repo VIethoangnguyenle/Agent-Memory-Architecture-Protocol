@@ -8,7 +8,7 @@ description: >
   extract từ wiki/Confluence dài nhiều trang (→ spec-extract),
   review kiến trúc hoặc đánh giá rủi ro (→ architecture-reviewer).
 pre_conditions:
-  - file: .amap/knowledge/active/AGENT_TRANSPARENCY.md
+  - file: "{{ platform.framework_root }}/knowledge/active/AGENT_TRANSPARENCY.md"
     condition: exists
     on_fail: "ABORT — bootstrap chưa chạy, gọi `/task` trước"
   - input: ticket_id_or_doc_url
@@ -82,7 +82,7 @@ Skill **không tự ý bịa thêm requirement** nếu không có trong nguồn 
 
 File chuẩn:
 
-- `.amap/knowledge/active/REQUIREMENT.md` (hoặc biến thể gắn với ID ticket tuỳ convention repo).
+- `{{ platform.framework_root }}/knowledge/active/REQUIREMENT.md` (hoặc biến thể gắn với ID ticket tuỳ convention repo).
 
 Cấu trúc tối thiểu:
 
@@ -119,7 +119,7 @@ Cấu trúc tối thiểu:
 2. Mở tất cả link tài liệu chính (wiki/spec…) xuất hiện trong ticket.
 3. Nếu có tài liệu lớn/chung mà chưa được tóm tắt:
    - Kích hoạt skill `spec-extract` để trích ra phần liên quan và dùng kết quả đó làm nền cho REQUIREMENT.
-4. Ghi lại trong `.amap/knowledge/active/AGENT_TRANSPARENCY.md` là đã đọc những nguồn nào.
+4. Ghi lại trong `{{ platform.framework_root }}/knowledge/active/AGENT_TRANSPARENCY.md` là đã đọc những nguồn nào.
 
 ---
 
@@ -281,7 +281,7 @@ Vai trò:
 
 ## 6. Cập nhật AGENT_TRANSPARENCY
 
-Trong `.amap/knowledge/active/AGENT_TRANSPARENCY.md`:
+Trong `{{ platform.framework_root }}/knowledge/active/AGENT_TRANSPARENCY.md`:
 
 - Đánh dấu:
   - `[x] REQUIREMENT.md`

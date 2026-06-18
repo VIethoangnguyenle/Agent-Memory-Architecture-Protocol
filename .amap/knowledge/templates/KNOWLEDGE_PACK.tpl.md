@@ -6,8 +6,8 @@ confidence:
   database: THAP
   memory: THAP
 sources:
-  requirement: ".amap/knowledge/active/REQUIREMENT.md"
-  explore_context: ".amap/knowledge/active/EXPLORE_CONTEXT.md"
+  requirement: "{{ platform.framework_root }}/knowledge/active/REQUIREMENT.md"
+  explore_context: "{{ platform.framework_root }}/knowledge/active/EXPLORE_CONTEXT.md"
   openspec: "openspec/changes/<change-id>/"
 ua_kg:
   graph_status: "unavailable"

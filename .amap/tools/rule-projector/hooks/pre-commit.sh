@@ -11,7 +11,7 @@ CUR=$(cat "$DNA_PATH" "$CONV_PATH" | sha256sum | cut -d' ' -f1)
 EMB=$(grep -o 'source_hash=[a-f0-9]*' "$RULESET_PATH" | head -1 | cut -d= -f2)
 if [ "$CUR" != "$EMB" ]; then
   echo "⛔ DNA/conventions changed but ruleset is stale."
-  echo "   Run: python3 .amap/tools/rule-projector/projector.py --dna \"$DNA_PATH\" --conventions \"$CONV_PATH\" --out generated/"
+  echo "   Run: python3 {{ platform.framework_root }}/tools/rule-projector/projector.py --dna \"$DNA_PATH\" --conventions \"$CONV_PATH\" --out generated/"
   echo "   then regenerate checkstyle and commit the ruleset."
   exit 1
 fi

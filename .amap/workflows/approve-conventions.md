@@ -14,7 +14,7 @@ Workflow này chỉ chạy khi user đã:
 ## Bước 1 — Validate file
 
 ```
-CHECK: .amap/knowledge/long-term/conventions.draft.yaml tồn tại?
+CHECK: {{ platform.framework_root }}/knowledge/long-term/conventions.draft.yaml tồn tại?
   → Không tồn tại: ABORT
     "conventions.draft.yaml không tìm thấy. Chạy /convention-scan trước."
 
@@ -35,7 +35,7 @@ CHECK: Các section bắt buộc còn đủ?
 ## Bước 2 — Cross-check với knowledge-snapshot.md
 
 ```
-READ: .amap/knowledge/long-term/knowledge-snapshot.md
+READ: {{ platform.framework_root }}/knowledge/long-term/knowledge-snapshot.md
   → Nếu không tồn tại: SKIP bước này, ghi WARN vào AGENT_TRANSPARENCY.
 
 FOR EACH entry trong conventions.draft.yaml:
@@ -68,7 +68,7 @@ FOR EACH entry trong conventions.draft.yaml:
 3. Backup draft:
    Tạo conventions.draft.{YYYYMMDD-HHMMSS}.yaml.bak
    (copy từ conventions.draft.yaml trước khi rename)
-   → Giữ trong .amap/knowledge/templates/ làm audit trail
+   → Giữ trong {{ platform.framework_root }}/knowledge/templates/ làm audit trail
    → Không nạp vào context (context-loader bỏ qua *.bak)
 ```
 
@@ -77,7 +77,7 @@ FOR EACH entry trong conventions.draft.yaml:
 ## Bước 4 — Cập nhật AGENT_TRANSPARENCY
 
 ```
-APPEND vào .amap/knowledge/active/AGENT_TRANSPARENCY.md:
+APPEND vào {{ platform.framework_root }}/knowledge/active/AGENT_TRANSPARENCY.md:
 
   [x] /approve-conventions: conventions.yaml committed
   - Approved at: {timestamp}

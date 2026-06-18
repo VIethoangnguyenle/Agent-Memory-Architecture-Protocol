@@ -7,10 +7,10 @@ description: >
   KHÔNG dùng cho: khám phá DB schema (→ db-explorer),
   review kiến trúc/rủi ro (→ architecture-reviewer), sinh spec (→ openspec-propose).
 pre_conditions:
-  - file: .amap/knowledge/active/REQUIREMENT.md
+  - file: "{{ platform.framework_root }}/knowledge/active/REQUIREMENT.md"
     condition: not_skeleton
     on_fail: "ABORT — chạy requirement-analyst trước"
-  - file: .amap/knowledge/active/EXPLORE_CONTEXT.md
+  - file: "{{ platform.framework_root }}/knowledge/active/EXPLORE_CONTEXT.md"
     condition: exists
     on_fail: "WARN — EXPLORE_CONTEXT chưa có, tạo skeleton trước khi ghi"
 ---
@@ -66,9 +66,9 @@ Agent không được tự ý bỏ qua structured provider chỉ vì grep/search
 
 ## 3. Input
 
-- `.amap/knowledge/active/REQUIREMENT.md`
-- (Tuỳ chọn) `.amap/knowledge/active/EXPLORE_CONTEXT.md`
-- `.amap/knowledge/long-term/knowledge-snapshot.md` (nếu có)
+- `{{ platform.framework_root }}/knowledge/active/REQUIREMENT.md`
+- (Tuỳ chọn) `{{ platform.framework_root }}/knowledge/active/EXPLORE_CONTEXT.md`
+- `{{ platform.framework_root }}/knowledge/long-term/knowledge-snapshot.md` (nếu có)
 - Trạng thái tool:
   - Socraticode có khả dụng không
   - Repo có sử dụng Understand-Anything không
@@ -78,7 +78,7 @@ Agent không được tự ý bỏ qua structured provider chỉ vì grep/search
 
 ## 4. Output
 
-Cập nhật `.amap/knowledge/active/EXPLORE_CONTEXT.md` với section:
+Cập nhật `{{ platform.framework_root }}/knowledge/active/EXPLORE_CONTEXT.md` với section:
 
 ```md
 ### Kiến trúc code hiện tại (codebase-explorer)
@@ -145,7 +145,7 @@ Các tool đã được resolve tại thời điểm `amap init` — agent gọi
 
 ### Bước 1 — Chuẩn bị từ REQUIREMENT
 
-Đọc `.amap/knowledge/active/REQUIREMENT.md` và trích:
+Đọc `{{ platform.framework_root }}/knowledge/active/REQUIREMENT.md` và trích:
 
 - Use case chính
 - Entity/khái niệm chính
@@ -161,7 +161,7 @@ Dùng các mục này làm từ khoá truy vấn.
   - Ưu tiên các thư mục code chính như `src`, `app`, `domain`
 - **Quan trọng**: Phân loại rõ tính chất của module/service liên quan là phục vụ API (Synchronous) hay xử lý nền (Background Worker / Kafka / Job) để các skill sau dễ dàng check Topology.
 
-Ghi phạm vi khảo sát vào `.amap/knowledge/active/EXPLORE_CONTEXT.md`.
+Ghi phạm vi khảo sát vào `{{ platform.framework_root }}/knowledge/active/EXPLORE_CONTEXT.md`.
 
 ### Bước 3 — Kiểm tra trạng thái công cụ
 
@@ -252,7 +252,7 @@ Nếu có khác biệt giữa KG và Socraticode:
 
 ### Bước 8 — Cập nhật AGENT_TRANSPARENCY
 
-Trong `.amap/knowledge/active/AGENT_TRANSPARENCY.md`:
+Trong `{{ platform.framework_root }}/knowledge/active/AGENT_TRANSPARENCY.md`:
 
 - Đánh dấu đã dùng:
   - `codebase-explorer`
