@@ -161,6 +161,7 @@ Format (Giới hạn dưới 5 dòng):
 {greeting} — Đã Bootstrap: [x] Core [x] Skills ({n}) [x] Workflows
 📋 Context: REQ={active/empty} | EXPLORE={active/empty}
 🧠 Knowledge-index: {loaded — n entries / MISSING ⛔}
+🔌 MCP: {server: nodes=N edges=M freshness=… / KG unavailable — grep fallback, MEDIUM / none configured}
 📦 Archive: {n} tickets | Token Log: {exists/new}
 ⚠️ {warnings nếu có}
 ```
@@ -168,7 +169,13 @@ Format (Giới hạn dưới 5 dòng):
 > **Bắt buộc sau khi nạp**:
 > - `knowledge-index.yaml` đã nạp → report ghi `🧠 Knowledge-index: loaded — {n entries}`.
 >   Body của từng entry KHÔNG nạp ở bootstrap; kéo JIT tại decision-gate (xem `procedures/decision-gate.md`).
-> Nếu KHÔNG ghi dòng này = R-Guard-1 sẽ block các skill downstream.
+> - **MCP probe bắt buộc:** nếu `resolved-config.yaml` khai báo MCP server (vd `understand-anything`) →
+>   PHẢI gọi probe thật (`get_graph_stats`/`list_projects`) và ghi dòng `🔌 MCP:` chứa **SỐ THẬT**
+>   (nodes/edges/freshness). **Cấm** ghi "Runtime Ready" rỗng. Probe fail/absent → ghi dòng degrade
+>   `KG unavailable — grep fallback, MEDIUM`. Không có MCP nào trong config → `🔌 MCP: none configured`.
+>   Dòng này phải pass (R-Tool-5):
+>   `python3 {{ platform.framework_root }}/tools/gate-check/cli.py mcp-status <file>`.
+> Nếu KHÔNG ghi các dòng này = R-Guard-1 sẽ block các skill downstream.
 
 Sau đó ghi vào `{{ platform.framework_root }}/knowledge/active/AGENT_TRANSPARENCY.md` — section Bootstrap:
 
