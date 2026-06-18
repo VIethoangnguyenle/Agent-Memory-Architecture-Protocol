@@ -54,6 +54,27 @@ def main():
         default=None,
         help="AMAP repo root (default: auto-detect from CLI location)",
     )
+    init_parser.add_argument(
+        "--platform",
+        default=None,
+        help="Agent platform key, e.g. antigravity, claude-code, codex, generic",
+    )
+    init_parser.add_argument(
+        "--mcp",
+        action="append",
+        default=None,
+        help="MCP server key. Repeat or pass comma-separated values.",
+    )
+    init_parser.add_argument(
+        "--language",
+        default=None,
+        help="Primary project language from cli/plugin-manifest.yaml",
+    )
+    init_parser.add_argument(
+        "--yes",
+        action="store_true",
+        help="Run non-interactively; requires --platform and --language",
+    )
 
     # ─── status ───
     status_parser = subparsers.add_parser(
@@ -87,8 +108,15 @@ def main():
     args = parser.parse_args()
 
     if args.command == "init":
-        from cli.commands.init import run_init
-        run_init(target_dir=args.target, amap_root=args.source)
+        from cli.commands.init import parse_multi_values, run_init
+        run_init(
+            target_dir=args.target,
+            amap_root=args.source,
+            platform_key=args.platform,
+            selected_mcps=parse_multi_values(args.mcp),
+            language=args.language,
+            assume_yes=args.yes,
+        )
     elif args.command == "update":
         from cli.commands.update import run_update
         run_update(target_dir=args.target, amap_root=args.source, reconfigure=args.reconfigure)
