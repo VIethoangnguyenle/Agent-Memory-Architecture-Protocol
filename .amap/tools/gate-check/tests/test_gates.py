@@ -27,3 +27,21 @@ def test_phase_chain_requires_ordered_markers():
     skipped = "Pha 1 DONE\nPha 3 DONE"
     assert g.validate_phase_chain(done).ok is True
     assert g.validate_phase_chain(skipped).ok is False
+
+
+def test_handoff_slice_requires_applicable_section_with_ruleids():
+    empty = "# Handoff\n## Task\ndo X\n"
+    filled = "# Handoff\n## Applicable DNA/Conventions\n- SP-6: staircase\n- IW-05: config-driven\n"
+    assert g.validate_handoff_slice(empty).ok is False
+    assert g.validate_handoff_slice(filled).ok is True
+
+
+def test_cli_returns_nonzero_on_invalid(tmp_path):
+    import importlib.util
+    cli_mod = Path(__file__).resolve().parents[1] / "cli.py"
+    spec2 = importlib.util.spec_from_file_location("cli", cli_mod)
+    cli = importlib.util.module_from_spec(spec2)
+    spec2.loader.exec_module(cli)
+    f = tmp_path / "chk.md"
+    f.write_text("nothing useful", encoding="utf-8")
+    assert cli.main(["knowledge-checkpoint", str(f)]) == 1

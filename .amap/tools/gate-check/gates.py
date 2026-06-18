@@ -40,3 +40,10 @@ def validate_phase_chain(text: str) -> Result:
     if seen and seen == list(range(1, max(seen) + 1)):
         return Result(True)
     return Result(False, f"phase markers not contiguous from 1: found {seen}")
+
+
+def validate_handoff_slice(text: str) -> Result:
+    m = re.search(r"##\s+Applicable DNA/Conventions\s*\n(.*)", text, re.DOTALL)
+    if not m or not _RULE_ID.search(m.group(1)):
+        return Result(False, "handoff missing non-empty 'Applicable DNA/Conventions' with rule-ids")
+    return Result(True)
