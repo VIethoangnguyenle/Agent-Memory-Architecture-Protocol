@@ -48,8 +48,12 @@ class CursorPlatform(BasePlatform):
         "browser": False,
     }
 
+    native_skill_export = {"dir": ".cursor/commands", "strip_frontmatter": True, "flatten": True}
+
     notes = [
         ".cursorrules is the config entry point",
         "Cursor has limited MCP support — check version",
         "No subagent capability — workflows degrade to sequential",
+        "Skills/workflows export to .cursor/commands/ as manual commands — Cursor does "
+        "not auto-trigger them from a description the way a real skill picker would",
     ]

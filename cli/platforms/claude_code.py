@@ -56,6 +56,8 @@ class ClaudeCodePlatform(BasePlatform):
 
     mcp_tool_prefix = "mcp__"
 
+    native_skill_export = {"dir": ".claude/skills", "strip_frontmatter": False, "flatten": False}
+
     notes = [
         "CLAUDE.md is the config entry point",
         "MCP tools use double underscore prefix: mcp__<server>__<tool>",

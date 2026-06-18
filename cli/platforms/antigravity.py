@@ -60,6 +60,8 @@ class AntigravityPlatform(BasePlatform):
 
     mcp_tool_prefix = "mcp_"
 
+    native_skill_export = {"dir": ".agents/skills", "strip_frontmatter": False, "flatten": False}
+
     notes = [
         "AGENTS.md is loaded via user_rules in Antigravity config",
         "MCP tools use prefix: mcp_<server>_<tool>",
