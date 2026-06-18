@@ -32,6 +32,11 @@ REQUIRED_TOOL_KEYS = frozenset({
     "read_url",
 })
 
+OPTIONAL_TOOL_KEYS = frozenset({
+    "browser_agent",
+    "generate_image",
+})
+
 
 class PlatformToolMappingError(ValueError):
     """Raised when a platform adapter cannot resolve required AMAP tool keys."""
@@ -141,11 +146,18 @@ class BasePlatform(ABC):
 
     def validate_tool_mapping(self) -> None:
         """Fail early when a platform adapter drifts from AMAP's tool contract."""
-        missing = REQUIRED_TOOL_KEYS - set(self.tool_mapping) - self.unsupported_tools
+        tool_keys = set(self.tool_mapping)
+        allowed_keys = REQUIRED_TOOL_KEYS | OPTIONAL_TOOL_KEYS
+        missing = REQUIRED_TOOL_KEYS - tool_keys - self.unsupported_tools
+        extra = tool_keys - allowed_keys
         extra_unsupported = self.unsupported_tools - REQUIRED_TOOL_KEYS
         if missing:
             raise PlatformToolMappingError(
                 f"{self.name} missing required tool mappings: {', '.join(sorted(missing))}"
+            )
+        if extra:
+            raise PlatformToolMappingError(
+                f"{self.name} declares unknown tool mappings: {', '.join(sorted(extra))}"
             )
         if extra_unsupported:
             raise PlatformToolMappingError(

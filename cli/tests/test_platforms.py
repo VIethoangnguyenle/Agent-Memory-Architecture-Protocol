@@ -4,6 +4,7 @@ import pytest
 
 from cli.platforms import PLATFORMS, get_platform
 from cli.platforms.base import (
+    OPTIONAL_TOOL_KEYS,
     REQUIRED_TOOL_KEYS,
     BasePlatform,
     PlatformToolMappingError,
@@ -42,8 +43,10 @@ def test_all_platforms_define_required_tool_keyset():
     for key, cls in PLATFORMS.items():
         platform = cls()
         missing = REQUIRED_TOOL_KEYS - set(platform.tool_mapping) - platform.unsupported_tools
+        extra = set(platform.tool_mapping) - REQUIRED_TOOL_KEYS - OPTIONAL_TOOL_KEYS
         extra_unsupported = platform.unsupported_tools - REQUIRED_TOOL_KEYS
         assert missing == set(), f"{key} missing tool mappings: {sorted(missing)}"
+        assert extra == set(), f"{key} declares unknown tool mappings: {sorted(extra)}"
         assert extra_unsupported == set(), (
             f"{key} declares unknown unsupported tools: {sorted(extra_unsupported)}"
         )
@@ -63,6 +66,41 @@ def test_build_render_context_fails_on_missing_required_tool_mapping():
     assert "broken" in message
     assert "missing required tool mappings" in message
     assert "write_file" in message
+
+
+def test_build_render_context_allows_declared_optional_tool_mappings():
+    class OptionalToolPlatform(BasePlatform):
+        name = "optional-tools"
+        display_name = "Optional Tools"
+        config_entry_point = "AGENTS.md"
+        tool_mapping = {
+            **{key: key.upper() for key in REQUIRED_TOOL_KEYS},
+            **{key: key.upper() for key in OPTIONAL_TOOL_KEYS},
+        }
+
+    context = OptionalToolPlatform().build_render_context([], "python")
+
+    assert context["tools"]["browser_agent"] == "BROWSER_AGENT"
+    assert context["tools"]["generate_image"] == "GENERATE_IMAGE"
+
+
+def test_build_render_context_fails_on_unknown_extra_tool_mapping():
+    class ExtraToolPlatform(BasePlatform):
+        name = "extra-tools"
+        display_name = "Extra Tools"
+        config_entry_point = "AGENTS.md"
+        tool_mapping = {
+            **{key: key.upper() for key in REQUIRED_TOOL_KEYS},
+            "surprise_tool": "SURPRISE_TOOL",
+        }
+
+    with pytest.raises(PlatformToolMappingError) as exc:
+        ExtraToolPlatform().build_render_context([], "python")
+
+    message = str(exc.value)
+    assert "extra-tools" in message
+    assert "unknown tool mappings" in message
+    assert "surprise_tool" in message
 
 
 def test_get_tool_fails_for_unknown_required_operation():

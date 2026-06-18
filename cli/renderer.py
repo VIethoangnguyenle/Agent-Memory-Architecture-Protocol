@@ -5,7 +5,7 @@ import shutil
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from jinja2 import Environment, FileSystemLoader, select_autoescape
+from jinja2 import Environment, FileSystemLoader, StrictUndefined, select_autoescape
 
 
 # Extensions that are safe to read and render as text templates.
@@ -32,6 +32,7 @@ def create_renderer(template_base_dir: str) -> Environment:
         keep_trailing_newline=True,
         trim_blocks=True,
         lstrip_blocks=True,
+        undefined=StrictUndefined,
     )
     return env
 
