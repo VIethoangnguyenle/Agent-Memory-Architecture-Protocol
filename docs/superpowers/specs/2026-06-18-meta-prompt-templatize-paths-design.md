@@ -20,8 +20,12 @@ còn dùng literal `.amap/` path — 32 lần xuất hiện trên 29 dòng. 44 f
 `{{ platform.framework_root }}` trong commit `d9924fc` (`platform-native-framework-root`). File này
 bị bỏ sót vì lúc đó nó còn ở root (`AGENTS.md`), ngoài cây `.amap/` — pass đó chỉ quét trong `.amap/`.
 
-Khi render cho Antigravity/Codex (`platform.framework_root = ".agents"`), nội dung in ra vẫn là
-`.amap/...` — sai, vì các file thật được scaffold vào `.agents/...`.
+Literal `.amap/` render verbatim cho **mọi** platform non-Generic, nên bug ảnh hưởng cả ba root:
+Antigravity (`.agents`), Codex (`.agents`), và Claude Code (`.claude`) — file render ra vẫn in
+`.amap/...` trong khi file thật được scaffold vào `.agents/...` hoặc `.claude/...`. Chỉ Antigravity
+hiện có test che leakage này; Codex và Claude Code không có (test claude-code hiện tại,
+`test_init_templatizes_entry_point_references`, chỉ check vắng `{{ ` và tên entry-point, không check
+`.amap/`).
 
 ## 2. Quyết định đã chốt
 
@@ -41,9 +45,10 @@ Khi render cho Antigravity/Codex (`platform.framework_root = ".agents"`), nội 
   `document-writer`, `infra-tdd`, các workflow `opsx-*`, `executor.md`/`reviewer.md`,
   `rule-projector`, `microloop-orchestrator`). Đây là vấn đề content-accuracy lớn hơn, tách thành
   task riêng sau.
-- **Thêm test Codex tương đương:** Codex dùng cùng `framework_root = ".agents"` như Antigravity, cùng
-  bug root cause, nhưng chưa có test che phủ. Thêm 1 test giống cấu trúc test Antigravity hiện có,
-  đổi platform answer sang Codex.
+- **Thêm test cho Codex và Claude Code:** cả hai cùng dính bug nhưng chưa có test leakage. Thêm 2
+  test giống cấu trúc test Antigravity hiện có, đổi platform answer sang Codex và Claude Code. Sau
+  fix, cả ba root non-Generic (`.agents` Antigravity, `.agents` Codex, `.claude`) đều có guard chống
+  regression `.amap/` leakage.
 
 ## 3. Phạm vi thay đổi
 
@@ -98,22 +103,28 @@ nhằng giữa path và tên framework.
 
 ### 3.2 `cli/tests/test_init.py`
 
-Thêm test mới ngay sau `test_antigravity_rendered_framework_files_do_not_reference_active_amap_paths`:
-cùng logic quét, đổi platform answer từ Antigravity (`"1"`) sang Codex (`"4"`).
+Thêm 2 test mới ngay sau `test_antigravity_rendered_framework_files_do_not_reference_active_amap_paths`,
+cùng logic quét, chỉ đổi platform answer:
+- `test_codex_rendered_framework_files_do_not_reference_active_amap_paths` — answer `"4"` (Codex).
+- `test_claude_code_rendered_framework_files_do_not_reference_active_amap_paths` — answer `"2"`
+  (Claude Code; root `.claude`).
 
 ## 4. Test & Verification
 
 - `cli/tests/test_init.py::test_antigravity_rendered_framework_files_do_not_reference_active_amap_paths`
   → phải chuyển từ FAIL → PASS.
-- Test Codex mới → PASS ngay từ đầu (vì fix áp dụng chung cho cả 2 platform).
+- 2 test mới (Codex, Claude Code) → PASS (fix áp dụng chung cho mọi platform).
 - Full suite `/usr/bin/python3 -m pytest cli/tests/ -q` → **100% pass**, không còn known-failure nào
   (khác với lần fix trước, lần này không có exception "pre-existing, ngoài phạm vi" — đây chính là
   task fix nó).
 - Smoke kiểm tra platform Generic không đổi hành vi: `framework_root` của Generic = `.amap`, nên sau
   templatize, output render cho Generic vẫn in ra `.amap/...` giống y hệt hôm nay (chỉ khác nguồn là
   biến thay vì literal).
-- `grep -c '\.amap/' .amap/meta-prompt.md` → phải bằng 0 sau khi sửa (trừ khi còn cụm escape
-  "legacy .amap"/"source repo" — không có trường hợp nào trong phạm vi này).
+- `grep -o '\.amap/' .amap/meta-prompt.md | wc -l` → phải bằng 0 sau khi sửa (dùng `grep -o` đếm số
+  lần xuất hiện, nhất quán với cách đếm 32 ở §1; `grep -c` đếm dòng nên không dùng cho count).
+- **Verify cây thư mục thủ công** (test KHÔNG che phần này): render entry-point cho 1 platform non-Generic
+  rồi đọc lại §0 bằng mắt — xác nhận chỉ còn 1 nhánh top-level `{{ platform.framework_root }}/`, lồng
+  đúng, không lệch box-drawing/độ thụt.
 
 ## 5. Tiêu chí Done
 
