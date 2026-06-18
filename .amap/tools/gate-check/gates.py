@@ -18,9 +18,12 @@ _NODE_ID = re.compile(r"\bnode_id\s*[:=]", re.IGNORECASE)
 _BLAST = re.compile(r"blast-radius", re.IGNORECASE)
 _DEGRADE = re.compile(r"KG unavailable.*MEDIUM", re.IGNORECASE)
 _NUMBERS = re.compile(r"(nodes?|edges?)\s*[:=]\s*\d+", re.IGNORECASE)
+_NO_KNOWLEDGE = re.compile(r"no approved (dna|conventions).*low", re.IGNORECASE)
 
 
 def validate_knowledge_checkpoint(text: str) -> Result:
+    if _NO_KNOWLEDGE.search(text):
+        return Result(True)  # fresh project: no approved DNA/conventions yet → proceed at LOW confidence
     if not _RULE_ID.search(text):
         return Result(False, "no rule-id (e.g. SP-6) cited")
     has_facts = bool(_NODE_ID.search(text) and _BLAST.search(text))

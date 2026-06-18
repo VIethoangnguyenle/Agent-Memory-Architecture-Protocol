@@ -29,7 +29,7 @@ Trước khi tạo/sửa bất kỳ artifact nào, agent PHẢI sinh
 
 - Slice knowledge lấy từ `knowledge-index.yaml` theo `applies_to` khớp artifact-type
   hiện tại (artifact-type là tag do project định nghĩa — KHÔNG enum cứng).
-- Checkpoint phải có: rule-id áp dụng + (node_id reuse-được + blast-radius) HOẶC dòng degrade.
+- Checkpoint phải có: rule-id áp dụng + (node_id reuse-được + blast-radius) HOẶC dòng degrade KG. Trường hợp project CHƯA có DNA/conventions approved: ghi dòng "no approved DNA/conventions ... LOW confidence" → gate pass ở mức LOW (thay cho WARN cũ).
 - Gate FAIL → **ABORT**, không được viết code. Chi tiết: `procedures/decision-gate.md`.
 
 ### [CRITICAL] R-DNA-7: Capture teaching moment ngay trong phiên

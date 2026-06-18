@@ -16,6 +16,18 @@ def test_knowledge_checkpoint_needs_ruleid_and_evidence():
     assert g.validate_knowledge_checkpoint(ok_degrade).ok is True
 
 
+def test_knowledge_checkpoint_governance_degrade_passes():
+    # No approved DNA/conventions yet (fresh project) → proceed at LOW confidence, no rule-id required.
+    gov = "## Applicable DNA/Conventions\nno approved DNA/conventions for this artifact-type — generic patterns, LOW confidence\n"
+    assert g.validate_knowledge_checkpoint(gov).ok is True
+
+
+def test_knowledge_checkpoint_still_needs_evidence_when_ruleid_present():
+    # Regression: citing a rule-id but no evidence and no degrade still fails.
+    bad = "## DNA\nSP-6 staircase\n## Codebase\n(no node_id, no blast-radius)\n"
+    assert g.validate_knowledge_checkpoint(bad).ok is False
+
+
 def test_mcp_status_needs_numbers_or_degrade():
     assert g.validate_mcp_status("MCP: Runtime Ready").ok is False
     assert g.validate_mcp_status("KG: nodes=1240 edges=5530 freshness=2026-06-18").ok is True
