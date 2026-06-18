@@ -20,32 +20,17 @@
 - Không được bypass `pre_conditions` dù context có vẻ đủ — guard phải chạy deterministically.
 - Lý do (Arthur AI): "Pre-LLM guardrails should be fast and deterministic." Guards ngăn lỗi lan truyền sang downstream skills.
 
-### [CRITICAL] R-Guard-2: Artifact-type pre-check trước khi sinh code
+### [CRITICAL] R-Guard-2: Knowledge-before-code gate (evidence-based)
 
-Trước khi bắt đầu viết bất kỳ artifact nào (factory, service, repository, entity, etc.), agent PHẢI:
+Trước khi tạo/sửa bất kỳ artifact nào, agent PHẢI sinh
+`knowledge/active/KNOWLEDGE_CHECKPOINT.md` (theo template) và pass gate:
 
-1. Xác định artifact type từ tên class/file sẽ sinh:
-   - Chứa `Factory` → kiểm tra conventions.yaml **Factory Design Boundary** section
-   - Chứa `Service` → kiểm tra conventions.yaml **Service Pattern** section (nếu có)
-   - Chứa `Repository` / `Repo` → kiểm tra conventions.yaml **Repository rules** (nếu có)
-   - Bất kỳ → đọc `author-dna.yaml` confirmed entries về naming + complexity
+`python3 {{ platform.framework_root }}/tools/gate-check/cli.py knowledge-checkpoint <file>`
 
-2. Ghi checkpoint vào AGENT_TRANSPARENCY trước khi sinh code:
-   ```
-   [R-Guard-2] Artifact: {ArtifactName} ({type})
-   Conventions checked: {section names} — {key constraints ghi nhớ}
-   DNA checked: {relevant entries, e.g. "prefer immutable (dna-003), descriptive naming (dna-007)"}
-   ```
-
-3. Nếu conventions.yaml không tồn tại hoặc status=draft:
-   → WARN "conventions.yaml chưa có/approved — sinh code với generic patterns, **rủi ro lệch kiến trúc**"
-   → Hạ confidence của output xuống THẤP trong AGENT_TRANSPARENCY
-
-4. Nếu author-dna.yaml không tồn tại hoặc status=draft:
-   → WARN "author-dna.yaml chưa có/approved — sinh code với generic style, có thể vi phạm preference của tác giả"
-
-- **Không được** bắt đầu viết code trước khi checkpoint này được ghi.
-- Lý do: nguyên nhân trực tiếp của incident 2026-06-08 — agent sinh code mà không tham chiếu DNA + conventions.
+- Slice knowledge lấy từ `knowledge-index.yaml` theo `applies_to` khớp artifact-type
+  hiện tại (artifact-type là tag do project định nghĩa — KHÔNG enum cứng).
+- Checkpoint phải có: rule-id áp dụng + (node_id reuse-được + blast-radius) HOẶC dòng degrade.
+- Gate FAIL → **ABORT**, không được viết code. Chi tiết: `procedures/decision-gate.md`.
 
 ### [CRITICAL] R-DNA-7: Capture teaching moment ngay trong phiên
 
