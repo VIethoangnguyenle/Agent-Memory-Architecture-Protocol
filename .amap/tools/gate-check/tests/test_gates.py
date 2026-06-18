@@ -69,3 +69,19 @@ def test_cli_returns_nonzero_on_invalid(tmp_path):
     f = tmp_path / "chk.md"
     f.write_text("nothing useful", encoding="utf-8")
     assert cli.main(["knowledge-checkpoint", str(f)]) == 1
+
+
+# ─── Regression fixtures: the historical failures these gates exist to catch ───
+
+def test_c10_handoff_without_sp6_slice_blocks_dispatch():
+    # C-10: a subagent was dispatched with only a task description (no knowledge
+    # slice) → it violated SP-6. The dispatch-gate must refuse such a handoff.
+    handoff = "# Handoff\n## Task\nwrite UnlockUserConfirmExecutor\n"
+    assert g.validate_handoff_slice(handoff).ok is False
+
+
+def test_c22_skipped_spec_blocks_completion():
+    # C-22: agent jumped Pha 1 → Pha 3, skipping the spec phase. The phase-chain
+    # completion gate must reject a non-contiguous marker chain.
+    transparency = "Pha 1 DONE\nPha 3 DONE"
+    assert g.validate_phase_chain(transparency).ok is False
