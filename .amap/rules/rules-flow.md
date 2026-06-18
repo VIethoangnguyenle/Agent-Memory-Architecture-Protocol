@@ -16,8 +16,9 @@
 
 - **Chuỗi pha cố định:** `/task <ticket>` → `/task spec <ticket>` → `/task apply <ticket>`.
 - **Apply-entry:** `/task apply` có precondition `phase_done(spec)` AND spec artifact tại
-  `openspec/changes/<id>/`. Thiếu → ABORT. Lý do "scope rõ nên bỏ spec" KHÔNG hợp lệ —
-  spec artifact là bắt buộc, không phải phán đoán agent.
+  `openspec/changes/<id>/` AND không còn `[BLOCKER-ARCH]` chưa resolve trong AGENT_TRANSPARENCY.md
+  (BLOCKER cuối phải có `[BLOCKER-ARCH RESOLVED]` tương ứng). Thiếu/BLOCKER chưa resolve → ABORT.
+  Lý do "scope rõ nên bỏ spec" KHÔNG hợp lệ — spec artifact là bắt buộc, không phải phán đoán agent.
 - **Completion:** KHÔNG phát "Done" cho tới khi phase-chain self-check pass:
   `python3 {{ platform.framework_root }}/tools/gate-check/cli.py phase-chain knowledge/active/AGENT_TRANSPARENCY.md`
   (kiểm marker `Pha 1/2/3 DONE` liên tục từ 1). Build-pass + bookkeeping thuộc sub-spec verify riêng.
