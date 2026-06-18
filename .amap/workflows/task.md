@@ -110,7 +110,7 @@ Sau khi nhận diện:
      - Cập nhật section "Tầng Database (db-explorer)" trong `{{ platform.framework_root }}/knowledge/active/EXPLORE_CONTEXT.md`.
 3. Gọi `codebase-explorer`:
    - Đọc `{{ platform.framework_root }}/knowledge/active/REQUIREMENT.md`, map yêu cầu → module/service/file.
-   - **[GATE] Kiểm tra trạng thái KG graph trước bất kỳ tool nào khác** (theo R-Tool-5b):
+   - **[GATE] Kiểm tra trạng thái KG graph trước bất kỳ tool nào khác** (theo R-Tool-5):
      - Gọi `{{ tools.graph_stats }}` (KG MCP Server) để xem graph có tồn tại và đủ mới không.
      - Nếu **graph OK** → dùng KG tools làm nguồn chính:
        - `{{ tools.search_code }}` → tìm nodes liên quan đến REQUIREMENT.

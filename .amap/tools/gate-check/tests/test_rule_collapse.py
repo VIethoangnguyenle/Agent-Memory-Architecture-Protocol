@@ -23,3 +23,10 @@ def test_rflow_phase_gate():
     text = (RULES / "rules-flow.md").read_text(encoding="utf-8")
     assert "phase-chain" in text                         # completion gate validator
     assert "phase_done(spec)" in text or "phase_done: spec" in text
+
+
+def test_rtool_mcp_probe_collapse():
+    text = (RULES / "rules-tool.md").read_text(encoding="utf-8")
+    assert "mcp-status" in text                          # probe gate validator
+    assert "Runtime Ready" not in text or "rỗng = invalid" in text
+    assert "secondary" not in text                       # removed skippable preference prose
