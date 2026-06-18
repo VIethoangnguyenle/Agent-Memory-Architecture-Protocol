@@ -2,6 +2,7 @@
 
 from .antigravity import AntigravityPlatform
 from .claude_code import ClaudeCodePlatform
+from .codex import CodexPlatform
 from .cursor import CursorPlatform
 from .generic import GenericPlatform
 
@@ -10,6 +11,7 @@ PLATFORMS = {
     "claude-code": ClaudeCodePlatform,
     "cursor": CursorPlatform,
     "generic": GenericPlatform,
+    "codex": CodexPlatform,
 }
 
 
