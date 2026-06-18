@@ -327,3 +327,32 @@ def test_cli_init_forwards_non_interactive_options(monkeypatch, tmp_path):
     assert captured["selected_mcps"] == ["socraticode", "confluence"]
     assert captured["language"] == "python"
     assert captured["assume_yes"] is True
+
+
+def test_cli_init_preserves_omitted_mcp_as_none(monkeypatch, tmp_path):
+    from cli import amap
+
+    captured = {}
+
+    def fake_run_init(**kwargs):
+        captured.update(kwargs)
+
+    monkeypatch.setattr("cli.commands.init.run_init", fake_run_init)
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "amap",
+            "init",
+            "--target",
+            str(tmp_path),
+            "--platform",
+            "generic",
+            "--language",
+            "python",
+            "--yes",
+        ],
+    )
+
+    amap.main()
+
+    assert captured["selected_mcps"] is None

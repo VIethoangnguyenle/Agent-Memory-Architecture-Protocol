@@ -109,11 +109,14 @@ def main():
 
     if args.command == "init":
         from cli.commands.init import parse_multi_values, run_init
+        selected_mcps = (
+            parse_multi_values(args.mcp) if args.mcp is not None else None
+        )
         run_init(
             target_dir=args.target,
             amap_root=args.source,
             platform_key=args.platform,
-            selected_mcps=parse_multi_values(args.mcp),
+            selected_mcps=selected_mcps,
             language=args.language,
             assume_yes=args.yes,
         )
