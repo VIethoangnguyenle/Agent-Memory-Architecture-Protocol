@@ -1,7 +1,45 @@
 """Base platform definition — abstract interface for all agent platforms."""
 
 from abc import ABC, abstractmethod
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Set
+
+
+REQUIRED_TOOL_KEYS = frozenset({
+    "read_file",
+    "write_file",
+    "edit_file",
+    "multi_edit_file",
+    "search_text",
+    "list_directory",
+    "run_command",
+    "command_status",
+    "send_input",
+    "search_code",
+    "index_code",
+    "code_status",
+    "get_dependencies",
+    "trace_flow",
+    "find_blast_radius",
+    "get_symbol",
+    "list_symbols",
+    "graph_stats",
+    "graph_build",
+    "search_docs",
+    "get_page",
+    "list_spaces",
+    "get_space_pages",
+    "search_web",
+    "read_url",
+})
+
+OPTIONAL_TOOL_KEYS = frozenset({
+    "browser_agent",
+    "generate_image",
+})
+
+
+class PlatformToolMappingError(ValueError):
+    """Raised when a platform adapter cannot resolve required AMAP tool keys."""
 
 
 class BasePlatform(ABC):
@@ -93,16 +131,43 @@ class BasePlatform(ABC):
         """Platform-specific notes shown during init."""
         return []
 
-    def get_tool(self, abstract_name: str) -> str:
-        """Resolve abstract operation to concrete tool name.
+    @property
+    def unsupported_tools(self) -> Set[str]:
+        """Required abstract operations intentionally unsupported by this platform."""
+        return set()
 
-        Returns the abstract name itself if no mapping exists
-        (graceful degradation).
-        """
-        return self.tool_mapping.get(abstract_name, abstract_name)
+    def get_tool(self, abstract_name: str) -> str:
+        """Resolve abstract operation to concrete tool name."""
+        if abstract_name in self.tool_mapping:
+            return self.tool_mapping[abstract_name]
+        raise PlatformToolMappingError(
+            f"{self.name} has no mapping for abstract tool operation: {abstract_name}"
+        )
+
+    def validate_tool_mapping(self) -> None:
+        """Fail early when a platform adapter drifts from AMAP's tool contract."""
+        tool_keys = set(self.tool_mapping)
+        allowed_keys = REQUIRED_TOOL_KEYS | OPTIONAL_TOOL_KEYS
+        missing = REQUIRED_TOOL_KEYS - tool_keys - self.unsupported_tools
+        extra = tool_keys - allowed_keys
+        extra_unsupported = self.unsupported_tools - REQUIRED_TOOL_KEYS
+        if missing:
+            raise PlatformToolMappingError(
+                f"{self.name} missing required tool mappings: {', '.join(sorted(missing))}"
+            )
+        if extra:
+            raise PlatformToolMappingError(
+                f"{self.name} declares unknown tool mappings: {', '.join(sorted(extra))}"
+            )
+        if extra_unsupported:
+            raise PlatformToolMappingError(
+                f"{self.name} declares unknown unsupported tools: "
+                f"{', '.join(sorted(extra_unsupported))}"
+            )
 
     def build_render_context(self, mcps: List[str], language: str) -> dict:
         """Build the full Jinja2 render context for this platform."""
+        self.validate_tool_mapping()
         return {
             "platform": {
                 "name": self.name,

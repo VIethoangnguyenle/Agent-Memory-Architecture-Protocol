@@ -17,19 +17,19 @@ from cli.scaffold import (
 )
 
 
-def prompt_single_checkbox(message: str, choices: List[str], default: int = 0) -> str:
-    """Interactive single-select prompt displayed as checkbox-style choices.
-
-    The fallback input remains numeric to keep tests and plain terminals
-    deterministic.
-    """
+def prompt_single_checkbox(
+    message: str, choices: List[str], default: Optional[int] = 0
+) -> str:
+    """Interactive single-select prompt displayed as checkbox-style choices."""
     print(f"\n{message}")
     for i, choice in enumerate(choices):
-        marker = "x" if i == default else " "
+        marker = "x" if default is not None and i == default else " "
         print(f"  [{marker}] [{i + 1}] {choice}")
+
+    prompt_suffix = f" [{default + 1}]" if default is not None else ""
     while True:
-        raw = input(f"\nChọn một mục (1-{len(choices)}) [{default + 1}]: ").strip()
-        if not raw:
+        raw = input(f"\nChọn một mục (1-{len(choices)}){prompt_suffix}: ").strip()
+        if not raw and default is not None:
             return choices[default]
         try:
             idx = int(raw) - 1
@@ -60,27 +60,95 @@ def prompt_multi_checkbox(message: str, choices: List[dict]) -> List[str]:
     return selected
 
 
-def gather_choices(manifest: dict) -> Tuple[str, List[str], str]:
-    """Interactively gather (platform_key, selected_mcps, language)."""
+def parse_multi_values(values: Optional[List[str]]) -> List[str]:
+    """Normalize repeated or comma-separated CLI option values."""
+    if not values:
+        return []
+    parsed = []
+    for value in values:
+        for part in value.split(","):
+            item = part.strip()
+            if item:
+                parsed.append(item)
+    return parsed
+
+
+def _validate_selected_mcps(selected_mcps: List[str], mcp_capabilities: dict) -> None:
+    unknown = [mcp for mcp in selected_mcps if mcp not in mcp_capabilities]
+    if unknown:
+        raise ValueError(f"Unknown MCP server(s): {', '.join(unknown)}")
+
+
+def _validate_language(language: str, languages: List[str]) -> None:
+    if language not in languages:
+        raise ValueError(
+            f"Unknown language: {language}. Available: {', '.join(languages)}"
+        )
+
+
+def resolve_init_choices(
+    manifest: dict,
+    platform_key: Optional[str] = None,
+    selected_mcps: Optional[List[str]] = None,
+    language: Optional[str] = None,
+    assume_yes: bool = False,
+) -> Tuple[str, List[str], str]:
+    """Resolve init choices from explicit options or interactive prompts."""
     mcp_capabilities = manifest.get("mcp_capabilities", {})
     languages = manifest.get("languages", ["java", "typescript", "python", "other"])
+    explicit_selected_mcps = selected_mcps is not None
+    selected_mcps = selected_mcps or []
 
-    platform_keys = list(PLATFORMS.keys())
-    platform_choices = [get_platform(k).display_name for k in platform_keys]
-    chosen_display = prompt_single_checkbox("Chọn agent platform:", platform_choices)
-    platform_key = platform_keys[platform_choices.index(chosen_display)]
+    if assume_yes and (platform_key is None or language is None):
+        raise ValueError("--yes requires --platform and --language")
+
+    if platform_key is not None and platform_key not in PLATFORMS:
+        raise ValueError(
+            f"Unknown platform: {platform_key}. Available: {', '.join(PLATFORMS)}"
+        )
+    _validate_selected_mcps(selected_mcps, mcp_capabilities)
+    if language is not None:
+        _validate_language(language, languages)
+
+    if platform_key is None:
+        platform_keys = list(PLATFORMS.keys())
+        platform_choices = [get_platform(k).display_name for k in platform_keys]
+        chosen_display = prompt_single_checkbox(
+            "Chọn agent platform:", platform_choices, default=None
+        )
+        platform_key = platform_keys[platform_choices.index(chosen_display)]
     print(f"\n  ✅ Platform: {get_platform(platform_key).display_name}")
 
-    mcp_choices = [{"key": k, "display": v["display"]} for k, v in mcp_capabilities.items()]
-    selected_mcps = prompt_multi_checkbox("MCP servers có sẵn:", mcp_choices)
+    if not explicit_selected_mcps and not assume_yes:
+        mcp_choices = [
+            {"key": key, "display": value["display"]}
+            for key, value in mcp_capabilities.items()
+        ]
+        selected_mcps = prompt_multi_checkbox("MCP servers có sẵn:", mcp_choices)
     print(f"  ✅ MCPs: {', '.join(selected_mcps) or 'none'}")
 
-    language = prompt_single_checkbox("Ngôn ngữ chính của project:", languages)
+    if language is None:
+        default_language = languages.index("other") if "other" in languages else None
+        language = prompt_single_checkbox(
+            "Ngôn ngữ chính của project:", languages, default=default_language
+        )
     print(f"  ✅ Language: {language}")
     return platform_key, selected_mcps, language
 
 
-def run_init(target_dir: str, amap_root: Optional[str] = None) -> None:
+def gather_choices(manifest: dict) -> Tuple[str, List[str], str]:
+    """Interactively gather (platform_key, selected_mcps, language)."""
+    return resolve_init_choices(manifest)
+
+
+def run_init(
+    target_dir: str,
+    amap_root: Optional[str] = None,
+    platform_key: Optional[str] = None,
+    selected_mcps: Optional[List[str]] = None,
+    language: Optional[str] = None,
+    assume_yes: bool = False,
+) -> None:
     """Main init command — scaffold AMAP into a target project."""
     target = Path(target_dir).resolve()
     amap = Path(amap_root).resolve() if amap_root else Path(__file__).resolve().parent.parent.parent
@@ -89,7 +157,13 @@ def run_init(target_dir: str, amap_root: Optional[str] = None) -> None:
     print(f"  Target: {target}\n  Source: {amap}")
 
     manifest = load_manifest(amap)
-    platform_key, selected_mcps, language = gather_choices(manifest)
+    platform_key, selected_mcps, language = resolve_init_choices(
+        manifest,
+        platform_key=platform_key,
+        selected_mcps=selected_mcps,
+        language=language,
+        assume_yes=assume_yes,
+    )
     platform = get_platform(platform_key)
 
     print(f"\n{'─' * 50}")
@@ -97,7 +171,7 @@ def run_init(target_dir: str, amap_root: Optional[str] = None) -> None:
     print(f"  MCPs:      {', '.join(selected_mcps) or 'none'}")
     print(f"  Language:  {language}")
     print(f"  Target:    {target}\n{'─' * 50}")
-    if input("\nTiến hành scaffold? [Y/n]: ").strip().lower() == "n":
+    if not assume_yes and input("\nTiến hành scaffold? [Y/n]: ").strip().lower() == "n":
         print("\n❌ Đã huỷ.")
         return
 
