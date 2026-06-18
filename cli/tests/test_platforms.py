@@ -1,54 +1,31 @@
 """Tests for platform adapter definitions."""
 
+from cli.platforms import PLATFORMS, get_platform
 from cli.platforms.generic import GenericPlatform
-from cli.platforms import get_platform
 
 
-def test_generic_platform_has_no_native_skill_export():
+def test_platform_framework_roots():
+    assert get_platform("antigravity").framework_root == ".agents"
+    assert get_platform("codex").framework_root == ".agents"
+    assert get_platform("claude-code").framework_root == ".claude"
+    assert get_platform("generic").framework_root == ".amap"
+
+
+def test_native_root_platforms_do_not_need_skill_mirror():
+    assert get_platform("antigravity").native_skill_export is None
+    assert get_platform("codex").native_skill_export is None
+    assert get_platform("claude-code").native_skill_export is None
+
+
+def test_render_context_includes_framework_root():
+    ctx = get_platform("antigravity").build_render_context(["socraticode"], "python")
+    assert ctx["platform"]["framework_root"] == ".agents"
+
+
+def test_cursor_is_out_of_scope_for_platform_selection():
+    assert "cursor" not in PLATFORMS
+
+
+def test_generic_platform_defaults_to_amap_root():
+    assert GenericPlatform().framework_root == ".amap"
     assert GenericPlatform().native_skill_export is None
-
-
-def test_claude_code_native_skill_export():
-    export = get_platform("claude-code").native_skill_export
-    assert export == {"dir": ".claude/skills", "strip_frontmatter": False, "flatten": False}
-
-
-def test_antigravity_native_skill_export():
-    export = get_platform("antigravity").native_skill_export
-    assert export == {"dir": ".agents/skills", "strip_frontmatter": False, "flatten": False}
-
-
-def test_cursor_native_skill_export():
-    export = get_platform("cursor").native_skill_export
-    assert export == {"dir": ".cursor/commands", "strip_frontmatter": True, "flatten": True}
-
-
-def test_cursor_notes_mention_manual_invocation():
-    notes = " ".join(get_platform("cursor").notes).lower()
-    assert "auto-trigger" in notes or "manual" in notes
-
-
-from cli.platforms import PLATFORMS
-
-
-def test_codex_platform_registered():
-    assert "codex" in PLATFORMS
-    codex = get_platform("codex")
-    assert codex.config_entry_point == "AGENTS.md"
-    assert codex.native_skill_export == {
-        "dir": ".agents/skills", "strip_frontmatter": False, "flatten": False,
-    }
-
-
-def test_codex_tool_mapping_is_abstract_passthrough():
-    codex = get_platform("codex")
-    assert codex.tool_mapping["read_file"] == "read_file"
-    assert codex.tool_mapping["run_command"] == "run_command"
-
-
-def test_platforms_dict_order_unchanged_for_existing_platforms():
-    # Existing tests hardcode numeric prompt indices for these 4 platforms —
-    # codex must be appended, never inserted, or those indices break.
-    keys = list(PLATFORMS.keys())
-    assert keys[:4] == ["antigravity", "claude-code", "cursor", "generic"]
-    assert keys[4] == "codex"

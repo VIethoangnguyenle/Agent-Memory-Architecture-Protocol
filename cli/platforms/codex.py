@@ -8,8 +8,8 @@ class CodexPlatform(BasePlatform):
     name = "codex"
     display_name = "OpenAI Codex CLI"
     config_entry_point = "AGENTS.md"
-
-    native_skill_export = {"dir": ".agents/skills", "strip_frontmatter": False, "flatten": False}
+    framework_root = ".agents"
+    native_skill_export = None
 
     tool_mapping = {
         # Codex CLI does not publicly document its internal tool names the
@@ -43,8 +43,8 @@ class CodexPlatform(BasePlatform):
 
     notes = [
         "AGENTS.md is the config entry point (developers.openai.com/codex/guides/agents-md)",
+        "AMAP runtime scaffolds into .agents/",
         "tool_mapping is abstract passthrough — Codex CLI's internal tool names are not "
         "publicly documented; map manually if your AMAP skills need concrete tool calls",
-        "Skills/workflows export to .agents/skills/ — the open agent-skills standard, "
-        "shared with Antigravity",
+        "Skills/workflows export directly into the .agents/ framework root",
     ]

@@ -8,6 +8,8 @@ class AntigravityPlatform(BasePlatform):
     name = "antigravity"
     display_name = "Google Antigravity (Gemini)"
     config_entry_point = "AGENTS.md"
+    framework_root = ".agents"
+    native_skill_export = None
 
     tool_mapping = {
         # ── File Operations ──
@@ -60,10 +62,9 @@ class AntigravityPlatform(BasePlatform):
 
     mcp_tool_prefix = "mcp_"
 
-    native_skill_export = {"dir": ".agents/skills", "strip_frontmatter": False, "flatten": False}
-
     notes = [
         "AGENTS.md is loaded via user_rules in Antigravity config",
+        "AMAP runtime scaffolds into .agents/",
         "MCP tools use prefix: mcp_<server>_<tool>",
         "Supports browser_subagent for visual tasks",
     ]

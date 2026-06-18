@@ -80,6 +80,15 @@ class BasePlatform(ABC):
         return None
 
     @property
+    def framework_root(self) -> str:
+        """Canonical AMAP runtime root inside a target project.
+
+        This is where rules, skills, workflows, procedures, tools, profiles,
+        knowledge, and resolved-config.yaml are scaffolded for the platform.
+        """
+        return ".amap"
+
+    @property
     def notes(self) -> List[str]:
         """Platform-specific notes shown during init."""
         return []
@@ -99,6 +108,7 @@ class BasePlatform(ABC):
                 "name": self.name,
                 "display_name": self.display_name,
                 "config_entry_point": self.config_entry_point,
+                "framework_root": self.framework_root,
             },
             "tools": self.tool_mapping,
             "capabilities": self.capabilities,
