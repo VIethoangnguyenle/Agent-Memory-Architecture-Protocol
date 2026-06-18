@@ -138,6 +138,46 @@ def test_antigravity_rendered_framework_files_do_not_reference_active_amap_paths
     assert offenders == []
 
 
+def test_codex_rendered_framework_files_do_not_reference_active_amap_paths(
+    tmp_path, amap_root, monkeypatch,
+):
+    target = tmp_path / "proj"
+    _answers(monkeypatch, ["4", "1,2,3", "3", "y"])
+
+    run_init(target_dir=str(target), amap_root=str(amap_root))
+
+    offenders = []
+    for path in target.rglob("*"):
+        if not path.is_file():
+            continue
+        if path.suffix.lower() not in {".md", ".yaml", ".yml", ".txt"} and path.name != "AGENTS.md":
+            continue
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        if ".amap/" in text and "legacy .amap" not in text and "source repo" not in text:
+            offenders.append(path.relative_to(target).as_posix())
+    assert offenders == []
+
+
+def test_claude_code_rendered_framework_files_do_not_reference_active_amap_paths(
+    tmp_path, amap_root, monkeypatch,
+):
+    target = tmp_path / "proj"
+    _answers(monkeypatch, ["2", "1,2,3", "3", "y"])
+
+    run_init(target_dir=str(target), amap_root=str(amap_root))
+
+    offenders = []
+    for path in target.rglob("*"):
+        if not path.is_file():
+            continue
+        if path.suffix.lower() not in {".md", ".yaml", ".yml", ".txt"} and path.name != "AGENTS.md":
+            continue
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        if ".amap/" in text and "legacy .amap" not in text and "source repo" not in text:
+            offenders.append(path.relative_to(target).as_posix())
+    assert offenders == []
+
+
 def test_init_next_steps_use_platform_framework_root(tmp_path, amap_root, monkeypatch, capsys):
     target = tmp_path / "proj"
     _answers(monkeypatch, ["1", "1,2,3", "3", "y"])
