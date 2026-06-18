@@ -44,3 +44,8 @@ include = ["cli*"]
 cli = [
     "plugin-manifest.yaml",
 ]
+
+[tool.pytest.ini_options]
+# Tool dirs each ship a `tests/` package with the same name; importlib mode
+# avoids the rootdir-relative module-name collision under default import mode.
+addopts = "--import-mode=importlib"

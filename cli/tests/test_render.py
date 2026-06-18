@@ -29,3 +29,22 @@ def test_directory_render_propagates_template_errors(tmp_path, jinja_env, claude
     dst = tmp_path / "dst"
     with pytest.raises(TemplateSyntaxError):
         copy_and_render_directory(jinja_env, src, dst, claude_context)
+
+
+def test_directory_render_excludes_instance_and_build_artifacts(tmp_path, jinja_env, claude_context):
+    # The scaffold must never ship a dev's local instance/build artifacts;
+    # only templates/seeds ship. (Also keeps test_snapshots.py hermetic.)
+    src = tmp_path / "src"
+    (src / "generated").mkdir(parents=True)
+    (src / "persona.template.yaml").write_text("seed\n", encoding="utf-8")
+    (src / "persona.yaml").write_text("dev local\n", encoding="utf-8")
+    (src / "generated" / ".gitkeep").write_text("", encoding="utf-8")
+    (src / "generated" / "rules.json").write_text("{}", encoding="utf-8")
+    (src / "generated" / "checkstyle.generated.xml").write_text("<x/>", encoding="utf-8")
+    dst = tmp_path / "dst"
+    copy_and_render_directory(jinja_env, src, dst, claude_context)
+    assert (dst / "persona.template.yaml").exists()      # seed ships
+    assert (dst / "generated" / ".gitkeep").exists()     # empty-dir marker ships
+    assert not (dst / "persona.yaml").exists()           # dev instance excluded
+    assert not (dst / "generated" / "rules.json").exists()
+    assert not (dst / "generated" / "checkstyle.generated.xml").exists()
