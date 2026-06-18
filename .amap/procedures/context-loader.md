@@ -40,22 +40,16 @@ Tránh tình trạng agent dùng context cũ của task khác.
 
 **Artifact-type slice (JIT, tại decision-gate)**:
 
-Khi R-Guard-2 detect artifact type (trước khi sinh code), decision-gate kéo entry tương ứng từ `knowledge-index.yaml` (xem `ARTIFACT_SECTION_MAP` cũ — vẫn dùng để khớp `applies_to`):
+Khi R-Guard-2 detect artifact type (trước khi sinh code), decision-gate kéo entry khớp từ `knowledge-index.yaml` thuần theo tag `applies_to`:
 
 ```
-ARTIFACT_SECTION_MAP = {
-  "Factory"    : ["Factory Design Boundary", "upstream_constraints"],
-  "Handler"    : ["Handler naming", "upstream_constraints"],
-  "Service"    : ["Service naming", "upstream_constraints"],
-  "Repository" : ["Repository naming", "upstream_constraints"],
-  "Processor"  : ["Processor naming"],
-  "Executor"   : ["Executor naming", "upstream_constraints"],
-  "Entity"     : ["Entity naming", "upstream_constraints"],
-  "*"          : ["Section 1 naming rules"]  # default — mọi artifact
-}
+slice = [ entry for entry in knowledge-index
+          if artifact_type in entry.applies_to       # khớp type hiện tại
+          or not entry.applies_to ]                  # + entry áp dụng mọi artifact
 ```
 
-Đây là slice JIT — context-loader không pre-load các section này; decision-gate kéo đúng lúc cần bằng chứng (xem token bằng chứng bắt buộc trong `decision-gate.md`).
+- **Vocabulary artifact-type do PROJECT định nghĩa** (tag `applies_to` mà author-dna-builder / convention-intelligence-builder gắn vào entry) — framework KHÔNG hard-code danh sách type (vd Factory/Service…). Khớp thuần theo `applies_to`, không qua bảng cố định.
+- Đây là slice JIT — context-loader không pre-load; decision-gate kéo đúng lúc cần bằng chứng (xem token bằng chứng bắt buộc trong `decision-gate.md`).
 
 > **[R-KI-1 — Bắt buộc]**: Nếu external KI (vd Cursor rules, Antigravity knowledge, etc.) chứa
 > file `factory-rules.md`, `coding-rules.md`, hoặc bất kỳ file nào duplicate nội dung
