@@ -40,6 +40,7 @@ class GenericPlatform(BasePlatform):
         "search_docs":       "search_docs",
         "get_page":          "get_page",
         "list_spaces":       "list_spaces",
+        "get_space_pages":   "get_space_pages",
         "search_web":        "search_web",
         "read_url":          "read_url",
     }
