@@ -1,7 +1,7 @@
 """Base platform definition — abstract interface for all agent platforms."""
 
 from abc import ABC, abstractmethod
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 
 class BasePlatform(ABC):
@@ -60,6 +60,24 @@ class BasePlatform(ABC):
         Claude Code: 'mcp__<server>__<tool>'
         """
         return ""
+
+    @property
+    def native_skill_export(self) -> Optional[dict]:
+        """Where (if anywhere) this platform natively auto-discovers skills.
+
+        None = no native discovery; skills/workflows are reachable only via
+        bootstrap.md's manual PHASE 1 self-registration (works on every
+        platform, including this one).
+
+        dir: root directory; the skill/workflow name is appended automatically.
+        strip_frontmatter: True means export as a flat <name>.md with YAML
+          frontmatter removed — pre_conditions (if any) are re-rendered into
+          the body as a checklist instead of being silently dropped (see
+          export_as_flat_command in cli/scaffold.py).
+        flatten: True means output is <dir>/<name>.md (no subfolder); False
+          means <dir>/<name>/SKILL.md.
+        """
+        return None
 
     @property
     def notes(self) -> List[str]:
