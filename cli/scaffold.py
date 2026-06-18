@@ -204,6 +204,63 @@ def export_as_flat_command(skill_md_text: str) -> str:
     return "\n".join(header_lines) + "\n" + body.lstrip("\n")
 
 
+def scaffold_native_skill_exports(
+    plugins: List[dict], write_root: Path, platform, verbose: bool = True,
+) -> dict:
+    """Mirror skill/workflow plugins into the platform's native skill/command
+    location (if it has one), in addition to their .amap/ output.
+
+    Reads from write_root / plugin["output"] — already Jinja-rendered for
+    this platform by scaffold_plugins() — rather than from the AMAP repo
+    source, so the native export always matches the rendered content
+    exactly. No-op if platform.native_skill_export is None.
+    """
+    stats = {"exported": 0, "skipped": 0}
+    export = platform.native_skill_export
+    if export is None:
+        return stats
+
+    for plugin in plugins:
+        if plugin.get("type") not in ("skill", "workflow"):
+            continue
+
+        output_path = write_root / plugin["output"]
+        source_file = output_path / "SKILL.md" if plugin.get("copy_dir") else output_path
+        if not source_file.exists():
+            stats["skipped"] += 1
+            continue
+
+        text = source_file.read_text(encoding="utf-8")
+        if not text.startswith("---"):
+            if verbose:
+                print(f"  ⏭️  native export skip: {plugin['name']} (no frontmatter)")
+            stats["skipped"] += 1
+            continue
+
+        name = plugin["name"].removeprefix("workflow-")
+        _, frontmatter_text, body = text.split("---", 2)
+        meta = yaml.safe_load(frontmatter_text) or {}
+        if "name" not in meta:
+            meta = {"name": name, **meta}
+            frontmatter_text = yaml.dump(meta, default_flow_style=False, allow_unicode=True)
+            text = f"---\n{frontmatter_text}---{body}"
+
+        content = export_as_flat_command(text) if export["strip_frontmatter"] else text
+
+        if export["flatten"]:
+            target = write_root / export["dir"] / f"{name}.md"
+        else:
+            target = write_root / export["dir"] / name / "SKILL.md"
+
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(content, encoding="utf-8")
+        stats["exported"] += 1
+        if verbose:
+            print(f"  ✅ native export: {target.relative_to(write_root)}")
+
+    return stats
+
+
 def verify_no_unresolved(root: Path) -> List[Path]:
     """Return text files under root that still contain an unresolved '{{ ' marker.
 

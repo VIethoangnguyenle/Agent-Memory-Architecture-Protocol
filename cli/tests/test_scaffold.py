@@ -183,3 +183,100 @@ def test_export_as_flat_command_without_pre_conditions_omits_checklist():
     assert "Approve and commit." in output
     assert "Body." in output
 
+
+from cli.scaffold import scaffold_native_skill_exports
+
+
+class _FakePlatform:
+    def __init__(self, native_skill_export):
+        self.native_skill_export = native_skill_export
+
+
+def test_scaffold_native_skill_exports_noop_when_unsupported(tmp_path):
+    plugins = [{"name": "requirement-analyst", "type": "skill", "copy_dir": True,
+                "output": ".amap/skills/requirement-analyst/"}]
+    platform = _FakePlatform(None)
+
+    stats = scaffold_native_skill_exports(plugins, tmp_path, platform, verbose=False)
+
+    assert stats == {"exported": 0, "skipped": 0}
+
+
+def test_scaffold_native_skill_exports_mirrors_skill_verbatim(tmp_path):
+    skill_dir = tmp_path / ".amap" / "skills" / "requirement-analyst"
+    skill_dir.mkdir(parents=True)
+    (skill_dir / "SKILL.md").write_text(
+        "---\nname: requirement-analyst\ndescription: Standardize tickets.\n---\n\nBody.\n",
+        encoding="utf-8",
+    )
+    plugins = [{"name": "requirement-analyst", "type": "skill", "copy_dir": True,
+                "output": ".amap/skills/requirement-analyst/"}]
+    platform = _FakePlatform({"dir": ".claude/skills", "strip_frontmatter": False, "flatten": False})
+
+    stats = scaffold_native_skill_exports(plugins, tmp_path, platform, verbose=False)
+
+    target = tmp_path / ".claude" / "skills" / "requirement-analyst" / "SKILL.md"
+    assert target.exists()
+    assert target.read_text(encoding="utf-8") == (skill_dir / "SKILL.md").read_text(encoding="utf-8")
+    assert stats == {"exported": 1, "skipped": 0}
+
+
+def test_scaffold_native_skill_exports_inserts_name_for_workflow(tmp_path):
+    workflow_path = tmp_path / ".amap" / "workflows" / "task.md"
+    workflow_path.parent.mkdir(parents=True)
+    workflow_path.write_text(
+        "---\ndescription: Main task orchestrator.\n---\n\n# /task\n",
+        encoding="utf-8",
+    )
+    plugins = [{"name": "workflow-task", "type": "workflow", "output": ".amap/workflows/task.md"}]
+    platform = _FakePlatform({"dir": ".claude/skills", "strip_frontmatter": False, "flatten": False})
+
+    scaffold_native_skill_exports(plugins, tmp_path, platform, verbose=False)
+
+    target = tmp_path / ".claude" / "skills" / "task" / "SKILL.md"
+    content = target.read_text(encoding="utf-8")
+    assert "name: task" in content
+    assert "description: Main task orchestrator." in content
+
+
+def test_scaffold_native_skill_exports_flattens_and_strips_for_cursor(tmp_path):
+    skill_dir = tmp_path / ".amap" / "skills" / "requirement-analyst"
+    skill_dir.mkdir(parents=True)
+    (skill_dir / "SKILL.md").write_text(
+        "---\nname: requirement-analyst\ndescription: Standardize tickets.\n---\n\nBody.\n",
+        encoding="utf-8",
+    )
+    plugins = [{"name": "requirement-analyst", "type": "skill", "copy_dir": True,
+                "output": ".amap/skills/requirement-analyst/"}]
+    platform = _FakePlatform({"dir": ".cursor/commands", "strip_frontmatter": True, "flatten": True})
+
+    scaffold_native_skill_exports(plugins, tmp_path, platform, verbose=False)
+
+    target = tmp_path / ".cursor" / "commands" / "requirement-analyst.md"
+    content = target.read_text(encoding="utf-8")
+    assert not content.startswith("---")
+    assert "Standardize tickets." in content
+    assert "Body." in content
+
+
+def test_scaffold_native_skill_exports_skips_missing_frontmatter(tmp_path):
+    workflow_path = tmp_path / ".amap" / "workflows" / "tdd.md"
+    workflow_path.parent.mkdir(parents=True)
+    workflow_path.write_text("# /tdd\n\nNo frontmatter here.\n", encoding="utf-8")
+    plugins = [{"name": "workflow-tdd", "type": "workflow", "output": ".amap/workflows/tdd.md"}]
+    platform = _FakePlatform({"dir": ".claude/skills", "strip_frontmatter": False, "flatten": False})
+
+    stats = scaffold_native_skill_exports(plugins, tmp_path, platform, verbose=False)
+
+    assert stats == {"exported": 0, "skipped": 1}
+    assert not (tmp_path / ".claude" / "skills" / "tdd").exists()
+
+
+def test_scaffold_native_skill_exports_ignores_non_skill_workflow_plugins(tmp_path):
+    plugins = [{"name": "rules-manifest", "type": "rule", "output": ".amap/rules/RULES.md"}]
+    platform = _FakePlatform({"dir": ".claude/skills", "strip_frontmatter": False, "flatten": False})
+
+    stats = scaffold_native_skill_exports(plugins, tmp_path, platform, verbose=False)
+
+    assert stats == {"exported": 0, "skipped": 0}
+
