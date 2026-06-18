@@ -36,6 +36,18 @@ def test_handoff_slice_requires_applicable_section_with_ruleids():
     assert g.validate_handoff_slice(filled).ok is True
 
 
+def test_handoff_slice_ignores_ruleids_outside_its_section():
+    # rule-id appears only in a LATER, unrelated section → must NOT pass
+    leaky = (
+        "# Handoff\n"
+        "## Applicable DNA/Conventions\n"
+        "\n"
+        "## Unrelated Section\n"
+        "SP-6 is just mentioned here\n"
+    )
+    assert g.validate_handoff_slice(leaky).ok is False
+
+
 def test_cli_returns_nonzero_on_invalid(tmp_path):
     import importlib.util
     cli_mod = Path(__file__).resolve().parents[1] / "cli.py"

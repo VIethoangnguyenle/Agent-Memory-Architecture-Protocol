@@ -43,7 +43,7 @@ def validate_phase_chain(text: str) -> Result:
 
 
 def validate_handoff_slice(text: str) -> Result:
-    m = re.search(r"##\s+Applicable DNA/Conventions\s*\n(.*)", text, re.DOTALL)
+    m = re.search(r"##\s+Applicable DNA/Conventions[ \t]*\n(.*?)(?=\n##\s|\Z)", text, re.DOTALL)
     if not m or not _RULE_ID.search(m.group(1)):
         return Result(False, "handoff missing non-empty 'Applicable DNA/Conventions' with rule-ids")
     return Result(True)
