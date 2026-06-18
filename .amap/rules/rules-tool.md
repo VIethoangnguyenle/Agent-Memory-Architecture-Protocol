@@ -153,10 +153,15 @@ artifact-type của node) và pass:
 
 `python3 {{ platform.framework_root }}/tools/gate-check/cli.py handoff-slice <file>`
 
-- Slice nhúng INLINE vào prompt subagent (subagent KHÔNG tự đọc knowledge/gọi UA).
-- Output subagent kèm node-checkpoint ghi rule-id đã áp dụng; linter cơ học (sub-spec #2)
-  gác cửa cuối cho rule `mechanically_checkable`.
-- Thiếu slice trong khi chạy → subagent ghi `CONTEXT_REQUEST.<node-id>.md`, KHÔNG tự explore.
+- Slice nhúng INLINE vào prompt subagent. Coding subagent KHÔNG tự đọc knowledge files,
+  cũng KHÔNG gọi trực tiếp: UA/KG tools, db-explorer/DB, agent-memory, Socraticode search
+  như nguồn khám phá chính.
+- Output subagent kèm node-checkpoint ghi rule-id đã áp dụng; linter cơ học (giai đoạn
+  enforcement sau) gác cửa cuối cho rule `mechanically_checkable`.
+- Thiếu slice/context trong khi chạy → subagent ghi `CONTEXT_REQUEST.<node-id>.md`, KHÔNG tự explore.
+
+Lý do: codebase lớn cần knowledge-first evidence đã verify; executor không tự suy đoán
+hay mở rộng blast radius.
 
 ---
 
