@@ -3,6 +3,7 @@
 __pycache__/
 *.pyc
 .venv
+.worktrees/
 
 # Per-dev: persona là phong cách tương tác riêng từng developer (seed từ persona.template.yaml)
 .amap/knowledge/long-term/persona.yaml
