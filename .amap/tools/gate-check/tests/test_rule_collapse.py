@@ -17,3 +17,9 @@ def test_rtool8_dispatch_gate():
     text = (RULES / "rules-tool.md").read_text(encoding="utf-8")
     assert "handoff-slice" in text                     # references the gate validator
     assert "Applicable DNA/Conventions" in text         # required slice section
+
+
+def test_rflow_phase_gate():
+    text = (RULES / "rules-flow.md").read_text(encoding="utf-8")
+    assert "phase-chain" in text                         # completion gate validator
+    assert "phase_done(spec)" in text or "phase_done: spec" in text
