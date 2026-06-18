@@ -6,6 +6,53 @@
 
 ---
 
+## Claude Handoff — Next Session / Batch 2
+
+> **Current branch:** `batch1-scaffold-hardening`
+> **Remote branch:** `origin/batch1-scaffold-hardening`
+> **PR creation URL:** <https://github.com/VIethoangnguyenle/Agent-Memory-Architecture-Protocol/pull/new/batch1-scaffold-hardening>
+> **Last implemented commit:** `b9908fa fix(scaffold): fail on unknown template tool keys`
+> **Validation:** `python3 -m pytest cli/tests -q` → `74 passed`
+> **Final review:** clean; ready to merge. GitHub app could not create PR (`403 Resource not accessible by integration`), and `gh` is not installed.
+
+### Batch 1 status
+
+Batch 1 scaffold hardening is implemented on `batch1-scaffold-hardening`:
+
+- `P1.2` done: platform tool mapping now has required/optional key contracts, strict validation, and render-path protection via Jinja `StrictUndefined`.
+- `P1.3 + P2.2` done: `amap init` supports `--platform`, `--mcp`, `--language`, `--yes`; interactive platform has no default; language defaults to `other`; omitted `--mcp` still allows interactive MCP prompt; explicit empty MCP selection is preserved.
+- `UP3` done: structural golden snapshot tests cover `antigravity`, `codex`, `claude-code`, and `generic` scaffold trees.
+- `TODOS.md` audit done: stale `P3.2` moved to Done/Stale.
+
+### Recommended Batch 2
+
+Start Batch 2 with **P1.1 — U0 litmus baseline arm**. Do not jump to `P2.1/UP2` portability registry yet; Batch 1 created scaffold guardrails, but the project still needs outcome evidence before larger portability investment.
+
+Suggested Batch 2 scope:
+
+1. Write/adjust a spec for U0 baseline litmus:
+   - Compare the same ticket under two arms:
+     - AMAP full workflow.
+     - Baseline agent with only light repo guidance (`CLAUDE.md` / ad hoc prompt).
+   - Measure outcome, not just process: rework, review loops/comments, bug leakage, convention adherence, blast-radius quality, manual intervention count, token cost, and wall-clock.
+   - Use at least 3 ticket sizes: tiny, standard, complex.
+2. Keep Batch 2 mostly documentation/protocol unless the spec explicitly chooses to implement harness code.
+3. After P1.1 is designed/approved, create an implementation plan in `docs/superpowers/plans/`.
+4. Only after P1.1 has a validated protocol should Claude move to **UP1 eval harness**.
+
+Key docs for Claude to read first:
+
+- `docs/superpowers/specs/2026-06-18-batch1-scaffold-hardening-design.md`
+- `docs/superpowers/plans/2026-06-18-batch1-scaffold-hardening.md`
+- `docs/superpowers/specs/2026-06-17-upgrade-roadmap-design.md`
+- `TODOS.md` sections `P1.1` and `UP1`
+
+Recommended first user-facing question for Claude:
+
+> "Batch 1 is ready to merge. For Batch 2, should I first write the U0 baseline-litmus design spec, or do you want me to merge/open the Batch 1 PR first?"
+
+---
+
 ## P1 — Làm trước (đòn bẩy cao, chi phí thấp)
 
 ### P1.1 — U0 litmus phải có baseline arm (đo outcome, không đo process)
@@ -17,6 +64,7 @@
 - **Priority:** P1. **Depends on:** U2-min (repo sạch) như roadmap.
 
 ### P1.2 — Fix silent-failure trong tool resolution
+- **Status:** Done in Batch 1 on `batch1-scaffold-hardening` (`57ea533`, final hardening fix `b9908fa`). Keep this entry for historical context until the branch is merged.
 - **What:** `get_tool()` trả về chính tên abstract khi miss → template render thẳng chữ `find_blast_radius` (tool không tồn tại) vào instruction agent. Thêm: (a) test khẳng định mọi platform định nghĩa **cùng tập abstract-op key**, (b) guard lúc render cảnh báo/fail khi gặp op chưa map.
 - **Why:** Vi phạm "zero silent failures". `verify_no_unresolved` chỉ bắt marker `{{ `, không bắt abstract-op rò rỉ → output sai mà không ai biết.
 - **Context:** [cli/platforms/base.py:96-102](cli/platforms/base.py#L96-L102) (`get_tool`), [cli/scaffold.py:301-324](cli/scaffold.py#L301-L324) (`verify_no_unresolved`), [cli/tests/test_platforms.py](cli/tests/test_platforms.py).
@@ -24,6 +72,7 @@
 - **Priority:** P1 (nhỏ, an toàn).
 
 ### P1.3 + P2.2 — Init automation and safe defaults
+- **Status:** Done in Batch 1 on `batch1-scaffold-hardening` (`2da0ff6`, fixes `30f2d10` and `536fa68`). Keep this entry for historical context until the branch is merged.
 - **What:** Add flags for `amap init`: `--platform`, `--mcp`, `--language`, `--yes`. Keep interactive as the default, but prevent enter-through from silently installing Antigravity + Java. Platform has no interactive default; language defaults to `other`.
 - **Why:** Init must be scriptable for CI/onboarding, and defaults must not silently choose the wrong runtime or language.
 - **Context:** [cli/commands/init.py](cli/commands/init.py), [cli/amap.py](cli/amap.py). Supersedes the old separate `P1.3` and `P2.2` entries.
@@ -96,6 +145,7 @@
 - **Priority:** sau UP1/UP3. **Depends on:** liên quan P1.2, P2.1.
 
 ### UP3 — Golden-snapshot test mỗi platform
+- **Status:** Done in Batch 1 on `batch1-scaffold-hardening` (`9961918`). Keep this entry for historical context until the branch is merged.
 - **What:** `amap init` cho từng platform vào fixture, snapshot toàn bộ cây output, diff mỗi lần đổi. Regression ở path-resolution fail CI ngay.
 - **Why:** Churn lặp (6 commit về path resolution) cho thấy bề mặt platform × framework_root rất giòn. Đây là một test bắt được phần lớn churn gần đây.
 - **Context:** [cli/tests/](cli/tests/), [cli/scaffold.py](cli/scaffold.py). Bổ trợ P2.3 (gom config canonical).
