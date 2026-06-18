@@ -306,6 +306,20 @@ plugins:
     output: "{{ platform.framework_root }}/tools/skill-lint/"
     copy_dir: true
 
+  - name: gate-check
+    type: tool
+    source: tools/gate-check/
+    template: false
+    output: "{{ platform.framework_root }}/tools/gate-check/"
+    copy_dir: true
+
+  - name: knowledge-index
+    type: tool
+    source: tools/knowledge-index/
+    template: false
+    output: "{{ platform.framework_root }}/tools/knowledge-index/"
+    copy_dir: true
+
   # ─── KNOWLEDGE LAYER TEMPLATES ───
   - name: knowledge-templates
     type: template
