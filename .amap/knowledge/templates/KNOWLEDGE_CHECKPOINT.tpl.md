@@ -1,4 +1,4 @@
-# KNOWLEDGE CHECKPOINT — {{ artifact_name }}
+# KNOWLEDGE CHECKPOINT — <!-- artifact_name -->
 
 > Sinh trước khi tạo/sửa artifact. Gate đọc file này. Skeleton = INVALID (gate ABORT).
 

@@ -18,6 +18,7 @@
 .claude/knowledge/templates/CONTRACT_SNAPSHOT.tpl.md
 .claude/knowledge/templates/EXPLORE_CONTEXT.tpl.md
 .claude/knowledge/templates/INTEGRATION_REQUEST.tpl.md
+.claude/knowledge/templates/KNOWLEDGE_CHECKPOINT.tpl.md
 .claude/knowledge/templates/KNOWLEDGE_PACK.tpl.md
 .claude/knowledge/templates/REQUIREMENT.tpl.md
 .claude/knowledge/templates/TOKEN_LOG.tpl.md

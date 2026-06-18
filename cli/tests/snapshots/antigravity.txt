@@ -18,6 +18,7 @@
 .agents/knowledge/templates/CONTRACT_SNAPSHOT.tpl.md
 .agents/knowledge/templates/EXPLORE_CONTEXT.tpl.md
 .agents/knowledge/templates/INTEGRATION_REQUEST.tpl.md
+.agents/knowledge/templates/KNOWLEDGE_CHECKPOINT.tpl.md
 .agents/knowledge/templates/KNOWLEDGE_PACK.tpl.md
 .agents/knowledge/templates/REQUIREMENT.tpl.md
 .agents/knowledge/templates/TOKEN_LOG.tpl.md

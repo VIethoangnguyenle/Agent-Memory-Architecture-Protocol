@@ -18,6 +18,7 @@
 .amap/knowledge/templates/CONTRACT_SNAPSHOT.tpl.md
 .amap/knowledge/templates/EXPLORE_CONTEXT.tpl.md
 .amap/knowledge/templates/INTEGRATION_REQUEST.tpl.md
+.amap/knowledge/templates/KNOWLEDGE_CHECKPOINT.tpl.md
 .amap/knowledge/templates/KNOWLEDGE_PACK.tpl.md
 .amap/knowledge/templates/REQUIREMENT.tpl.md
 .amap/knowledge/templates/TOKEN_LOG.tpl.md
