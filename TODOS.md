@@ -23,11 +23,11 @@
 - **Effort:** human ~nửa ngày / CC ~15 phút.
 - **Priority:** P1 (nhỏ, an toàn).
 
-### P1.3 — Init non-interactive (flags)
-- **What:** Thêm flag cho `amap init`: `--platform`, `--mcp`, `--language`, `--yes`. Giữ interactive làm mặc định.
-- **Why:** Hiện `init` chỉ interactive → không script được, không CI được, không tái lập được, không viết script onboarding cho team. Với framework mà North Star là đa-platform + team adoption, đây là gap DX lớn nhất.
-- **Context:** `amap init --help` chỉ có `--target/--source`. [cli/commands/init.py](cli/commands/init.py).
-- **Effort:** human ~nửa ngày / CC ~20 phút.
+### P1.3 + P2.2 — Init automation and safe defaults
+- **What:** Add flags for `amap init`: `--platform`, `--mcp`, `--language`, `--yes`. Keep interactive as the default, but prevent enter-through from silently installing Antigravity + Java. Platform has no interactive default; language defaults to `other`.
+- **Why:** Init must be scriptable for CI/onboarding, and defaults must not silently choose the wrong runtime or language.
+- **Context:** [cli/commands/init.py](cli/commands/init.py), [cli/amap.py](cli/amap.py). Supersedes the old separate `P1.3` and `P2.2` entries.
+- **Effort:** CC ~30-45 minutes.
 - **Priority:** P1.
 
 ---
@@ -40,13 +40,6 @@
 - **Context:** [cli/platforms/base.py:37-102](cli/platforms/base.py#L37-L102), [cli/platforms/claude_code.py:28-44](cli/platforms/claude_code.py#L28-L44), [cli/scaffold.py:48-53](cli/scaffold.py#L48-L53) (`has_capability` đã có notion `provides` nhưng chỉ dùng gate plugin). Roadmap SP3: [docs/superpowers/specs/2026-06-17-upgrade-roadmap-design.md](docs/superpowers/specs/2026-06-17-upgrade-roadmap-design.md) §4.
 - **Effort:** human ~3-5 ngày / CC ~1-2 giờ.
 - **Priority:** P2. **Depends on:** P1.1 (validate trước khi đổ công vào portability), P1.2.
-
-### P2.2 — Sửa footgun default khi init
-- **What:** Default platform hiện = Antigravity, default ngôn ngữ = java. Enter-through (hoặc pipe) **âm thầm** cài Antigravity + java. Sửa: default về `generic`, hoặc xếp theo độ phổ biến, hoặc bắt buộc chọn platform (no default).
-- **Why:** Đa số user là Claude Code/Cursor/Codex. Default về platform ít dùng nhất → đa số phải đổi tay, automation cài sai mà không cảnh báo.
-- **Context:** [cli/commands/init.py](cli/commands/init.py) (prompt order + default). Liên quan P1.3.
-- **Effort:** human ~1 giờ / CC ~10 phút.
-- **Priority:** P2.
 
 ### P2.3 — Gom resolved-config về một vị trí canonical
 - **What:** Hiện config có thể ở 3 nơi (`.agents`/`.claude`/`.amap`) với preference-order + fallback. Gom về **một** vị trí theo `platform.framework_root`, bỏ multi-candidate scan, thay bằng một migration cho layout cũ.
@@ -71,15 +64,15 @@
 - **Context:** [cli/platforms/base.py:117](cli/platforms/base.py#L117), [cli/scaffold.py:86](cli/scaffold.py#L86).
 - **Effort:** CC ~5 phút. **Priority:** P3.
 
-### P3.2 — Next-steps footer sau `amap init`
-- **What:** Output init kết ở danh sách file. Thêm footer "Next: customize persona → /convention-scan → /task ..." để đóng vòng TTHW.
-- **Context:** [cli/commands/init.py](cli/commands/init.py). README đã có nội dung, chỉ thiếu ở CLI.
-- **Effort:** CC ~10 phút. **Priority:** P3.
-
 ### P3.3 — Cập nhật framing chi phí SP3 trong roadmap
 - **What:** Sau khi xác nhận P2.1 (SP3 = mở rộng adapter, không phải greenfield), cập nhật §2/§4 roadmap: SP3 từ "spec mới, đòn bẩy build lớn nhất" → "mở rộng adapter + migrate ~16 ref + test". Điều này dịch lại bài toán "portability có đáng không".
 - **Context:** [docs/superpowers/specs/2026-06-17-upgrade-roadmap-design.md](docs/superpowers/specs/2026-06-17-upgrade-roadmap-design.md) §2, §4.
 - **Effort:** CC ~15 phút. **Priority:** P3. **Depends on:** P2.1.
+
+## Done / Stale
+
+### P3.2 — Next-steps footer sau `amap init`
+- **Status:** Done before Batch 1. `run_init()` already prints platform-root-aware next steps, and `cli/tests/test_init.py` covers the output.
 
 ---
 
@@ -107,7 +100,7 @@
 - **Why:** Churn lặp (6 commit về path resolution) cho thấy bề mặt platform × framework_root rất giòn. Đây là một test bắt được phần lớn churn gần đây.
 - **Context:** [cli/tests/](cli/tests/), [cli/scaffold.py](cli/scaffold.py). Bổ trợ P2.3 (gom config canonical).
 - **Effort:** CC ~30 phút.
-- **Priority:** cao (rẻ, bảo vệ mọi thay đổi sau).
+- **Priority:** P1 hardening guard. Do before large portability refactors.
 
 ### UP4 — `amap init/update --dry-run` + drift detection
 - **What:** `--dry-run` hiện diff trước khi ghi; `amap status --check-drift` cảnh báo khi file framework-owned bị sửa tay (sẽ bị overwrite khi update).
