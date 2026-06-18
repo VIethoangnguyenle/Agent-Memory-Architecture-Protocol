@@ -37,6 +37,7 @@
   tự khắc buộc dùng KG tools (`query_nodes`/`get_node_source`/`trace_call_chain`/`find_impact`);
   KG không có → dòng degrade "KG unavailable — grep fallback, MEDIUM" + hạ confidence kiến trúc.
 - `get_node_source` tuân thủ R-Data-1 (không log raw PII vào context files).
+- Khi ghi `EXPLORE_CONTEXT.md`, luôn kèm `node_id` cho component quan trọng (cho phép downstream `get_node_source(node_id)` trực tiếp).
 - KHÔNG bịa kết quả cho tool không khả dụng.
 - (Infra: thiếu mcp_config.json theo runtime là việc của `amap doctor`, ngoài rule này.)
 
