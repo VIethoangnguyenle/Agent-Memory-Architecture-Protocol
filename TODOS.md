@@ -11,20 +11,40 @@
 > **Current branch:** `batch1-scaffold-hardening`
 > **Remote branch:** `origin/batch1-scaffold-hardening`
 > **PR creation URL:** <https://github.com/VIethoangnguyenle/Agent-Memory-Architecture-Protocol/pull/new/batch1-scaffold-hardening>
-> **Last implemented commit:** `b9908fa fix(scaffold): fail on unknown template tool keys`
+> **Batch 1 implementation head:** `b9908fa fix(scaffold): fail on unknown template tool keys`
+> **Handoff note:** this section is kept at branch `HEAD`; check `git log -1` for the latest handoff commit.
 > **Validation:** `python3 -m pytest cli/tests -q` → `74 passed`
 > **Final review:** clean; ready to merge. GitHub app could not create PR (`403 Resource not accessible by integration`), and `gh` is not installed.
 
-### Batch 1 status
+### Done by Codex / Batch 1
 
-Batch 1 scaffold hardening is implemented on `batch1-scaffold-hardening`:
+Batch 1 scaffold hardening is implemented and pushed on `origin/batch1-scaffold-hardening`.
 
-- `P1.2` done: platform tool mapping now has required/optional key contracts, strict validation, and render-path protection via Jinja `StrictUndefined`.
-- `P1.3 + P2.2` done: `amap init` supports `--platform`, `--mcp`, `--language`, `--yes`; interactive platform has no default; language defaults to `other`; omitted `--mcp` still allows interactive MCP prompt; explicit empty MCP selection is preserved.
-- `UP3` done: structural golden snapshot tests cover `antigravity`, `codex`, `claude-code`, and `generic` scaffold trees.
-- `TODOS.md` audit done: stale `P3.2` moved to Done/Stale.
+| Item | Status | Evidence |
+|---|---|---|
+| Batch 1 design spec | **DONE** | `docs/superpowers/specs/2026-06-18-batch1-scaffold-hardening-design.md`, commit `9e7e219` |
+| Batch 1 implementation plan | **DONE** | `docs/superpowers/plans/2026-06-18-batch1-scaffold-hardening.md`, commit `65a7294` |
+| Worktree safety | **DONE** | `.worktrees/` ignored, commit `2e14923` |
+| `TODOS.md` audit | **DONE** | stale `P3.2` moved to Done/Stale, commit `7119890` |
+| `P1.2` silent tool-resolution guard | **DONE** | required/optional tool-key contract + strict validation, commits `57ea533` and `b9908fa` |
+| Unknown `{{ tools.* }}` render failure | **DONE** | Jinja `StrictUndefined` + scaffold regression test, commit `b9908fa` |
+| `P1.3 + P2.2` init automation/defaults | **DONE** | `--platform`, `--mcp`, `--language`, `--yes`; safe interactive defaults; commits `2da0ff6`, `30f2d10`, `536fa68` |
+| `UP3` golden scaffold snapshots | **DONE** | platform tree snapshots for `antigravity`, `codex`, `claude-code`, `generic`; commit `9961918` |
+| Verification | **DONE** | `python3 -m pytest cli/tests -q` → `74 passed` |
+| Final code review | **DONE** | final reviewer said ready to merge after `b9908fa` |
+| PR creation | **BLOCKED IN ENV** | branch pushed; GitHub app 403; `gh` missing. Use PR URL above. |
 
-### Recommended Batch 2
+### Needs to happen next
+
+| Order | Item | Status | Notes |
+|---|---|---|---|
+| 1 | Open PR for Batch 1 | **TODO** | Use PR URL above. Base `main`, head `batch1-scaffold-hardening`. |
+| 2 | Merge Batch 1 | **TODO** | Safe to merge after PR review; tests and final review are clean. |
+| 3 | Start Batch 2 with `P1.1` | **TODO NEXT** | Write/adjust U0 baseline-litmus design spec. Do this before portability registry. |
+| 4 | Move to `UP1` eval harness | **TODO AFTER P1.1** | Only after P1.1 protocol is approved/validated. |
+| 5 | Move to `P2.1 + UP2` portability registry | **TODO LATER** | Do not start before outcome validation exists. |
+
+### Recommended Batch 2 Scope
 
 Start Batch 2 with **P1.1 — U0 litmus baseline arm**. Do not jump to `P2.1/UP2` portability registry yet; Batch 1 created scaffold guardrails, but the project still needs outcome evidence before larger portability investment.
 
