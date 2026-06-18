@@ -49,7 +49,7 @@ plugins:
   # ─── META-PROMPT ───
   - name: agents-md
     type: meta-prompt
-    source: AGENTS.md
+    source: meta-prompt.md
     template: false
     output: "{{ platform.config_entry_point }}"
 

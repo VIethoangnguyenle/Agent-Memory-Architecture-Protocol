@@ -24,7 +24,7 @@ SOURCE_MAP = {
     "knowledge-templates/": ".amap/knowledge/templates/",
     "knowledge-active/":    ".amap/knowledge/active/",
     "knowledge-long-term/": ".amap/knowledge/long-term/",
-    "AGENTS.md":            "AGENTS.md",
+    "meta-prompt.md":       ".amap/meta-prompt.md",
 }
 
 # File extensions eligible for single-file Jinja auto-render.
