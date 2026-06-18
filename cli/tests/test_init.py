@@ -90,3 +90,82 @@ def test_e2e_cursor_platform(tmp_path, amap_root, monkeypatch, capsys):
     assert not (target / ".cursorrules").exists()
 
 
+def test_init_exports_skills_to_claude_native_path(tmp_path, amap_root, monkeypatch):
+    target = tmp_path / "proj"
+    _answers(monkeypatch, ["2", "1,2,3", "3", "y"])  # claude-code
+
+    run_init(target_dir=str(target), amap_root=str(amap_root))
+
+    native = target / ".claude" / "skills" / "requirement-analyst" / "SKILL.md"
+    assert native.exists()
+    canonical = target / ".amap" / "skills" / "requirement-analyst" / "SKILL.md"
+    assert native.read_text(encoding="utf-8") == canonical.read_text(encoding="utf-8")
+
+
+def test_init_exports_skills_to_agents_path_for_codex(tmp_path, amap_root, monkeypatch):
+    target = tmp_path / "proj"
+    _answers(monkeypatch, ["5", "1,2,3", "3", "y"])  # codex
+
+    run_init(target_dir=str(target), amap_root=str(amap_root))
+
+    assert (target / "AGENTS.md").exists()
+    assert (target / ".agents" / "skills" / "requirement-analyst" / "SKILL.md").exists()
+
+
+def test_init_exports_skills_to_agents_path_for_antigravity(tmp_path, amap_root, monkeypatch):
+    target = tmp_path / "proj"
+    _answers(monkeypatch, ["1", "1,2,3", "3", "y"])  # antigravity
+
+    run_init(target_dir=str(target), amap_root=str(amap_root))
+
+    assert (target / ".agents" / "skills" / "requirement-analyst" / "SKILL.md").exists()
+
+
+def test_init_exports_cursor_commands_without_frontmatter(tmp_path, amap_root, monkeypatch):
+    target = tmp_path / "proj"
+    _answers(monkeypatch, ["3", "1,2,3", "3", "y"])  # cursor
+
+    run_init(target_dir=str(target), amap_root=str(amap_root))
+
+    native = target / ".cursor" / "commands" / "requirement-analyst.md"
+    assert native.exists()
+    content = native.read_text(encoding="utf-8")
+    assert not content.startswith("---")
+    assert "ABORT" in content  # pre_conditions on_fail text inlined
+
+
+def test_init_generic_platform_creates_no_native_export_dirs(tmp_path, amap_root, monkeypatch):
+    target = tmp_path / "proj"
+    _answers(monkeypatch, ["4", "1,2,3", "3", "y"])  # generic
+
+    run_init(target_dir=str(target), amap_root=str(amap_root))
+
+    assert not (target / ".claude").exists()
+    assert not (target / ".agents").exists()
+    assert not (target / ".cursor").exists()
+
+
+def test_init_exports_workflow_with_synthesized_name(tmp_path, amap_root, monkeypatch):
+    target = tmp_path / "proj"
+    _answers(monkeypatch, ["2", "1,2,3", "3", "y"])  # claude-code
+
+    run_init(target_dir=str(target), amap_root=str(amap_root))
+
+    native = target / ".claude" / "skills" / "task" / "SKILL.md"
+    assert native.exists()
+    assert "name: task" in native.read_text(encoding="utf-8")
+
+
+def test_init_skips_workflow_tdd_native_export_without_frontmatter(
+    tmp_path, amap_root, monkeypatch, capsys,
+):
+    target = tmp_path / "proj"
+    _answers(monkeypatch, ["2", "1,2,3", "3", "y"])  # claude-code
+
+    run_init(target_dir=str(target), amap_root=str(amap_root))
+
+    assert not (target / ".claude" / "skills" / "tdd").exists()
+    out = capsys.readouterr().out
+    assert "no frontmatter" in out
+
+

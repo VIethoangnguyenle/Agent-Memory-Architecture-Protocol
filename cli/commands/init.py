@@ -10,6 +10,7 @@ from cli.renderer import create_renderer
 from cli.scaffold import (
     load_manifest,
     scaffold_plugins,
+    scaffold_native_skill_exports,
     generate_resolved_config,
     verify_no_unresolved,
     sync_tree,
@@ -106,6 +107,7 @@ def run_init(target_dir: str, amap_root: Optional[str] = None) -> None:
             manifest.get("plugins", []), amap, staging, context, jinja_env,
             manifest.get("mcp_capabilities", {}), selected_mcps,
         )
+        scaffold_native_skill_exports(manifest.get("plugins", []), staging, platform)
         offenders = verify_no_unresolved(staging)
         if offenders:
             print("\n  ❌ Init aborted — unresolved template markers in:")
