@@ -16,6 +16,7 @@ from cli.scaffold import (
     load_manifest,
     load_resolved_config,
     scaffold_plugins,
+    scaffold_native_skill_exports,
     verify_no_unresolved,
     sync_tree,
     generate_resolved_config,
@@ -56,6 +57,7 @@ def run_update(target_dir: str, amap_root: Optional[str] = None, reconfigure: bo
             manifest.get("mcp_capabilities", {}), selected_mcps,
             only_framework=True,
         )
+        scaffold_native_skill_exports(manifest.get("plugins", []), staging, platform)
         offenders = verify_no_unresolved(staging)
         if offenders:
             print("\n  ❌ Update aborted — unresolved template markers in:")
@@ -78,5 +80,17 @@ def run_update(target_dir: str, amap_root: Optional[str] = None, reconfigure: bo
                 if stale.exists():
                     stale.unlink()
                     print(f"  🗑️  Removed stale entry point: {other_entry}")
+        # Remove stale native skill/workflow export dirs left by the previous
+        # platform. Scoped to exactly other_export["dir"] (e.g. ".claude/skills"),
+        # never the parent dotdir (".claude/"), which may hold unrelated user
+        # content (this repo's own .claude/settings.local.json, for example).
+        current_export = platform.native_skill_export
+        for key in PLATFORMS:
+            other_export = get_platform(key).native_skill_export
+            if other_export and other_export != current_export:
+                stale_dir = target / other_export["dir"]
+                if stale_dir.exists():
+                    shutil.rmtree(stale_dir)
+                    print(f"  🗑️  Removed stale native export dir: {other_export['dir']}")
 
     print(f"\n  ✅ Updated {count} framework files. User files preserved.\n")

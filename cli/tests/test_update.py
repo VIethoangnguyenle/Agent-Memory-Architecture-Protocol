@@ -82,3 +82,45 @@ def test_reconfigure_removes_old_entry_point(tmp_path, amap_root, monkeypatch):
     assert (target / "AGENTS.md").exists()
     assert not (target / "CLAUDE.md").exists()
 
+
+def test_update_keeps_native_export_in_sync(tmp_path, amap_root, monkeypatch):
+    target = tmp_path / "proj"
+    _init_claude(target, amap_root, monkeypatch)
+
+    native = target / ".claude" / "skills" / "codebase-explorer" / "SKILL.md"
+    native.write_text("tampered\n", encoding="utf-8")
+
+    run_update(target_dir=str(target), amap_root=str(amap_root))
+
+    assert "tampered" not in native.read_text(encoding="utf-8")
+
+
+def test_reconfigure_removes_stale_native_export_dir(tmp_path, amap_root, monkeypatch):
+    target = tmp_path / "proj"
+    _init_claude(target, amap_root, monkeypatch)
+    assert (target / ".claude" / "skills" / "requirement-analyst" / "SKILL.md").exists()
+
+    # Reconfigure to antigravity (platform=1).
+    answers = iter(["1", "1,2,3", "3"])
+    monkeypatch.setattr("builtins.input", lambda *a, **k: next(answers))
+    run_update(target_dir=str(target), amap_root=str(amap_root), reconfigure=True)
+
+    assert not (target / ".claude" / "skills").exists()
+    assert (target / ".agents" / "skills" / "requirement-analyst" / "SKILL.md").exists()
+
+
+def test_reconfigure_to_generic_removes_native_export_dir_without_creating_a_new_one(
+    tmp_path, amap_root, monkeypatch,
+):
+    target = tmp_path / "proj"
+    _init_claude(target, amap_root, monkeypatch)
+
+    # Reconfigure to generic (platform=4).
+    answers = iter(["4", "1,2,3", "3"])
+    monkeypatch.setattr("builtins.input", lambda *a, **k: next(answers))
+    run_update(target_dir=str(target), amap_root=str(amap_root), reconfigure=True)
+
+    assert not (target / ".claude" / "skills").exists()
+    assert not (target / ".agents").exists()
+    assert not (target / ".cursor").exists()
+
