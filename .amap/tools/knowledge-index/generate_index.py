@@ -4,10 +4,13 @@ GENERIC: never hard-codes container names or artifact types. Any dict node
 that carries an 'applies_to' key becomes an index entry, keyed by its parent
 key. See spec §3.3.
 """
+import re
 import sys
 from pathlib import Path
 
 import yaml
+
+_HEADING = re.compile(r"^#{2,3}\s+(.*?)\s*(?:<!--\s*applies_to:\s*(.*?)\s*-->)?\s*$")
 
 
 def walk_entries(node, store, _key=None):
@@ -31,20 +34,44 @@ def walk_entries(node, store, _key=None):
     return out
 
 
-def build_index(dna_path, conventions_path):
+def index_snapshot(snapshot_path):
+    """Index ## / ### headings in a knowledge-snapshot.md file.
+
+    Each heading becomes an entry; an optional trailing
+    `<!-- applies_to: A, B -->` comment supplies the applies_to list.
+    """
+    p = Path(snapshot_path)
+    if not p.is_file():
+        return []
+    out = []
+    for line in p.read_text(encoding="utf-8").splitlines():
+        m = _HEADING.match(line)
+        if not m:
+            continue
+        title = m.group(1).strip()
+        applies = [t.strip() for t in (m.group(2) or "").split(",") if t.strip()]
+        out.append({"id": title, "store": "snapshot", "title": title,
+                    "applies_to": applies, "mechanically_checkable": False})
+    return out
+
+
+def build_index(dna_path, conventions_path, snapshot_path=None):
     entries = []
     for path, store in ((dna_path, "author-dna"), (conventions_path, "conventions")):
         p = Path(path)
         if p.is_file():
             data = yaml.safe_load(p.read_text(encoding="utf-8")) or {}
             entries.extend(walk_entries(data, store))
+    if snapshot_path:
+        entries.extend(index_snapshot(snapshot_path))
     return entries
 
 
 def main(argv=None):
     argv = argv or sys.argv[1:]
     long_term = Path(argv[0]) if argv else Path(__file__).resolve().parents[2] / "knowledge" / "long-term"
-    entries = build_index(long_term / "author-dna.yaml", long_term / "conventions.yaml")
+    entries = build_index(long_term / "author-dna.yaml", long_term / "conventions.yaml",
+                           snapshot_path=long_term / "knowledge-snapshot.md")
     out_file = long_term / "knowledge-index.yaml"
     header = "# TỰ ĐỘNG TẠO BỞI generate_index.py — KHÔNG CHỈNH SỬA THỦ CÔNG\n"
     out_file.write_text(header + yaml.safe_dump({"entries": entries}, allow_unicode=True, sort_keys=False), encoding="utf-8")

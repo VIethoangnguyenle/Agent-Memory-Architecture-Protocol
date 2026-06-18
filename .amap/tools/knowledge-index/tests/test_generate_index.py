@@ -25,3 +25,20 @@ def test_walk_extracts_entries_with_applies_to():
         "applies_to": ["Service"], "mechanically_checkable": False,
     }
     assert ids["SP-6"]["mechanically_checkable"] is True
+
+
+def test_index_snapshot_headings(tmp_path):
+    snap = tmp_path / "knowledge-snapshot.md"
+    snap.write_text(
+        "# Snapshot\n"
+        "### User Status Module <!-- applies_to: Handler, Executor -->\n"
+        "blah\n"
+        "### Untagged Module\n",
+        encoding="utf-8",
+    )
+    entries = gi.index_snapshot(snap)
+    assert {"id": "User Status Module", "store": "snapshot",
+            "title": "User Status Module", "applies_to": ["Handler", "Executor"],
+            "mechanically_checkable": False} in entries
+    untagged = [e for e in entries if e["id"] == "Untagged Module"][0]
+    assert untagged["applies_to"] == []
