@@ -70,6 +70,29 @@ def test_resolve_init_choices_accepts_complete_non_interactive_options(amap_root
     assert language == "python"
 
 
+def test_resolve_init_choices_honors_explicit_empty_mcps_without_prompt(
+    amap_root, monkeypatch
+):
+    manifest = load_manifest(amap_root)
+
+    def fail_if_prompted(*args, **kwargs):
+        raise AssertionError("prompt_multi_checkbox should not be called")
+
+    monkeypatch.setattr("cli.commands.init.prompt_multi_checkbox", fail_if_prompted)
+
+    platform_key, selected_mcps, language = resolve_init_choices(
+        manifest,
+        platform_key="generic",
+        selected_mcps=[],
+        language="python",
+        assume_yes=False,
+    )
+
+    assert platform_key == "generic"
+    assert selected_mcps == []
+    assert language == "python"
+
+
 def test_resolve_init_choices_rejects_yes_with_missing_required_options(amap_root):
     manifest = load_manifest(amap_root)
 

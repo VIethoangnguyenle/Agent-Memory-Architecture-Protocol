@@ -96,6 +96,7 @@ def resolve_init_choices(
     """Resolve init choices from explicit options or interactive prompts."""
     mcp_capabilities = manifest.get("mcp_capabilities", {})
     languages = manifest.get("languages", ["java", "typescript", "python", "other"])
+    explicit_selected_mcps = selected_mcps is not None
     selected_mcps = selected_mcps or []
 
     if assume_yes and (platform_key is None or language is None):
@@ -118,7 +119,7 @@ def resolve_init_choices(
         platform_key = platform_keys[platform_choices.index(chosen_display)]
     print(f"\n  ✅ Platform: {get_platform(platform_key).display_name}")
 
-    if not selected_mcps and not assume_yes:
+    if not explicit_selected_mcps and not assume_yes:
         mcp_choices = [
             {"key": key, "display": value["display"]}
             for key, value in mcp_capabilities.items()
