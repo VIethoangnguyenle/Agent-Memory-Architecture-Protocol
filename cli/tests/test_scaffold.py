@@ -1,7 +1,7 @@
 """Tests for the shared scaffolding core."""
 
 import pytest
-from jinja2 import TemplateSyntaxError
+from jinja2 import TemplateSyntaxError, UndefinedError
 
 from cli.scaffold import (
     generate_resolved_config,
@@ -70,6 +70,20 @@ def test_scaffold_plugin_malformed_template_raises_not_swallowed(
 
     with pytest.raises(TemplateSyntaxError):
         scaffold_plugin(plugin, source_path, target_path, claude_context, jinja_env)
+
+
+def test_scaffold_plugin_unknown_tool_key_raises_before_target_write(
+    tmp_path, jinja_env, claude_context
+):
+    source_path = tmp_path / "x.md"
+    source_path.write_text("use {{ tools.not_a_real_tool }}", encoding="utf-8")
+    target_path = tmp_path / "out" / "x.md"
+    plugin = {"name": "x", "source": "x.md", "output": "x.md"}
+
+    with pytest.raises(UndefinedError):
+        scaffold_plugin(plugin, source_path, target_path, claude_context, jinja_env)
+
+    assert not target_path.exists()
 
 
 def test_knowledge_dirs_are_user_owned(amap_root):
