@@ -8,13 +8,13 @@
 
 ## Claude Handoff — Next Session / Batch 2
 
-> **Current branch:** `batch1-scaffold-hardening`
-> **Remote branch:** `origin/batch1-scaffold-hardening`
-> **PR creation URL:** <https://github.com/VIethoangnguyenle/Agent-Memory-Architecture-Protocol/pull/new/batch1-scaffold-hardening>
-> **Batch 1 implementation head:** `b9908fa fix(scaffold): fail on unknown template tool keys`
+> **Batch 1:** MERGED into `main` (scaffold hardening).
+> **Current branch:** `batch2-u0-baseline-litmus` (off `main`).
+> **Batch 2 = P1.1 (U0 baseline-litmus).** Spec + plan written and committed; **run execution deliberately deferred** to save tokens.
+>   - Spec: `docs/superpowers/specs/2026-06-18-u0-baseline-litmus-design.md`
+>   - Plan: `docs/superpowers/plans/2026-06-18-u0-baseline-litmus.md`
+> **Resume =** execute the plan: Phase 0 (pre-register repo/tickets/baseline + freeze decision rule), then Phase 1 (≥6 cold-start A/B runs on Claude Code), then Phase 2–3 (score + verdict).
 > **Handoff note:** this section is kept at branch `HEAD`; check `git log -1` for the latest handoff commit.
-> **Validation:** `python3 -m pytest cli/tests -q` → `74 passed`
-> **Final review:** clean; ready to merge. GitHub app could not create PR (`403 Resource not accessible by integration`), and `gh` is not installed.
 
 ### Done by Codex / Batch 1
 
@@ -38,13 +38,16 @@ Batch 1 scaffold hardening is implemented and pushed on `origin/batch1-scaffold-
 
 | Order | Item | Status | Notes |
 |---|---|---|---|
-| 1 | Open PR for Batch 1 | **TODO** | Use PR URL above. Base `main`, head `batch1-scaffold-hardening`. |
-| 2 | Merge Batch 1 | **TODO** | Safe to merge after PR review; tests and final review are clean. |
-| 3 | Start Batch 2 with `P1.1` | **TODO NEXT** | Write/adjust U0 baseline-litmus design spec. Do this before portability registry. |
-| 4 | Move to `UP1` eval harness | **TODO AFTER P1.1** | Only after P1.1 protocol is approved/validated. |
-| 5 | Move to `P2.1 + UP2` portability registry | **TODO LATER** | Do not start before outcome validation exists. |
+| 1 | Open + merge Batch 1 | **DONE** | Merged into `main`. |
+| 2 | P1.1 design spec | **DONE** | `docs/superpowers/specs/2026-06-18-u0-baseline-litmus-design.md` |
+| 3 | P1.1 execution plan | **DONE** | `docs/superpowers/plans/2026-06-18-u0-baseline-litmus.md` |
+| 4 | Run the litmus (plan Phase 1) | **DEFERRED** | User deferred the ≥6 runs to save tokens. Resume here when ready → produces first `litmus-report`. |
+| 5 | Move to `UP1` eval harness | **TODO AFTER P1.1 VALIDATED** | Only after the litmus run yields a verdict. |
+| 6 | Move to `P2.1 + UP2` portability registry | **TODO LATER** | Do not start before outcome validation exists. |
 
 ### Recommended Batch 2 Scope
+
+> **STATUS (2026-06-18):** Realized as spec + plan (see handoff header). Scope was tightened during brainstorming: **single platform (Claude Code), output-quality only** — cross-IDE / IDE-independence was cut as out of scope (belongs to SP3-portability). Verdict reads as a **gradient by task size + break-even** feeding U1. The runs themselves are **deferred**. Original scope notes below kept for context.
 
 Start Batch 2 with **P1.1 — U0 litmus baseline arm**. Do not jump to `P2.1/UP2` portability registry yet; Batch 1 created scaffold guardrails, but the project still needs outcome evidence before larger portability investment.
 
