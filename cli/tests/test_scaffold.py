@@ -39,6 +39,11 @@ def test_resolve_source_path_maps_skills(amap_root):
     assert p == amap_root / ".amap/skills/codebase-explorer/"
 
 
+def test_resolve_source_path_maps_meta_prompt(amap_root):
+    p = resolve_source_path(amap_root, "meta-prompt.md")
+    assert p == amap_root / ".amap/meta-prompt.md"
+
+
 def test_scaffold_plugin_renders_template_source(tmp_path, jinja_env, claude_context):
     source_path = tmp_path / "x.md"
     source_path.write_text("use {{ tools.read_file }}", encoding="utf-8")
