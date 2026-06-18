@@ -11,3 +11,9 @@ def test_guard2_is_evidence_gate_and_generic():
     # generic-ised: no hard-coded artifact-type enum in the rule
     assert "Chứa `Factory`" not in text
     assert "Chứa `Service`" not in text
+
+
+def test_rtool8_dispatch_gate():
+    text = (RULES / "rules-tool.md").read_text(encoding="utf-8")
+    assert "handoff-slice" in text                     # references the gate validator
+    assert "Applicable DNA/Conventions" in text         # required slice section
