@@ -34,6 +34,15 @@ def test_mcp_status_needs_numbers_or_degrade():
     assert g.validate_mcp_status("KG unavailable — grep fallback, MEDIUM").ok is True
 
 
+def test_degrade_line_must_be_compact_not_rambling():
+    # P1(a): rambling prose that merely contains both anchors far apart must NOT
+    # satisfy the degrade path; the canonical compact line still does.
+    rambling = ("KG unavailable, but actually the architecture quality is only "
+                "MEDIUM for entirely unrelated documentation reasons")
+    assert g.validate_mcp_status(rambling).ok is False
+    assert g.validate_mcp_status("KG unavailable — grep fallback, MEDIUM").ok is True
+
+
 def test_phase_chain_requires_ordered_markers():
     done = "Pha 1 DONE\nPha 2 DONE (spec: openspec/changes/x/)\nPha 3 DONE"
     skipped = "Pha 1 DONE\nPha 3 DONE"

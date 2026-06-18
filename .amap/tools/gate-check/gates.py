@@ -16,8 +16,13 @@ class Result:
 _RULE_ID = re.compile(r"\b[A-Z]{2,3}-\d+\b")              # e.g. SP-6, HP-12, IW-05
 _NODE_ID = re.compile(r"\bnode_id\s*[:=]", re.IGNORECASE)
 _BLAST = re.compile(r"blast-radius", re.IGNORECASE)
-_DEGRADE = re.compile(r"KG unavailable.*MEDIUM", re.IGNORECASE)
+# Degrade line must be COMPACT (the canonical "KG unavailable — grep fallback,
+# MEDIUM" is ~18 chars between the anchors). The {0,40} bound rejects rambling
+# prose that merely happens to contain both "KG unavailable" and "MEDIUM".
+_DEGRADE = re.compile(r"KG unavailable.{0,40}MEDIUM", re.IGNORECASE)
 _NUMBERS = re.compile(r"(nodes?|edges?)\s*[:=]\s*\d+", re.IGNORECASE)
+# NOTE: self-asserted; hardening (only-when-index-empty) is deferred to the
+# index-aware validator follow-up (see decision-gates-followups spec).
 _NO_KNOWLEDGE = re.compile(r"no approved (dna|conventions).*low", re.IGNORECASE)
 
 
