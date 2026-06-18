@@ -136,3 +136,50 @@ def test_verify_no_unresolved_flags_suffixless_entry_point(tmp_path):
 
     assert offending in offenders
 
+
+from cli.scaffold import export_as_flat_command
+
+
+def test_export_as_flat_command_strips_frontmatter_and_inlines_pre_conditions():
+    skill_md = (
+        "---\n"
+        "name: requirement-analyst\n"
+        "description: Standardize tickets into REQUIREMENT.md.\n"
+        "pre_conditions:\n"
+        "  - file: .amap/knowledge/active/AGENT_TRANSPARENCY.md\n"
+        "    condition: exists\n"
+        "    on_fail: \"ABORT - bootstrap hasn't run\"\n"
+        "---\n"
+        "\n"
+        "# Requirement Analyst\n"
+        "\n"
+        "Body content here.\n"
+    )
+
+    output = export_as_flat_command(skill_md)
+
+    assert not output.startswith("---")
+    assert "name:" not in output
+    assert "# requirement-analyst" in output
+    assert "Standardize tickets into REQUIREMENT.md." in output
+    assert "ABORT - bootstrap hasn't run" in output
+    assert "Body content here." in output
+
+
+def test_export_as_flat_command_without_pre_conditions_omits_checklist():
+    skill_md = (
+        "---\n"
+        "description: Approve and commit.\n"
+        "---\n"
+        "\n"
+        "# /approve-conventions\n"
+        "\n"
+        "Body.\n"
+    )
+
+    output = export_as_flat_command(skill_md)
+
+    assert "Pre-conditions" not in output
+    assert "Approve and commit." in output
+    assert "Body." in output
+

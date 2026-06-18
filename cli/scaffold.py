@@ -176,6 +176,34 @@ def scaffold_plugins(
     return stats
 
 
+def export_as_flat_command(skill_md_text: str) -> str:
+    """Render a SKILL.md/workflow file as a frontmatter-free flat command.
+
+    For platforms whose native command format forbids YAML frontmatter
+    (e.g. Cursor's .cursor/commands/*.md). pre_conditions are re-rendered
+    as a plain markdown checklist so the gates they encode (e.g.
+    "ABORT - bootstrap hasn't run") aren't silently dropped.
+    """
+    _, frontmatter_text, body = skill_md_text.split("---", 2)
+    meta = yaml.safe_load(frontmatter_text) or {}
+    name = meta.get("name", "")
+    description = (meta.get("description") or "").strip()
+
+    header_lines = [f"# {name}", "", f"> {description}"]
+
+    pre_conditions = meta.get("pre_conditions") or []
+    if pre_conditions:
+        header_lines.append("")
+        header_lines.append("## Pre-conditions")
+        for cond in pre_conditions:
+            target = cond.get("file") or cond.get("input") or ""
+            condition = cond.get("condition", "")
+            on_fail = cond.get("on_fail", "")
+            header_lines.append(f"- `{target}` {condition} -> if not met: {on_fail}")
+
+    return "\n".join(header_lines) + "\n" + body.lstrip("\n")
+
+
 def verify_no_unresolved(root: Path) -> List[Path]:
     """Return text files under root that still contain an unresolved '{{ ' marker.
 
