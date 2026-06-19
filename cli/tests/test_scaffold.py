@@ -199,6 +199,14 @@ def test_manifest_declares_write_gate_plugins(amap_root):
     assert by_name["antigravity-write-gate-hooks"]["requires_platform_capability"] == "write_gate_hook"
 
 
+def test_manifest_declares_mcp_bridge_plugin(amap_root):
+    manifest = load_manifest(amap_root)
+    by_name = {p["name"]: p for p in manifest["plugins"]}
+    assert by_name["mcp-bridge"]["type"] == "tool"
+    assert by_name["mcp-bridge"]["source"] == "tools/mcp-bridge/"
+    assert by_name["mcp-bridge"]["copy_dir"] is True
+
+
 def _write_resolved_config(target, content):
     config_path = target / ".amap" / "resolved-config.yaml"
     config_path.parent.mkdir(parents=True, exist_ok=True)

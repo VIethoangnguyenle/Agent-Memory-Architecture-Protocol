@@ -116,6 +116,9 @@
 .agents/tools/knowledge-index/tests/
 .agents/tools/knowledge-index/tests/__init__.py
 .agents/tools/knowledge-index/tests/test_generate_index.py
+.agents/tools/mcp-bridge/
+.agents/tools/mcp-bridge/README.md
+.agents/tools/mcp-bridge/mcp_client.py
 .agents/tools/microloop-orchestrator/
 .agents/tools/microloop-orchestrator/README.md
 .agents/tools/microloop-orchestrator/contract.py

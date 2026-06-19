@@ -106,6 +106,9 @@
 .amap/tools/knowledge-index/tests/
 .amap/tools/knowledge-index/tests/__init__.py
 .amap/tools/knowledge-index/tests/test_generate_index.py
+.amap/tools/mcp-bridge/
+.amap/tools/mcp-bridge/README.md
+.amap/tools/mcp-bridge/mcp_client.py
 .amap/tools/microloop-orchestrator/
 .amap/tools/microloop-orchestrator/README.md
 .amap/tools/microloop-orchestrator/contract.py

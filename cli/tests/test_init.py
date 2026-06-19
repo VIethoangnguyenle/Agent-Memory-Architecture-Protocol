@@ -325,6 +325,35 @@ def test_init_next_steps_use_platform_framework_root(tmp_path, amap_root, monkey
     assert ".amap/knowledge/long-term/persona.yaml" not in out
 
 
+def test_init_scaffolds_mcp_bridge_when_platform_supports_tools(tmp_path, amap_root):
+    target = tmp_path / "proj"
+    run_init(
+        target_dir=str(target),
+        amap_root=str(amap_root),
+        platform_key="antigravity",
+        selected_mcps=["socraticode"],
+        language="python",
+        assume_yes=True,
+    )
+
+    assert (target / ".agents" / "tools" / "mcp-bridge" / "mcp_client.py").exists()
+
+
+def test_init_prints_mcp_doctor_hint_when_mcps_selected(tmp_path, amap_root, capsys):
+    target = tmp_path / "proj"
+    run_init(
+        target_dir=str(target),
+        amap_root=str(amap_root),
+        platform_key="codex",
+        selected_mcps=["socraticode"],
+        language="python",
+        assume_yes=True,
+    )
+
+    captured = capsys.readouterr()
+    assert "amap doctor mcp --target" in captured.out
+
+
 def test_cli_init_forwards_non_interactive_options(monkeypatch, tmp_path):
     from cli import amap
 
