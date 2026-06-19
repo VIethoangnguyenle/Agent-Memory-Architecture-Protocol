@@ -15,7 +15,19 @@ from cli.dashboard import registry
 from cli.dashboard.reader import RunState, read_run
 
 
-def run_dashboard(target: str = ".", action: Optional[str] = None, path: Optional[str] = None) -> None:
+def run_dashboard(
+    target: str = ".",
+    action: Optional[str] = None,
+    path: Optional[str] = None,
+    port: int = 7077,
+    no_browser: bool = False,
+) -> None:
+    if action == "serve":
+        from cli.dashboard import server
+
+        server.serve(target=target, port=port, open_browser=not no_browser)
+        return
+
     reg = registry.default_registry_file()
     chosen = path or target
 

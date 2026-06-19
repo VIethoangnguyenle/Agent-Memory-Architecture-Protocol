@@ -113,15 +113,21 @@ def main():
     dashboard_parser.add_argument(
         "action",
         nargs="?",
-        choices=["register", "unregister", "list"],
+        choices=["register", "unregister", "list", "serve"],
         default=None,
-        help="register/unregister/list; omit to print a progress snapshot",
+        help="register/unregister/list/serve; omit to print a progress snapshot",
     )
     dashboard_parser.add_argument(
         "--target", default=".", help="Project directory (default: current directory)",
     )
     dashboard_parser.add_argument(
         "--path", default=None, help="Path for register/unregister (default: --target)",
+    )
+    dashboard_parser.add_argument(
+        "--port", type=int, default=7077, help="Port for serve (default: 7077)",
+    )
+    dashboard_parser.add_argument(
+        "--no-browser", action="store_true", help="Do not auto-open the browser on serve",
     )
 
     # ─── doctor ───
@@ -162,7 +168,13 @@ def main():
         run_status(target_dir=args.target)
     elif args.command == "dashboard":
         from cli.commands.dashboard import run_dashboard
-        run_dashboard(target=args.target, action=args.action, path=args.path)
+        run_dashboard(
+            target=args.target,
+            action=args.action,
+            path=args.path,
+            port=args.port,
+            no_browser=args.no_browser,
+        )
     elif args.command == "doctor" and args.doctor_command == "mcp":
         from cli.commands.doctor import run_doctor_mcp
         run_doctor_mcp(target_dir=args.target, fix=args.fix, assume_yes=args.yes)

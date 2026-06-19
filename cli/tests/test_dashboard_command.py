@@ -97,3 +97,18 @@ def test_default_snapshot_prunes_deleted_projects(tmp_path, capsys, monkeypatch)
     projects = registry.load(reg)
     assert str(gone.resolve()) not in projects
     assert str(here.resolve()) in projects
+
+
+def test_serve_action_dispatches(monkeypatch):
+    calls = {}
+
+    def fake_serve(target=".", port=7077, open_browser=True):
+        calls.update(target=target, port=port, open_browser=open_browser)
+
+    import cli.dashboard.server as server_mod
+
+    monkeypatch.setattr(server_mod, "serve", fake_serve)
+
+    run_dashboard(target="/tmp/x", action="serve", port=9000, no_browser=True)
+
+    assert calls == {"target": "/tmp/x", "port": 9000, "open_browser": False}
