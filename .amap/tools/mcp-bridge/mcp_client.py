@@ -116,15 +116,28 @@ def discover_sse_message_endpoint(sse_url: str, headers: dict) -> str:
     raise ValueError("legacy SSE discovery failed: endpoint event missing")
 
 
+def normalize_mcp_endpoint(url: str) -> str:
+    parsed = urllib.parse.urlparse(url)
+    if parsed.scheme not in {"http", "https"}:
+        return ""
+    if parsed.path.endswith("/mcp"):
+        return url
+    return ""
+
+
 def resolve_http_endpoint(config: dict, headers: dict) -> str:
     if config.get("serverUrl"):
         url = config["serverUrl"]
         if not url.endswith("/mcp"):
             url = url.rstrip("/") + "/mcp"
         return url
-    sse_url = config.get("sseUrl") or config.get("url")
-    if sse_url:
-        return discover_sse_message_endpoint(sse_url, headers)
+    direct_url = normalize_mcp_endpoint(config.get("url", ""))
+    if direct_url:
+        return direct_url
+    if config.get("sseUrl"):
+        return discover_sse_message_endpoint(config["sseUrl"], headers)
+    if config.get("url"):
+        return discover_sse_message_endpoint(config["url"], headers)
     raise ValueError("http server has no serverUrl")
 
 

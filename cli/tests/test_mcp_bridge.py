@@ -146,3 +146,83 @@ def test_discover_sse_message_endpoint_reads_endpoint_event(monkeypatch):
     message_url = bridge.discover_sse_message_endpoint("http://example.test/sse", {})
 
     assert message_url == "http://example.test/messages?session_id=abc"
+
+
+def test_call_http_sends_initialized_notification_before_tools_list(monkeypatch):
+    bridge = load_bridge()
+    requests = []
+
+    class FakeResponse:
+        def __init__(self, body, session_id=None):
+            self._body = body.encode("utf-8")
+            self.headers = {}
+            if session_id is not None:
+                self.headers["mcp-session-id"] = session_id
+
+        def read(self):
+            return self._body
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+    monkeypatch.setattr(bridge, "resolve_http_endpoint", lambda config, headers: "https://host.test/mcp")
+
+    def fake_urlopen(request, timeout=15):
+        payload = json.loads(request.data.decode("utf-8"))
+        request_headers = {key.lower(): value for key, value in request.headers.items()}
+        requests.append(
+            {
+                "method": request.get_method(),
+                "url": request.full_url,
+                "payload": payload,
+                "session": request_headers.get("mcp-session-id"),
+            }
+        )
+        if payload["method"] == "initialize":
+            return FakeResponse(
+                '{"jsonrpc":"2.0","id":1,"result":{"protocolVersion":"2024-11-05"}}',
+                session_id="session-123",
+            )
+        if payload["method"] == "notifications/initialized":
+            return FakeResponse("", session_id="session-123")
+        if payload["method"] == "tools/list":
+            return FakeResponse('{"jsonrpc":"2.0","id":1,"result":{"tools":[]}}')
+        raise AssertionError(f"unexpected method {payload['method']}")
+
+    monkeypatch.setattr(bridge.urllib.request, "urlopen", fake_urlopen)
+
+    result, error = bridge.call_http({"serverUrl": "https://host.test/mcp"}, "tools-list", None, {})
+
+    assert error == ""
+    assert result["result"]["tools"] == []
+    assert [entry["payload"]["method"] for entry in requests] == [
+        "initialize",
+        "notifications/initialized",
+        "tools/list",
+    ]
+    assert requests[1]["payload"]["params"] == {}
+    assert requests[1]["session"] == "session-123"
+    assert requests[2]["session"] == "session-123"
+
+
+def test_resolve_http_endpoint_preserves_direct_post_url_and_explicit_sse_fallback(monkeypatch):
+    bridge = load_bridge()
+    discovered = []
+
+    def fake_discover(url, headers):
+        discovered.append(url)
+        return "https://host.test/messages?session_id=legacy"
+
+    monkeypatch.setattr(bridge, "discover_sse_message_endpoint", fake_discover)
+
+    direct_url = bridge.resolve_http_endpoint({"url": "https://host.test/mcp"}, {})
+    fallback_url = bridge.resolve_http_endpoint({"url": "https://host.test/sse"}, {})
+    explicit_sse_url = bridge.resolve_http_endpoint({"sseUrl": "https://host.test/events"}, {})
+
+    assert direct_url == "https://host.test/mcp"
+    assert fallback_url == "https://host.test/messages?session_id=legacy"
+    assert explicit_sse_url == "https://host.test/messages?session_id=legacy"
+    assert discovered == ["https://host.test/sse", "https://host.test/events"]
