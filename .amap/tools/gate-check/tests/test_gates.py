@@ -22,6 +22,30 @@ def test_knowledge_checkpoint_governance_degrade_passes():
     assert g.validate_knowledge_checkpoint(gov).ok is True
 
 
+def test_knowledge_checkpoint_rejects_ruleid_not_in_valid_set():
+    text = (
+        "## DNA\nISO-9001 mentioned here\n"
+        "## Codebase\nnode_id: svc.UserService#42\nblast-radius: 3 nodes\n"
+    )
+    result = g.validate_knowledge_checkpoint(text, valid_rule_ids={"SP-6"})
+    assert result.ok is False
+    assert "valid rule-id" in result.reason
+
+
+def test_knowledge_checkpoint_accepts_ruleid_from_valid_set():
+    text = (
+        "## DNA\nSP-6 staircase\n"
+        "## Codebase\nnode_id: svc.UserService#42\nblast-radius: 3 nodes\n"
+    )
+    assert g.validate_knowledge_checkpoint(text, valid_rule_ids={"SP-6"}).ok is True
+
+
+def test_governance_degrade_requires_no_knowledge_allowed():
+    gov = "## Applicable DNA/Conventions\nno approved DNA/conventions for this artifact-type — generic patterns, LOW confidence\n"
+    assert g.validate_knowledge_checkpoint(gov, allow_no_knowledge=False).ok is False
+    assert g.validate_knowledge_checkpoint(gov, allow_no_knowledge=True).ok is True
+
+
 def test_knowledge_checkpoint_still_needs_evidence_when_ruleid_present():
     # Regression: citing a rule-id but no evidence and no degrade still fails.
     bad = "## DNA\nSP-6 staircase\n## Codebase\n(no node_id, no blast-radius)\n"
@@ -78,6 +102,36 @@ def test_cli_returns_nonzero_on_invalid(tmp_path):
     f = tmp_path / "chk.md"
     f.write_text("nothing useful", encoding="utf-8")
     assert cli.main(["knowledge-checkpoint", str(f)]) == 1
+
+
+def test_cli_uses_index_to_reject_unknown_ruleid(tmp_path):
+    import importlib.util
+    cli_mod = Path(__file__).resolve().parents[1] / "cli.py"
+    spec2 = importlib.util.spec_from_file_location("cli", cli_mod)
+    cli = importlib.util.module_from_spec(spec2)
+    spec2.loader.exec_module(cli)
+
+    checkpoint = tmp_path / "KNOWLEDGE_CHECKPOINT.md"
+    checkpoint.write_text(
+        "## DNA\nISO-9001\n"
+        "## Codebase\nnode_id: svc.UserService#42\nblast-radius: 3 nodes\n",
+        encoding="utf-8",
+    )
+    index = tmp_path / "knowledge-index.yaml"
+    index.write_text(
+        "entries:\n"
+        "  - id: SP-6\n"
+        "    store: author-dna\n"
+        "    title: staircase\n"
+        "    applies_to: [Constructor]\n",
+        encoding="utf-8",
+    )
+
+    assert cli.main([
+        "knowledge-checkpoint", str(checkpoint),
+        "--index", str(index),
+        "--artifact-type", "Constructor",
+    ]) == 1
 
 
 # ─── Regression fixtures: the historical failures these gates exist to catch ───

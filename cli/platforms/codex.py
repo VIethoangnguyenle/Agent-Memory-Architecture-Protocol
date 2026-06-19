@@ -42,6 +42,15 @@ class CodexPlatform(BasePlatform):
         "read_url":          "read_url",
     }
 
+    capabilities = {
+        "subagent": False,
+        "persistent_terminal": False,
+        "artifacts": False,
+        "image_generation": False,
+        "browser": False,
+        "write_gate_hook": True,
+    }
+
     notes = [
         "AGENTS.md is the config entry point (developers.openai.com/codex/guides/agents-md)",
         "AMAP runtime scaffolds into .agents/",

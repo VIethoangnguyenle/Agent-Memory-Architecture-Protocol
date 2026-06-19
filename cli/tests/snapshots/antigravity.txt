@@ -1,4 +1,11 @@
 .agents/
+.agents/hooks/
+.agents/hooks/write-gate/
+.agents/hooks/write-gate/README.md
+.agents/hooks/write-gate/tests/
+.agents/hooks/write-gate/tests/test_write_gate.py
+.agents/hooks/write-gate/write_gate.py
+.agents/hooks.json
 .agents/knowledge/
 .agents/knowledge/active/
 .agents/knowledge/active/.gitignore

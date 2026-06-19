@@ -54,6 +54,7 @@ class ClaudeCodePlatform(BasePlatform):
         "artifacts": False,     # No artifact system like Antigravity
         "image_generation": False,
         "browser": False,
+        "write_gate_hook": True,
     }
 
     mcp_tool_prefix = "mcp__"

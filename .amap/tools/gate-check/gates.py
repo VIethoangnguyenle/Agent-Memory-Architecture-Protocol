@@ -26,10 +26,19 @@ _NUMBERS = re.compile(r"(nodes?|edges?)\s*[:=]\s*\d+", re.IGNORECASE)
 _NO_KNOWLEDGE = re.compile(r"no approved (dna|conventions).*low", re.IGNORECASE)
 
 
-def validate_knowledge_checkpoint(text: str) -> Result:
+def validate_knowledge_checkpoint(
+    text: str, valid_rule_ids=None, allow_no_knowledge: bool = True
+) -> Result:
     if _NO_KNOWLEDGE.search(text):
-        return Result(True)  # fresh project: no approved DNA/conventions yet → proceed at LOW confidence
-    if not _RULE_ID.search(text):
+        if allow_no_knowledge:
+            return Result(True)  # fresh project: no approved DNA/conventions yet → proceed at LOW confidence
+        return Result(False, "governance-degrade is allowed only when knowledge-index has no matching entries")
+    cited_rule_ids = set(_RULE_ID.findall(text))
+    if valid_rule_ids is not None:
+        valid_rule_ids = set(valid_rule_ids)
+        if not cited_rule_ids.intersection(valid_rule_ids):
+            return Result(False, "no valid rule-id from knowledge-index cited")
+    elif not cited_rule_ids:
         return Result(False, "no rule-id (e.g. SP-6) cited")
     has_facts = bool(_NODE_ID.search(text) and _BLAST.search(text))
     if has_facts or _DEGRADE.search(text):

@@ -58,6 +58,7 @@ class AntigravityPlatform(BasePlatform):
         "artifacts": True,
         "image_generation": True,
         "browser": True,
+        "write_gate_hook": True,
     }
 
     mcp_tool_prefix = "mcp_"

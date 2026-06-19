@@ -1,4 +1,10 @@
 .claude/
+.claude/hooks/
+.claude/hooks/write-gate/
+.claude/hooks/write-gate/README.md
+.claude/hooks/write-gate/tests/
+.claude/hooks/write-gate/tests/test_write_gate.py
+.claude/hooks/write-gate/write_gate.py
 .claude/knowledge/
 .claude/knowledge/active/
 .claude/knowledge/active/.gitignore
@@ -42,6 +48,7 @@
 .claude/rules/rules-guard.md
 .claude/rules/rules-knowledge.md
 .claude/rules/rules-tool.md
+.claude/settings.json
 .claude/skills/
 .claude/skills/architecture-reviewer/
 .claude/skills/architecture-reviewer/SKILL.md

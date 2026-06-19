@@ -21,6 +21,7 @@ SOURCE_MAP = {
     "workflows/":           ".amap/workflows/",
     "procedures/":          ".amap/procedures/",
     "tools/":               ".amap/tools/",
+    "hooks/":               ".amap/hooks/",
     "knowledge-templates/": ".amap/knowledge/templates/",
     "knowledge-active/":    ".amap/knowledge/active/",
     "knowledge-long-term/": ".amap/knowledge/long-term/",
@@ -183,6 +184,28 @@ def scaffold_plugins(
         if requires and not has_capability(selected_mcps, mcp_capabilities, requires):
             if verbose:
                 print(f"  ⏭️  {name:35s} (no {requires})")
+            stats["skipped"] += 1
+            continue
+        platform_requires_name = plugin.get("requires_platform")
+        platform_name = context.get("platform", {}).get("name")
+        if platform_requires_name:
+            allowed = (
+                platform_requires_name
+                if isinstance(platform_requires_name, list)
+                else [platform_requires_name]
+            )
+            if platform_name not in allowed:
+                if verbose:
+                    print(
+                        f"  ⏭️  {name:35s} "
+                        f"(platform: {platform_name}, needs: {', '.join(allowed)})"
+                    )
+                stats["skipped"] += 1
+                continue
+        platform_requires = plugin.get("requires_platform_capability")
+        if platform_requires and not context.get("capabilities", {}).get(platform_requires, False):
+            if verbose:
+                print(f"  ⏭️  {name:35s} (no platform capability: {platform_requires})")
             stats["skipped"] += 1
             continue
         if only_framework and get_ownership(plugin) == "user":
