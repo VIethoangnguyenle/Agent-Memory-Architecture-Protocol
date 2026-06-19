@@ -1,6 +1,7 @@
 from pathlib import Path
 
-RULES = Path(__file__).resolve().parents[3] / "rules"
+ROOT = Path(__file__).resolve().parents[3]
+RULES = ROOT / "rules"
 
 
 def test_guard2_is_evidence_gate_and_generic():
@@ -30,3 +31,17 @@ def test_rtool_mcp_probe_collapse():
     assert "mcp-status" in text                          # probe gate validator
     assert "Runtime Ready" not in text or "rỗng = invalid" in text
     assert "secondary" not in text                       # removed skippable preference prose
+
+
+def test_rules_tool_mentions_bridge_fallback_and_node_checkpoint():
+    text = (ROOT / "rules" / "rules-tool.md").read_text(encoding="utf-8")
+    assert "mcp-bridge" in text
+    assert "NODE_CHECKPOINT.<node-id>.md" in text
+    assert "CONTEXT_REQUEST.<node-id>.md" in text
+    assert "node-checkpoint" in text
+
+
+def test_bootstrap_points_mcp_failures_to_doctor():
+    text = (ROOT / "procedures" / "bootstrap.md").read_text(encoding="utf-8")
+    assert "amap doctor mcp" in text
+    assert "bridge fallback" in text

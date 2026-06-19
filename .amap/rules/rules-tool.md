@@ -41,6 +41,17 @@
 - KHÔNG bịa kết quả cho tool không khả dụng.
 - (Infra: thiếu mcp_config.json theo runtime là việc của `amap doctor`, ngoài rule này.)
 
+#### Bridge fallback
+
+`{{ platform.framework_root }}/tools/mcp-bridge/mcp_client.py` chỉ được dùng khi:
+
+- `resolved-config.yaml` có MCP tương ứng;
+- native MCP probe fail hoặc runtime không inject tool;
+- `amap doctor mcp` đã ghi bridge evidence vào `mcp-doctor-report.md`;
+- agent ghi vào `AGENT_TRANSPARENCY.md` lý do dùng bridge thay native MCP.
+
+Bridge không thay native MCP. Bridge không được dùng để gọi tool ghi dữ liệu/schema.
+
 ### [CRITICAL] R-Tool-6: Agent Memory MCP — Ranh giới sử dụng
 
 `agent-memory` là **lớp kinh nghiệm dài hạn** — những gì agent đã đúc kết và lưu lên
@@ -140,5 +151,20 @@ artifact-type của node) và pass:
 - Thiếu slice/context trong khi chạy → subagent ghi `CONTEXT_REQUEST.<node-id>.md`, KHÔNG tự explore.
 
 Executor phải dùng knowledge slice đã verify; không tự suy đoán hoặc mở rộng blast radius.
+
+#### Context request + orchestrator review
+
+Nếu thiếu context trong khi chạy, subagent ghi `CONTEXT_REQUEST.<node-id>.md` và file này
+phải pass:
+
+`python3 {{ platform.framework_root }}/tools/gate-check/cli.py context-request <file>`
+
+Orchestrator enrich context, cập nhật `TASK_HANDOFF.<node-id>.md`, rồi mới re-dispatch.
+Khi subagent hoàn tất, output phải kèm `NODE_CHECKPOINT.<node-id>.md` và pass:
+
+`python3 {{ platform.framework_root }}/tools/gate-check/cli.py node-checkpoint <file>`
+
+Orchestrator review diff/proposal, evidence, scope, và test result trước khi accept/apply.
+Subagent output không phải final chỉ vì subagent đã hoàn thành.
 
 ---

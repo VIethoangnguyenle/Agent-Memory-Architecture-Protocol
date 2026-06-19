@@ -20,7 +20,9 @@
 .amap/knowledge/templates/INTEGRATION_REQUEST.tpl.md
 .amap/knowledge/templates/KNOWLEDGE_CHECKPOINT.tpl.md
 .amap/knowledge/templates/KNOWLEDGE_PACK.tpl.md
+.amap/knowledge/templates/NODE_CHECKPOINT.tpl.md
 .amap/knowledge/templates/REQUIREMENT.tpl.md
+.amap/knowledge/templates/TASK_HANDOFF.tpl.md
 .amap/knowledge/templates/TOKEN_LOG.tpl.md
 .amap/knowledge/templates/changerequest.tpl.md
 .amap/knowledge/templates/feature.tpl.md
@@ -106,6 +108,9 @@
 .amap/tools/knowledge-index/tests/
 .amap/tools/knowledge-index/tests/__init__.py
 .amap/tools/knowledge-index/tests/test_generate_index.py
+.amap/tools/mcp-bridge/
+.amap/tools/mcp-bridge/README.md
+.amap/tools/mcp-bridge/mcp_client.py
 .amap/tools/microloop-orchestrator/
 .amap/tools/microloop-orchestrator/README.md
 .amap/tools/microloop-orchestrator/contract.py

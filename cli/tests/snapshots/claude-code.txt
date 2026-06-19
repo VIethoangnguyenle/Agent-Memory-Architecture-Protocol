@@ -26,7 +26,9 @@
 .claude/knowledge/templates/INTEGRATION_REQUEST.tpl.md
 .claude/knowledge/templates/KNOWLEDGE_CHECKPOINT.tpl.md
 .claude/knowledge/templates/KNOWLEDGE_PACK.tpl.md
+.claude/knowledge/templates/NODE_CHECKPOINT.tpl.md
 .claude/knowledge/templates/REQUIREMENT.tpl.md
+.claude/knowledge/templates/TASK_HANDOFF.tpl.md
 .claude/knowledge/templates/TOKEN_LOG.tpl.md
 .claude/knowledge/templates/changerequest.tpl.md
 .claude/knowledge/templates/feature.tpl.md
@@ -117,6 +119,9 @@
 .claude/tools/knowledge-index/tests/
 .claude/tools/knowledge-index/tests/__init__.py
 .claude/tools/knowledge-index/tests/test_generate_index.py
+.claude/tools/mcp-bridge/
+.claude/tools/mcp-bridge/README.md
+.claude/tools/mcp-bridge/mcp_client.py
 .claude/tools/microloop-orchestrator/
 .claude/tools/microloop-orchestrator/README.md
 .claude/tools/microloop-orchestrator/contract.py

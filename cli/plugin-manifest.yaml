@@ -317,6 +317,13 @@ plugins:
     output: "{{ platform.framework_root }}/tools/gate-check/"
     copy_dir: true
 
+  - name: mcp-bridge
+    type: tool
+    source: tools/mcp-bridge/
+    template: false
+    output: "{{ platform.framework_root }}/tools/mcp-bridge/"
+    copy_dir: true
+
   - name: knowledge-index
     type: tool
     source: tools/knowledge-index/

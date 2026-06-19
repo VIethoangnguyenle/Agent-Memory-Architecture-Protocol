@@ -58,9 +58,11 @@ def extract_target_paths(payload: dict):
     direct = (
         _path_from_value(tool_input.get("file_path"))
         or _path_from_value(tool_input.get("path"))
+        or _path_from_value(tool_input.get("TargetFile"))
         or _path_from_value(tool_args.get("file_path"))
         or _path_from_value(tool_args.get("path"))
         or _path_from_value(tool_args.get("FilePath"))
+        or _path_from_value(tool_args.get("TargetFile"))
     )
     if direct:
         return [direct]

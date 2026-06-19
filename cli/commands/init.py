@@ -208,3 +208,5 @@ def run_init(
     print(f"  1. Customize {platform.framework_root}/knowledge/long-term/persona.yaml")
     print("  2. Run /dna-scan to build author DNA")
     print("  3. Start your first task: /task <ticket-or-idea>\n")
+    if selected_mcps:
+        print(f"  4. Run MCP diagnostics: amap doctor mcp --target {target}\n")

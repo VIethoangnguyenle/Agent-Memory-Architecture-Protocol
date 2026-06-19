@@ -174,6 +174,11 @@ Format (Giới hạn dưới 5 dòng):
 >   `🔌 MCP: agent-memory: healthy` (hoặc trạng thái thật). Probe fail/absent → ghi dòng
 >   degrade `agent-memory unavailable — skip recall/save`.
 >   Không có MCP nào trong config → `🔌 MCP: none configured`.
+>   Khi native MCP không khả dụng nhưng config hợp lệ, chạy `amap doctor mcp --target <repo>`
+>   để tạo `mcp-doctor-report.md`. Nếu doctor chứng minh bridge fallback healthy, bootstrap
+>   có thể ghi dòng `🔌 MCP: bridge fallback — <server> tools/list ok`; mọi reasoning dùng
+>   bridge phải ghi vào `AGENT_TRANSPARENCY.md`. Không có native probe hoặc bridge evidence
+>   thì vẫn phải degrade, không được ghi "Runtime Ready".
 >   Dòng này phải pass (R-Tool-5):
 >   `python3 {{ platform.framework_root }}/tools/gate-check/cli.py mcp-status <file>`.
 > Nếu KHÔNG ghi các dòng này = R-Guard-1 sẽ block các skill downstream.

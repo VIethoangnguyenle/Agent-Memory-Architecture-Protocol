@@ -105,6 +105,21 @@ def main():
         help="Re-prompt platform/MCP/language before re-rendering",
     )
 
+    # ─── doctor ───
+    doctor_parser = subparsers.add_parser(
+        "doctor",
+        help="Run AMAP diagnostics",
+    )
+    doctor_subparsers = doctor_parser.add_subparsers(dest="doctor_command")
+    mcp_parser = doctor_subparsers.add_parser(
+        "mcp",
+        help="Diagnose MCP config and runtime availability",
+        description="Diagnose MCP config and runtime availability",
+    )
+    mcp_parser.add_argument("--target", default=".")
+    mcp_parser.add_argument("--fix", action="store_true")
+    mcp_parser.add_argument("--yes", action="store_true")
+
     args = parser.parse_args()
 
     if args.command == "init":
@@ -126,6 +141,9 @@ def main():
     elif args.command == "status":
         from cli.commands.status import run_status
         run_status(target_dir=args.target)
+    elif args.command == "doctor" and args.doctor_command == "mcp":
+        from cli.commands.doctor import run_doctor_mcp
+        run_doctor_mcp(target_dir=args.target, fix=args.fix, assume_yes=args.yes)
     else:
         parser.print_help()
         sys.exit(1)

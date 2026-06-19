@@ -7,6 +7,43 @@ g = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(g)
 
 
+def test_context_request_requires_request_type_and_missing_evidence():
+    empty = "node_id: L1\nrequest_type: context\nmissing: []\nsuggested_tools: []\nblocked_reason: \"\"\n"
+    filled = (
+        "node_id: L1\n"
+        "request_type: context\n"
+        "missing:\n  - AD_USER column metadata\n"
+        "suggested_tools:\n  - db-remote\n"
+        "blocked_reason: cannot choose the correct repository method\n"
+    )
+    assert g.validate_context_request(empty).ok is False
+    assert g.validate_context_request(filled).ok is True
+
+
+def test_context_request_rejects_wrong_request_type():
+    wrong = (
+        "node_id: L1\n"
+        "request_type: integration\n"
+        "missing:\n  - something\n"
+        "suggested_tools: []\n"
+        "blocked_reason: blocked\n"
+    )
+    assert g.validate_context_request(wrong).ok is False
+
+
+def test_node_checkpoint_requires_files_evidence_and_verification():
+    empty = "# Node Checkpoint\n## Files Changed\n\n"
+    filled = (
+        "# Node Checkpoint\n"
+        "## Files Changed\n- src/App.java\n"
+        "## Requirement Satisfied\n- Implements TASK-1\n"
+        "## Evidence Used\n- SP-6 from TASK_HANDOFF.node-1.md\n"
+        "## Verification\n- pytest cli/tests/test_init.py -v: PASS\n"
+    )
+    assert g.validate_node_checkpoint(empty).ok is False
+    assert g.validate_node_checkpoint(filled).ok is True
+
+
 def test_knowledge_checkpoint_needs_ruleid_and_evidence():
     bad = "## Applicable DNA/Conventions\n(nothing)\n"
     ok_graph = "## DNA\nSP-6 staircase\n## Codebase\nnode_id: svc.UserService#42\nblast-radius: 3 nodes\n"
