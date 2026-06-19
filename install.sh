@@ -34,6 +34,14 @@ fi
 
 PY="$VENV/bin/python"
 
+# Install the amap CLI as an editable package and expose it on PATH.
+# pyproject.toml declares the console script: amap = cli.amap:main
+"$VENV/bin/pip" install --quiet -e "$AMAP_ROOT"
+mkdir -p "$HOME/.local/bin"
+ln -sf "$VENV/bin/amap" "$HOME/.local/bin/amap"
+echo "→ Installed 'amap' → $HOME/.local/bin/amap"
+echo "  (ensure ~/.local/bin is on your PATH: export PATH=\"\$HOME/.local/bin:\$PATH\")"
+
 # Route to update if AMAP already installed, else init.
 if [ -f "$TARGET/.agents/resolved-config.yaml" ] || \
    [ -f "$TARGET/.claude/resolved-config.yaml" ] || \
