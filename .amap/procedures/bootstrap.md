@@ -169,7 +169,11 @@ Format (Giới hạn dưới 5 dòng):
 > - **MCP probe bắt buộc:** nếu `resolved-config.yaml` khai báo MCP server (vd `understand-anything`) →
 >   PHẢI gọi probe thật (`get_graph_stats`/`list_projects`) và ghi dòng `🔌 MCP:` chứa **SỐ THẬT**
 >   (nodes/edges/freshness). **Cấm** ghi "Runtime Ready" rỗng. Probe fail/absent → ghi dòng degrade
->   `KG unavailable — grep fallback, MEDIUM`. Không có MCP nào trong config → `🔌 MCP: none configured`.
+>   `KG unavailable — grep fallback, MEDIUM`.
+>   Nếu `resolved-config.yaml` khai báo `agent-memory` → probe `memory_health` và ghi
+>   `🔌 MCP: agent-memory: healthy` (hoặc trạng thái thật). Probe fail/absent → ghi dòng
+>   degrade `agent-memory unavailable — skip recall/save`.
+>   Không có MCP nào trong config → `🔌 MCP: none configured`.
 >   Dòng này phải pass (R-Tool-5):
 >   `python3 {{ platform.framework_root }}/tools/gate-check/cli.py mcp-status <file>`.
 > Nếu KHÔNG ghi các dòng này = R-Guard-1 sẽ block các skill downstream.
