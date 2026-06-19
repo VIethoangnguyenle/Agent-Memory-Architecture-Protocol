@@ -26,7 +26,7 @@ Primary scope:
 - `.amap/rules/*.md`
 - `.amap/procedures/*.md`
 - `.amap/workflows/*.md`
-- `.amap/skills/*/SKILL.md`
+- `.amap/skills/*/SKILL.md`, excluding OpenSpec skill packages
 
 Secondary scope, only when directly referenced by a runtime skill:
 
@@ -40,6 +40,10 @@ Out of scope:
 - `README.md`
 - Historical plans and assessments
 - Behavior changes to tools, hooks, or CLI code
+- OpenSpec skill packages:
+  - `.amap/skills/openspec-explore/`
+  - `.amap/skills/openspec-propose/`
+  - `.amap/skills/openspec-archive-change/`
 
 ## Style Rules
 
