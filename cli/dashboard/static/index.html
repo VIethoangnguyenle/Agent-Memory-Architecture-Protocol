@@ -27,6 +27,11 @@ function render(runs){
   runsEl.innerHTML=runs.map(r=>{
     const idle=(r.phase_state===null&&r.tasks_total===0);
     if(idle)return `<div class="card"><div class="name">${esc(r.name)} <span class="idle">&middot; idle</span></div><div class="meta">${esc(r.phase_state||'bootstrapped')}</div></div>`;
+    if(r.tasks_total===0)return `<div class="card">
+      <div class="name">${esc(r.name)}${r.stale?' <span class="stale">[stale]</span>':''}</div>
+      <div class="meta"><span class="phase">${esc(r.phase_state||'?')}</span> &middot; waiting for microloop TASK_QUEUE</div>
+      ${r.updated_at?`<div class="meta">updated ${esc(r.updated_at)}</div>`:''}
+    </div>`;
     const pct=r.progress_pct||0;
     return `<div class="card">
       <div class="name">${esc(r.name)}${r.stale?' <span class="stale">[stale]</span>':''}</div>

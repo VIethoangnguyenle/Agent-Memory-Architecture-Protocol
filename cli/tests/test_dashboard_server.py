@@ -67,6 +67,7 @@ def test_index_served(running_server):
     with urllib.request.urlopen(running_server + "/", timeout=5) as r:
         body = r.read().decode()
         assert r.status == 200
+        assert r.headers["Cache-Control"] == "no-store"
         assert "AMAP" in body
 
 
