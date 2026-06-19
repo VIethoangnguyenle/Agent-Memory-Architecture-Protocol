@@ -310,6 +310,22 @@ Nếu thêm hoặc bỏ MCP sau này:
 .venv/bin/python -m cli.amap update --target /path/to/your-project --reconfigure
 ```
 
+### MCP Doctor
+
+Sau khi chọn MCP lúc `amap init` hoặc `amap update --reconfigure`, chạy:
+
+```bash
+.venv/bin/python -m cli.amap doctor mcp --target /path/to/your-project
+```
+
+Doctor kiểm tra config MCP native của Codex, Claude Code, hoặc Antigravity, ghi
+`mcp-doctor-report.md`, và thử bridge fallback khi native MCP không khả dụng.
+Doctor không sửa config trừ khi bạn chạy:
+
+```bash
+.venv/bin/python -m cli.amap doctor mcp --target /path/to/your-project --fix
+```
+
 ---
 
 ## Knowledge Lifecycle
