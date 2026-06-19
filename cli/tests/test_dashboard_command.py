@@ -79,3 +79,21 @@ def test_unregister_messages(tmp_path, capsys, monkeypatch):
 
     run_dashboard(target=str(proj), action="unregister")
     assert "Not in registry" in capsys.readouterr().out
+
+
+def test_default_snapshot_prunes_deleted_projects(tmp_path, capsys, monkeypatch):
+    reg = tmp_path / "projects.yaml"
+    monkeypatch.setattr(registry, "default_registry_file", lambda: reg)
+    gone = tmp_path / "gone"
+    gone.mkdir()
+    run_dashboard(target=str(gone), action="register")
+    gone.rmdir()
+    capsys.readouterr()  # clear
+
+    here = tmp_path / "here"
+    here.mkdir()
+    run_dashboard(target=str(here))  # default snapshot from an existing dir
+
+    projects = registry.load(reg)
+    assert str(gone.resolve()) not in projects
+    assert str(here.resolve()) in projects

@@ -39,7 +39,8 @@ def run_dashboard(target: str = ".", action: Optional[str] = None, path: Optiona
         print()
         return
 
-    # default: auto-add cwd, then snapshot every registered run
+    # default: drop deleted projects, auto-add cwd, then snapshot every registered run
+    registry.prune_missing(reg)
     registry.register(reg, target)
     projects = registry.load(reg)
     print(f"\n  📊 AMAP runs ({len(projects)} project(s)):\n")
