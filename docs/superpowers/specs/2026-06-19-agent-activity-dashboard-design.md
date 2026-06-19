@@ -102,6 +102,15 @@ realtime server + UI + hook trở nên vô dụng. → Verify giả định bằ
 > - A hoặc B cập nhật live → tiếp Sub-project 1 phần server (đường neutral khả thi).
 > - Cả A lẫn B đều **không** fire cho subagent ngầm Antigravity → realtime cho Antigravity chỉ còn đường tầng C (`state.vscdb`) vốn fragile → **dừng, bàn lại** trước khi xây server.
 
+**P2.5 result (2026-06-19): PASS (mức phase).** Chạy thật trên BA-Framework (Antigravity),
+task brainstorm "chuyển tiền nội bộ". Trong lúc agent đang chạy, `AGENT_TRANSPARENCY.md`
+cập nhật live `bootstrapped → phase-1-in-progress` (mtime đổi mid-run), kèm `TOKEN_LOG.md` +
+`ideation/*.md` được ghi mới; `amap dashboard` phản ánh ngay `· phase-1-in-progress`. Tín hiệu
+A (contract files) cập nhật live → **xương sống realtime khả thi, P3 được phép tiến.**
+Còn treo: brainstorm chỉ tới Pha 1 nên chưa sinh `microloop/TASK_QUEUE.md` → mức *task* (`x/N`)
+chưa xác nhận live; cần một task đi tới **Pha 3 (apply/microloop)** để chốt nốt. Tín hiệu B
+(activity hook) chưa kiểm (thuộc P5).
+
 | Phase | Nội dung | Done khi… |
 |-------|----------|-----------|
 | **P3** | Server + UI: serve `index.html` + kênh push, push 1 lần khi connect; card progress/phase/task/token | mở browser thấy state thật |
