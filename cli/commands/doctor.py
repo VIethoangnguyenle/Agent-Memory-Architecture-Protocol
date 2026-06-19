@@ -14,7 +14,12 @@ def run_doctor_mcp(
 ) -> None:
     target = Path(target_dir).resolve()
     home_path = home or Path.home()
-    status = build_doctor_status(target, home_path)
+    try:
+        status = build_doctor_status(target, home_path)
+    except ValueError as exc:
+        print(f"\n  {exc}")
+        print("  Run `amap init` first, or point --target at an AMAP project.")
+        return
     report = write_report(target, status)
     print(f"\n  MCP doctor report: {report}")
     print(f"  native: {status.native_state} | bridge: {status.bridge_state}")

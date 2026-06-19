@@ -1,11 +1,12 @@
 """MCP doctor status and report generation."""
 
+import json
 import shutil
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 from cli.mcp.adapters import get_mcp_adapter
-from cli.mcp.config import load_mcp_config, selected_server_matches
+from cli.mcp.config import load_mcp_config, redact_mapping, selected_server_matches
 from cli.scaffold import load_resolved_config
 
 
@@ -20,6 +21,7 @@ class DoctorStatus:
     missing: list[str]
     bridge_state: str
     recommendation: str
+    redacted_servers: dict = field(default_factory=dict)
 
 
 def build_doctor_status(target: Path, home: Path) -> DoctorStatus:
@@ -60,6 +62,7 @@ def build_doctor_status(target: Path, home: Path) -> DoctorStatus:
         native_state = "unavailable"
 
     bridge_state = "not-probed"
+    redacted_servers = {name: redact_mapping(best_config.servers[name]) for name in matched}
     return DoctorStatus(
         platform=platform,
         framework_root=framework_root,
@@ -70,6 +73,7 @@ def build_doctor_status(target: Path, home: Path) -> DoctorStatus:
         missing=missing,
         bridge_state=bridge_state,
         recommendation="run native MCP in the IDE/CLI and inspect tool availability",
+        redacted_servers=redacted_servers,
     )
 
 
@@ -89,7 +93,15 @@ def render_report(status: DoctorStatus) -> str:
         f"- matched: {matched}\n"
         f"- missing: {missing}\n"
         f"- Recommendation: {status.recommendation}\n"
+        + _render_matched_config(status.redacted_servers)
     )
+
+
+def _render_matched_config(redacted_servers: dict) -> str:
+    if not redacted_servers:
+        return ""
+    body = json.dumps(redacted_servers, indent=2, ensure_ascii=False, sort_keys=True)
+    return f"\n## Matched server config (redacted)\n\n```json\n{body}\n```\n"
 
 
 def write_report(target: Path, status: DoctorStatus) -> Path:
