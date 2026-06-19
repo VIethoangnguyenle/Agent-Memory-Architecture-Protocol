@@ -23,6 +23,13 @@ def test_runtime_contract_emits_queue_handoff_result_and_events(tmp_path):
         tasks=tasks,
         framework_root=".agents",
     )
+    orchestrator.record_parent_event(
+        active,
+        "phase_changed",
+        phase="phase-3-in-progress",
+        summary="Parent entered apply phase.",
+        ticket_id="SME-TRANSFER-002",
+    )
     orchestrator.write_task_handoff(active, "napas-human", "# TASK_HANDOFF.napas-human\n")
     orchestrator.write_task_handoff(active, "napas-agent", "# TASK_HANDOFF.napas-agent\n")
     orchestrator.update_task_status(active, "napas-human", "in_progress", event="subagent_started")
@@ -43,12 +50,16 @@ def test_runtime_contract_emits_queue_handoff_result_and_events(tmp_path):
     assert loaded["tasks"][0]["result_path"] == ".agents/knowledge/active/microloop/TASK_RESULT.napas-human.md"
     assert [event["event"] for event in events] == [
         "task_queue_created",
+        "phase_changed",
         "subagent_spawned",
         "subagent_spawned",
         "subagent_started",
         "result_written",
         "subagent_done",
     ]
+    assert events[0]["actor"] == "parent"
+    assert events[1]["actor"] == "parent"
+    assert events[2]["actor"] == "subagent"
 
 
 def test_update_task_status_rejects_unknown_task(tmp_path):

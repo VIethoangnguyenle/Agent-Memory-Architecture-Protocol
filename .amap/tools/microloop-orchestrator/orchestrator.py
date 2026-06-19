@@ -46,6 +46,18 @@ def append_activity_event(active_dir, event, **fields):
     return record
 
 
+def record_parent_event(active_dir, event, phase=None, summary=None, **fields):
+    """Append a parent-agent lifecycle event for dashboard timelines."""
+    return append_activity_event(
+        active_dir,
+        event,
+        actor="parent",
+        phase=phase,
+        summary=summary,
+        **fields,
+    )
+
+
 def initialize_runtime_queue(active_dir, ticket_id, spec_path, tasks,
                              execution_mode="subagent", framework_root=".agents"):
     """Create dashboard-visible TASK_QUEUE.md before dispatching subagents."""
@@ -78,6 +90,7 @@ def initialize_runtime_queue(active_dir, ticket_id, spec_path, tasks,
     append_activity_event(
         active_dir,
         "task_queue_created",
+        actor="parent",
         ticket_id=ticket_id,
         tasks_total=len(normalized),
     )
@@ -103,6 +116,7 @@ def write_task_handoff(active_dir, task_id, prompt, label=None):
     append_activity_event(
         active_dir,
         "subagent_spawned",
+        actor="subagent",
         task_id=task_id,
         label=label,
         path=str(path),
@@ -129,6 +143,7 @@ def update_task_status(active_dir, task_id, status, event=None):
     append_activity_event(
         active_dir,
         event or f"task_{status}",
+        actor="subagent",
         ticket_id=queue.get("ticket_id"),
         task_id=task_id,
         status=status,
@@ -140,7 +155,13 @@ def write_task_result(active_dir, task_id, body, status="done"):
     """Write TASK_RESULT.<task_id>.md, update queue status, and emit result events."""
     path = _microloop_dir(active_dir) / f"TASK_RESULT.{task_id}.md"
     path.write_text(body, encoding="utf-8")
-    append_activity_event(active_dir, "result_written", task_id=task_id, path=str(path))
+    append_activity_event(
+        active_dir,
+        "result_written",
+        actor="subagent",
+        task_id=task_id,
+        path=str(path),
+    )
     update_task_status(
         active_dir,
         task_id,

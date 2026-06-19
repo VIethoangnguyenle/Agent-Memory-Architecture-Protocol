@@ -25,6 +25,7 @@
   .status-done{color:#9de7c2;border-color:#2f6f57}.status-in_progress{color:#e9c46a;border-color:#7b6530}.status-blocked,.status-stale{color:#ff9b9b;border-color:#7a3b45}.status-spawned{color:#9ac7ff;border-color:#355f83}
   .timeline{margin-top:12px;border-top:1px solid #2a2f3a;padding-top:10px;display:grid;gap:6px}
   .event{font-size:12px;color:#aab4c1}
+  .event-parent{color:#d9c98a}.event-subagent{color:#9de7c2}
   .event:before{content:"";display:inline-block;width:6px;height:6px;background:#9ac7ff;border-radius:50%;margin-right:8px;vertical-align:1px}
   .errors{margin-top:10px;color:#ff9b9b;font-size:12px}
   details{margin-top:8px}
@@ -56,7 +57,11 @@ function subagents(r){
 function timeline(r){
   const events=r.events||[];
   if(!events.length)return '';
-  return `<div class="timeline">${events.slice(-12).map(e=>`<div class="event">${esc(e.ts||'')} ${esc(e.event||'event')} ${e.task_id?`&middot; ${esc(e.task_id)}`:''}</div>`).join('')}</div>`;
+  return `<div class="timeline">${events.slice(-12).map(e=>{
+    const actor=e.actor||'event';
+    const label=e.summary||e.label||e.event||'event';
+    return `<div class="event event-${esc(actor)}">${esc(e.ts||'')} [${esc(actor)}] ${esc(e.event||'event')} &middot; ${esc(label)} ${e.task_id?`&middot; ${esc(e.task_id)}`:''}</div>`;
+  }).join('')}</div>`;
 }
 function errors(r){
   const list=r.errors||[];

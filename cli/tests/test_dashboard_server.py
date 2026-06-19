@@ -126,6 +126,7 @@ def test_snapshot_merges_queue_result_and_activity_log(tmp_path):
         encoding="utf-8",
     )
     (microloop / "ACTIVITY_LOG.jsonl").write_text(
+        '{"ts":"2026-06-19T23:49:00+07:00","actor":"parent","event":"phase_changed","summary":"Parent entered apply","phase":"phase-3-in-progress"}\n'
         '{"ts":"2026-06-19T23:50:00+07:00","event":"subagent_spawned","task_id":"napas-human"}\n'
         '{"ts":"2026-06-19T23:51:00+07:00","event":"subagent_started","task_id":"napas-agent"}\n',
         encoding="utf-8",
@@ -141,9 +142,12 @@ def test_snapshot_merges_queue_result_and_activity_log(tmp_path):
     assert run["subagents"][0]["result"].startswith("# TASK_RESULT.napas-human")
     assert run["subagents"][1]["result"] is None
     assert [e["event"] for e in run["events"]] == [
+        "phase_changed",
         "subagent_spawned",
         "subagent_started",
     ]
+    assert run["events"][0]["actor"] == "parent"
+    assert run["events"][0]["summary"] == "Parent entered apply"
     assert run["errors"] == []
 
 
@@ -185,6 +189,7 @@ def test_index_served(running_server):
         assert r.headers["Cache-Control"] == "no-store"
         assert "AMAP" in body
         assert "view result" in body
+        assert "event-parent" in body
 
 
 def test_api_runs_json(running_server):

@@ -10,6 +10,7 @@
 Dashboard cần chuyển từ "đọc artifact rời rạc và suy luận" sang một runtime contract rõ ràng,
 để khi agent chính sinh subagent, chạy task, fail gate, hoặc hoàn tất, UI thấy được ngay:
 
+- agent cha đang ở bước nào và vừa làm gì;
 - phase hiện tại của task chính;
 - progress thật `x/N`;
 - subagent nào được spawn;
@@ -29,7 +30,7 @@ Contract này vẫn là filesystem-first, local-only, không thêm dependency ru
 | `TASK_HANDOFF.*.md` | prompt/handoff giao cho subagent | orchestrator | có |
 | `microloop/TASK_HANDOFF.*.md` | prompt/handoff theo node khi Pha 3 chạy | orchestrator | có |
 | `microloop/TASK_RESULT.*.md` | kết quả subagent hoặc node | subagent/orchestrator | có |
-| `microloop/ACTIVITY_LOG.jsonl` | event timeline append-only | orchestrator và hooks | có |
+| `microloop/ACTIVITY_LOG.jsonl` | event timeline append-only cho agent cha và subagent | orchestrator và hooks | có |
 
 Dashboard không ghi các file này.
 
@@ -132,12 +133,18 @@ Append-only JSON Lines. Each line is one event.
 Required fields:
 
 ```json
-{"ts":"2026-06-19T23:50:00+07:00","event":"subagent_spawned","ticket_id":"SME-TRANSFER-002","task_id":"napas-human","label":"Human SRS","path":".agents/knowledge/active/TASK_HANDOFF.napas-human.md"}
+{"ts":"2026-06-19T23:50:00+07:00","actor":"subagent","event":"subagent_spawned","ticket_id":"SME-TRANSFER-002","task_id":"napas-human","label":"Human SRS","path":".agents/knowledge/active/TASK_HANDOFF.napas-human.md"}
 ```
 
 Event names:
 
 - `phase_changed`
+- `parent_note`
+- `spec_started`
+- `spec_done`
+- `apply_started`
+- `archive_started`
+- `archive_done`
 - `task_queue_created`
 - `task_started`
 - `task_done`
@@ -152,6 +159,9 @@ Event names:
 - `result_written`
 
 Dashboard treats unknown event names as generic timeline events and does not crash.
+
+`actor` is optional for backward compatibility. If omitted, dashboard treats the event as generic.
+Preferred values are `parent` and `subagent`.
 
 ## 7. Reader Behavior
 
@@ -193,6 +203,7 @@ Priority rules:
 P6 UI consumes this contract and displays:
 
 - run card: phase, ticket, progress bar, updated time;
+- parent-agent timeline: phase/spec/apply/archive events with `actor: parent`;
 - subagent lane: animated spawn nodes, status badges, prompt drawer, result drawer;
 - timeline: event stream from `ACTIVITY_LOG.jsonl`;
 - stale/error indicators with file path and short message.

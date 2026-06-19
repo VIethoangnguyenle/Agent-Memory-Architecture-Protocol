@@ -11,7 +11,8 @@ is platform-agnostic; `dispatch` is the only tier-specific seam.
 - `EXTRACTION_INPUT.md` / `EXTRACTION_REPORT.md` — HP-10/11
 - `ACTIVITY_LOG.jsonl` — append-only dashboard timeline (`task_queue_created`,
   `subagent_spawned`, `subagent_started`, `result_written`, `subagent_done`,
-  `subagent_blocked`)
+  `subagent_blocked`, plus parent-agent events such as `phase_changed`,
+  `parent_note`, `archive_started`)
 
 ## Dashboard runtime helpers
 Use these helpers from `orchestrator.py` when running Phase 3 so
@@ -22,6 +23,7 @@ Use these helpers from `orchestrator.py` when running Phase 3 so
 - `update_task_status(active_dir, task_id, status, event=None)`
 - `write_task_result(active_dir, task_id, body, status="done")`
 - `append_activity_event(active_dir, event, **fields)`
+- `record_parent_event(active_dir, event, phase=None, summary=None, **fields)`
 
 ## Tiers (`{{ platform.framework_root }}/profiles/execution-mode.yaml`)
 `subagent` (Claude) · `fresh-session` (Cursor/Antigravity) · `inline-reload` (fallback).
