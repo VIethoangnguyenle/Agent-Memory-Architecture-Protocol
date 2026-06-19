@@ -109,7 +109,14 @@ def copy_and_render_directory(
     Returns:
         Tuple of (total_files_copied, files_rendered).
     """
-    exclude = exclude_patterns or ["__pycache__", ".pytest_cache", "*.pyc", ".git"]
+    exclude = exclude_patterns or [
+        "__pycache__", ".pytest_cache", "*.pyc", ".git",
+        # Per-project instance / build artifacts that must never be scaffolded
+        # from the framework source (only their templates/seeds ship):
+        "persona.yaml",        # ship persona.template.yaml; user creates persona.yaml
+        "rules.json",          # rule-projector build output (regenerated per project)
+        "*.generated.xml",     # rule-projector checkstyle output
+    ]
     total = 0
     rendered = 0
 

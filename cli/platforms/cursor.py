@@ -46,6 +46,7 @@ class CursorPlatform(BasePlatform):
         "artifacts": False,
         "image_generation": False,
         "browser": False,
+        "write_gate_hook": False,
     }
 
     native_skill_export = {"dir": ".cursor/commands", "strip_frontmatter": True, "flatten": True}

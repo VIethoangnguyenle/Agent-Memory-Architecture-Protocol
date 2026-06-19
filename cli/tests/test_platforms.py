@@ -30,6 +30,13 @@ def test_render_context_includes_framework_root():
     assert ctx["platform"]["framework_root"] == ".agents"
 
 
+def test_write_gate_hook_capability_matrix():
+    assert get_platform("claude-code").capabilities["write_gate_hook"] is True
+    assert get_platform("codex").capabilities["write_gate_hook"] is True
+    assert get_platform("antigravity").capabilities["write_gate_hook"] is True
+    assert get_platform("generic").capabilities["write_gate_hook"] is False
+
+
 def test_cursor_is_out_of_scope_for_platform_selection():
     assert "cursor" not in PLATFORMS
 

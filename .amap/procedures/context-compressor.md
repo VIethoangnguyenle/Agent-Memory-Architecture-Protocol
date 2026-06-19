@@ -41,7 +41,7 @@ RULE:
 
 **Ví dụ**:
 - `EXPLORE_CONTEXT.md` 12K tokens → tóm tắt còn 4K, giữ nguyên schema tables và BLOCKER nodes.
-- `knowledge-snapshot.md` 20K tokens → chỉ load section liên quan đến domain của ticket hiện tại (xem M2 keyword filtering bên dưới).
+- `knowledge-snapshot.md` → KHÔNG nạp full body; chỉ nạp `knowledge-index.yaml` (entry list), slice kéo JIT tại decision-gate theo `applies_to` (xem `decision-gate.md`).
 
 ---
 

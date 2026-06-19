@@ -27,3 +27,6 @@ conventions:
   relevant_sections: []
 memory:
   related_decisions: []
+
+## Applicable DNA/Conventions
+<!-- Orchestrator nhét slice rule-id khớp applies_to của node vào đây trước khi dispatch -->

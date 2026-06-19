@@ -128,9 +128,7 @@ Nạp file theo thứ tự ưu tiên. Logic đầy đủ: `context-loader.md`.
 | P1 | `{{ platform.framework_root }}/knowledge/active/EXPLORE_CONTEXT.md` | Tồn tại + không phải skeleton | status = "empty" |
 | P1 | `{{ platform.framework_root }}/knowledge/active/AGENT_TRANSPARENCY.md` | Tồn tại | bỏ qua |
 | P2 | `{{ platform.framework_root }}/knowledge/active/ideation/ideation-*.md` | Tất cả file .md | danh sách rỗng |
-| P2 | `{{ platform.framework_root }}/knowledge/long-term/knowledge-snapshot.md` | Luôn nạp nếu tồn tại | **BLOCK** — ghi vào bootstrap report: "⛔ knowledge-snapshot.md MISSING — độ tin cậy kiến trúc = KHÔNG XÁC ĐỊNH. Chạy `/index-source` để tạo." |
-| P2 | `{{ platform.framework_root }}/knowledge/long-term/conventions.yaml` | status=approved | **BLOCK** — như hiện tại |
-| P2 | `{{ platform.framework_root }}/knowledge/long-term/author-dna.yaml` | status=approved | **BLOCK** — như hiện tại |
+| P2 | `{{ platform.framework_root }}/knowledge/long-term/knowledge-index.yaml` | Luôn nạp nếu tồn tại | **WARN** — chạy knowledge-index generator; gate sẽ kéo slice JIT |
 | P4 | `{{ platform.framework_root }}/knowledge/archive/` | Chỉ khi P1 trống | đọc metadata của ≤10 ticket gần nhất |
 
 **Skeleton detection**: File là template skeleton nếu chứa `<!-- TODO: fill in -->` hoặc độ dài < 200 ký tự.
@@ -161,26 +159,29 @@ Format (Giới hạn dưới 5 dòng):
 
 ```
 {greeting} — Đã Bootstrap: [x] Core [x] Skills ({n}) [x] Workflows
-📋 Context: REQ={active/empty} | EXPLORE={active/empty} | 🗺️ Snapshot: {loaded — n entries / MISSING ⛔}
-📐 DNA/Conv: 🧠 Author DNA: {approved — n confirmed entries read / missing} | Conv={approved/missing}
+📋 Context: REQ={active/empty} | EXPLORE={active/empty}
+🧠 Knowledge-index: {loaded — n entries / MISSING ⛔}
+🔌 MCP: {server: nodes=N edges=M freshness=… / KG unavailable — grep fallback, MEDIUM / none configured}
 📦 Archive: {n} tickets | Token Log: {exists/new}
 ⚠️ {warnings nếu có}
 ```
 
 > **Bắt buộc sau khi nạp**:
-> - `author-dna.yaml` status=approved → agent PHẢI đọc tất cả entries `confirmed: true` trước khi nhận lệnh code.
->   Dấu hiệu đã đọc: bootstrap report ghi `🧠 Author DNA: approved — {n} confirmed entries read`.
-> - `knowledge-snapshot.md` → agent PHẢI đọc sections "Kiến trúc Code" và "Business Rules Đã Xác Nhận"
->   trước khi nhận lệnh code bất kỳ liên quan đến feature/factory/service.
->   Dấu hiệu đã đọc: bootstrap report ghi `🗺️ Snapshot: loaded — {n} entries`.
->   Nếu snapshot MISSING: ghi `🗺️ Snapshot: MISSING ⛔` và hạ confidence kiến trúc = KHÔNG XÁC ĐỊNH.
+> - `knowledge-index.yaml` đã nạp → report ghi `🧠 Knowledge-index: loaded — {n entries}`.
+>   Body của từng entry KHÔNG nạp ở bootstrap; kéo JIT tại decision-gate (xem `procedures/decision-gate.md`).
+> - **MCP probe bắt buộc:** nếu `resolved-config.yaml` khai báo MCP server (vd `understand-anything`) →
+>   PHẢI gọi probe thật (`get_graph_stats`/`list_projects`) và ghi dòng `🔌 MCP:` chứa **SỐ THẬT**
+>   (nodes/edges/freshness). **Cấm** ghi "Runtime Ready" rỗng. Probe fail/absent → ghi dòng degrade
+>   `KG unavailable — grep fallback, MEDIUM`. Không có MCP nào trong config → `🔌 MCP: none configured`.
+>   Dòng này phải pass (R-Tool-5):
+>   `python3 {{ platform.framework_root }}/tools/gate-check/cli.py mcp-status <file>`.
 > Nếu KHÔNG ghi các dòng này = R-Guard-1 sẽ block các skill downstream.
 
 Sau đó ghi vào `{{ platform.framework_root }}/knowledge/active/AGENT_TRANSPARENCY.md` — section Bootstrap:
 
 ```
 - Timestamp, {{ platform.config_entry_point }} [x], RULES.md [x], Skills loaded [list], Workflows [list]
-- Context state: {requirement/explore_context/snapshot status}
+- Context state: {requirement/explore_context/knowledge-index status}
 - Warnings: {list}
 ```
 
@@ -194,4 +195,4 @@ Sau đó ghi vào `{{ platform.framework_root }}/knowledge/active/AGENT_TRANSPAR
 | Skill file corrupt | SKIP + WARN |
 | active/ file không đọc được | WARN, treat as empty |
 | archive/ > 50 tickets | Chỉ đọc metadata 10 gần nhất |
-| knowledge-snapshot.md thiếu | WARN, hạ độ tin cậy kiến trúc |
+| knowledge-index.yaml thiếu | WARN, hạ độ tin cậy kiến trúc |

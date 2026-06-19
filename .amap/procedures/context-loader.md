@@ -22,57 +22,34 @@ Tránh tình trạng agent dùng context cũ của task khác.
 │ P1        │ {{ platform.framework_root }}/knowledge/active/AGENT_TRANSPARENCY.md   │ Luôn nạp nếu có │
 │ P1        │ {{ platform.framework_root }}/knowledge/active/TOKEN_LOG.md             │ Luôn nạp nếu có │
 │ P2        │ {{ platform.framework_root }}/knowledge/active/ideation/ideation-*.md  │ Tất cả file .md │
-│ P3 (tĩnh) │ {{ platform.framework_root }}/knowledge/long-term/knowledge-snapshot.md│ Luôn nạp nếu có │
-│ P3 (tĩnh) │ {{ platform.framework_root }}/knowledge/long-term/conventions.yaml     │ Chỉ khi status=approved│
-│ P3 (tĩnh) │ {{ platform.framework_root }}/knowledge/long-term/author-dna.yaml      │ Chỉ khi status=approved│
+│ P3 (tĩnh) │ {{ platform.framework_root }}/knowledge/long-term/knowledge-index.yaml │ Luôn nạp nếu tồn tại│
 │ P4 (thấp) │ {{ platform.framework_root }}/knowledge/archive/{ticket-id}/           │ Chỉ khi P1 trống│
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
+> **Diet (khớp `bootstrap.md` PHASE 3/5)**: `knowledge-snapshot.md`, `conventions.yaml`, `author-dna.yaml`
+> KHÔNG được nạp toàn bộ ở context-loader nữa. Context-loader chỉ nạp `knowledge-index.yaml`
+> (entry list nhẹ). Body của từng entry được kéo **just-in-time tại decision-gate**
+> (xem `procedures/decision-gate.md`) khi gate cần bằng chứng cho artifact-type hiện tại.
+> Nếu `knowledge-index.yaml` không tồn tại → WARN "chạy knowledge-index generator; gate sẽ kéo slice JIT" và hạ độ tin cậy kiến trúc.
 
-**conventions.yaml — quy tắc nạp:**
-- `status: approved` → nạp cùng knowledge-snapshot, cùng lượt P3.
-- `status: draft` → KHÔNG nạp — chưa được approve.
-- Không tồn tại → WARN "conventions.yaml chưa có. Agent dùng generic naming. Chạy /convention-scan để tạo."
-- conventions.yaml được dùng bởi: `codebase-explorer`, `architecture-reviewer`, `spec-engineer` khi sinh tên class/method.
+**knowledge-index.yaml — quy tắc nạp:**
+- Luôn nạp nếu tồn tại, cùng lượt P3 (chỉ entry list, không nạp body).
+- Không tồn tại → WARN "knowledge-index.yaml chưa có. Agent dùng generic judgment/naming. Chạy index generator để tạo."
+- Được dùng bởi: `codebase-explorer`, `architecture-reviewer`, `spec-engineer`, `/task apply` — các skill này tự kéo slice JIT tại decision-gate theo `applies_to` khớp artifact-type, KHÔNG còn pre-load toàn bộ conventions/DNA trước khi chạy.
 
-**Selective loading — tied vào R-Guard-2 artifact type:**
+**Artifact-type slice (JIT, tại decision-gate)**:
 
-Khi bootstrap nạp conventions.yaml, chỉ load full nếu Pha 3 (`/task apply`) hoặc Pha 2 (`/task spec`).
-Với Pha 1 (exploration): chỉ cần Section 1 (naming) + Section 4 (upstream constraints).
-
-**Exception — khi `architecture-reviewer` được gọi trong Pha 1**:
-Load đầy đủ cả hai file trước khi chạy skill:
-- `conventions.yaml` → toàn bộ (bao gồm `design_patterns`, upstream constraints)
-- `author-dna.yaml` → toàn bộ `hard_principles` + `complexity_thresholds`
-  (pattern_preferences vẫn `on_demand` — arch-reviewer không cần level đó)
-
-Trigger: khi skill registry detect `architecture-reviewer` sắp được gọi → pre-load đầy đủ.
-Không cần artifact name — architecture-reviewer tự xác định boundary từ toàn bộ conventions + DNA HP.
-
-Khi R-Guard-2 detect artifact type (trước khi sinh code), load thêm section tương ứng:
+Khi R-Guard-2 detect artifact type (trước khi sinh code), decision-gate kéo entry khớp từ `knowledge-index.yaml` thuần theo tag `applies_to`:
 
 ```
-ARTIFACT_SECTION_MAP = {
-  "Factory"    : ["Factory Design Boundary", "upstream_constraints"],
-  "Handler"    : ["Handler naming", "upstream_constraints"],
-  "Service"    : ["Service naming", "upstream_constraints"],
-  "Repository" : ["Repository naming", "upstream_constraints"],
-  "Processor"  : ["Processor naming"],
-  "Executor"   : ["Executor naming", "upstream_constraints"],
-  "Entity"     : ["Entity naming", "upstream_constraints"],
-  "*"          : ["Section 1 naming rules"]  # default — mọi artifact
-}
+slice = [ entry for entry in knowledge-index
+          if artifact_type in entry.applies_to       # khớp type hiện tại
+          or not entry.applies_to ]                  # + entry áp dụng mọi artifact
 ```
 
-Agent đọc sections trong map, không cần load toàn bộ 754 dòng.
-Nếu section không tìm thấy trong conventions.yaml → load toàn bộ file (safe fallback).
-
-**author-dna.yaml — quy tắc nạp:**
-- `status: approved` → nạp cùng conventions.yaml, cùng lượt P3.
-- `status: draft` → KHÔNG nạp — chưa qua interview/approve.
-- Không tồn tại → WARN "author-dna.yaml chưa có. Agent dùng generic judgment. Chạy /dna-scan để tạo."
-- author-dna.yaml được dùng bởi: `architecture-reviewer` (hard principles), `spec-engineer` (pattern preferences), `/task apply` (style + complexity thresholds).
+- **Vocabulary artifact-type do PROJECT định nghĩa** (tag `applies_to` mà author-dna-builder / convention-intelligence-builder gắn vào entry) — framework KHÔNG hard-code danh sách type (vd Factory/Service…). Khớp thuần theo `applies_to`, không qua bảng cố định.
+- Đây là slice JIT — context-loader không pre-load; decision-gate kéo đúng lúc cần bằng chứng (xem token bằng chứng bắt buộc trong `decision-gate.md`).
 
 > **[R-KI-1 — Bắt buộc]**: Nếu external KI (vd Cursor rules, Antigravity knowledge, etc.) chứa
 > file `factory-rules.md`, `coding-rules.md`, hoặc bất kỳ file nào duplicate nội dung
@@ -104,9 +81,9 @@ Nếu section không tìm thấy trong conventions.yaml → load toàn bộ file
    ┌────────────────┬─────────────────────────────────────────────────────┐
    │ Task Type      │ Context cần nạp                                     │
    ├────────────────┼─────────────────────────────────────────────────────┤
-   │ IDEA_ONLY      │ knowledge-snapshot (nếu có) + active ideations      │
-   │ HAS_DOC_ONLY   │ knowledge-snapshot + active REQUIREMENT (nếu có)    │
-   │ HAS_TICKET     │ TẤT CẢ: REQUIREMENT + EXPLORE_CONTEXT + snapshot    │
+   │ IDEA_ONLY      │ knowledge-index (nếu có) + active ideations         │
+   │ HAS_DOC_ONLY   │ knowledge-index + active REQUIREMENT (nếu có)       │
+   │ HAS_TICKET     │ TẤT CẢ: REQUIREMENT + EXPLORE_CONTEXT + knowledge-index│
    └────────────────┴─────────────────────────────────────────────────────┘
 
 3. Nạp context theo priority, ghi status vào AGENT_TRANSPARENCY
@@ -120,7 +97,7 @@ REQUIRED:
   → {{ platform.framework_root }}/knowledge/active/EXPLORE_CONTEXT.md  (PHẢI có, nếu không: WARN, hạ tin cậy)
 
 OPTIONAL:
-  → {{ platform.framework_root }}/knowledge/long-term/knowledge-snapshot.md
+  → {{ platform.framework_root }}/knowledge/long-term/knowledge-index.yaml (entry list; body kéo JIT tại decision-gate)
   → {{ platform.framework_root }}/knowledge/archive/{ticket-id}/       (nếu active context khác ticket)
 ```
 
@@ -182,7 +159,7 @@ FUNCTION rescan_active_context():
 |-----------|-----------|
 | REQUIREMENT.md trống | Tiếp tục nhưng WARN, hạ độ tin cậy |
 | EXPLORE_CONTEXT.md trống | Tiếp tục, mark "Chưa explore" trong TRANSPARENCY |
-| knowledge-snapshot.md thiếu | WARN "Kiến trúc tổng thể chưa có snapshot. Kết luận kiến trúc có độ tin cậy THẤP hơn." |
+| knowledge-index.yaml thiếu | WARN "Kiến trúc tổng thể chưa có knowledge-index. Kết luận kiến trúc có độ tin cậy THẤP hơn." |
 | archive/ trống | Bình thường, không cần warn |
 | Toàn bộ active/ trống | Bootstrap sạch, không có context cũ |
 
@@ -197,10 +174,10 @@ CONTEXT_SUMMARY = {
   "active_task": "<ticket-id hoặc null>",
   "requirement_status": "loaded | empty | template-only",
   "explore_context_status": "loaded | empty",
-  "knowledge_snapshot": "available | missing",
+  "knowledge_index": "loaded — {n entries} | missing",
   "active_ideations": ["ideation-sdk-bill-payment.md", ...],
   "archive_count": 3,
-  "warnings": ["knowledge-snapshot missing", ...]
+  "warnings": ["knowledge-index.yaml missing", ...]
 }
 ```
 
@@ -311,41 +288,17 @@ IF [K] (Giữ spec):
 
 ---
 
-## [M2] Knowledge-Snapshot Domain Keyword Filtering
+## [M2] Knowledge-Index Domain Filtering — superseded bởi JIT slice tại decision-gate
 
-Khi knowledge-snapshot.md quá lớn (> 8K tokens), không nạp toàn bộ — chỉ load sections liên quan đến domain của task hiện tại.
-
-```
-FUNCTION load_snapshot_filtered(requirement_md):
-  1. Trích domain keywords từ REQUIREMENT.md:
-     - Đọc section "Bối cảnh" + "Phạm vi" + "Acceptance Criteria"
-     - Tách ra: entity names, table names, service names, business terms
-     - Ví dụ: ["DAILY_TRANS", "limit", "ValidateProcessor", "bill-payment"]
-
-  2. Đọc knowledge-snapshot.md theo section:
-     - Với mỗi section (## header): kiểm tra xem header hoặc 5 dòng đầu có chứa bất kỳ keyword nào không
-     - Nếu match: nạp toàn bộ section đó
-     - Nếu không match: bỏ qua (chỉ giữ section header để biết cấu trúc)
-
-  3. Luôn nạp:
-     - Section "Tổng quan Hệ thống" (bất kể keyword)
-     - Section "Quy ước Metadata Bắt buộc"
-
-  4. Ghi vào AGENT_TRANSPARENCY:
-     "[M2-FILTER] knowledge-snapshot: loaded {n}/{total} sections.
-      Keywords: {keyword_list}. Sections loaded: {section_names}."
-
-  5. Nếu tổng sau filter vẫn > 8K tokens:
-     → Chuyển sang context-compressor Mode A cho snapshot
-```
-
-**Khi nào áp dụng**:
-- knowledge-snapshot.md tồn tại VÀ size > 8,000 tokens estimate.
-- Áp dụng với cả lượt nạp ban đầu (bootstrap) và re-scan giữa chừng.
+> **Diet**: Mục này trước đây filter `knowledge-snapshot.md` theo domain keyword khi file quá lớn.
+> Sau diet, context-loader không còn nạp full snapshot/conventions/author-dna để mà filter —
+> chỉ nạp `knowledge-index.yaml` (entry list nhẹ, không cần filter theo size).
+> Việc chọn đúng phần nội dung liên quan domain/artifact hiện tại đã chuyển thành
+> JIT slice pull tại `procedures/decision-gate.md` (entry có `applies_to` khớp artifact-type/domain),
+> không còn là bước riêng ở context-loader.
 
 **Fallback**:
-- Nếu không trích được keyword từ REQUIREMENT (file trống/skeleton):
-  → Nạp toàn bộ snapshot (không filter) + WARN "Thiếu keywords từ REQUIREMENT, nạp snapshot đầy đủ".
+- Nếu `knowledge-index.yaml` không tồn tại → WARN "knowledge-index.yaml chưa có. Agent dùng generic judgment. Chạy index generator để tạo." (xem Graceful Degradation Rules).
 
 ---
 

@@ -51,6 +51,7 @@ class GenericPlatform(BasePlatform):
         "artifacts": False,
         "image_generation": False,
         "browser": False,
+        "write_gate_hook": False,
     }
 
     notes = [

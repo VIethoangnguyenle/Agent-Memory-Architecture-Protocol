@@ -88,6 +88,7 @@ class BasePlatform(ABC):
             "artifacts": False,
             "image_generation": False,
             "browser": False,
+            "write_gate_hook": False,
         }
 
     @property

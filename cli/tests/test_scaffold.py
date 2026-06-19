@@ -12,6 +12,7 @@ from cli.scaffold import (
     get_ownership,
     resolve_source_path,
     scaffold_plugin,
+    scaffold_plugins,
     verify_no_unresolved,
 )
 
@@ -42,6 +43,11 @@ def test_resolve_source_path_maps_skills(amap_root):
 def test_resolve_source_path_maps_meta_prompt(amap_root):
     p = resolve_source_path(amap_root, "meta-prompt.md")
     assert p == amap_root / ".amap/meta-prompt.md"
+
+
+def test_resolve_source_path_maps_hooks(amap_root):
+    p = resolve_source_path(amap_root, "hooks/write-gate/")
+    assert p == amap_root / ".amap/hooks/write-gate/"
 
 
 def test_scaffold_plugin_renders_template_source(tmp_path, jinja_env, claude_context):
@@ -86,6 +92,77 @@ def test_scaffold_plugin_unknown_tool_key_raises_before_target_write(
     assert not target_path.exists()
 
 
+def test_scaffold_plugins_skips_platform_capability_plugin_when_absent(
+    tmp_path, amap_root, jinja_env, claude_context
+):
+    source = amap_root / ".amap" / "knowledge" / "templates" / "TOKEN_LOG.tpl.md"
+    assert source.exists()
+
+    plugins = [{
+        "name": "write-gate-settings",
+        "type": "hook",
+        "source": "knowledge-templates/TOKEN_LOG.tpl.md",
+        "output": "{{ platform.framework_root }}/hooks/write-gate/TOKEN_LOG.tpl.md",
+        "requires_platform_capability": "write_gate_hook",
+    }]
+
+    context = {
+        **claude_context,
+        "capabilities": {**claude_context["capabilities"], "write_gate_hook": False},
+    }
+    stats = scaffold_plugins(
+        plugins, amap_root, tmp_path, context, jinja_env,
+        mcp_capabilities={}, selected_mcps=[], verbose=False,
+    )
+
+    assert stats["skipped"] == 1
+    assert not (tmp_path / ".claude" / "hooks" / "write-gate" / "TOKEN_LOG.tpl.md").exists()
+
+
+def test_scaffold_plugins_includes_platform_capability_plugin_when_present(
+    tmp_path, amap_root, jinja_env, claude_context
+):
+    plugins = [{
+        "name": "write-gate-settings",
+        "type": "hook",
+        "source": "knowledge-templates/TOKEN_LOG.tpl.md",
+        "output": "{{ platform.framework_root }}/hooks/write-gate/TOKEN_LOG.tpl.md",
+        "requires_platform_capability": "write_gate_hook",
+    }]
+
+    context = {
+        **claude_context,
+        "capabilities": {**claude_context["capabilities"], "write_gate_hook": True},
+    }
+    stats = scaffold_plugins(
+        plugins, amap_root, tmp_path, context, jinja_env,
+        mcp_capabilities={}, selected_mcps=[], verbose=False,
+    )
+
+    assert stats["copied"] + stats["rendered"] == 1
+    assert (tmp_path / ".claude" / "hooks" / "write-gate" / "TOKEN_LOG.tpl.md").exists()
+
+
+def test_scaffold_plugins_skips_platform_specific_plugin_for_other_platform(
+    tmp_path, amap_root, jinja_env, claude_context
+):
+    plugins = [{
+        "name": "codex-write-gate-settings",
+        "type": "hook",
+        "source": "knowledge-templates/TOKEN_LOG.tpl.md",
+        "output": ".codex/hooks.json",
+        "requires_platform": "codex",
+    }]
+
+    stats = scaffold_plugins(
+        plugins, amap_root, tmp_path, claude_context, jinja_env,
+        mcp_capabilities={}, selected_mcps=[], verbose=False,
+    )
+
+    assert stats["skipped"] == 1
+    assert not (tmp_path / ".codex" / "hooks.json").exists()
+
+
 def test_knowledge_dirs_are_user_owned(amap_root):
     manifest = load_manifest(amap_root)
     by_name = {p["name"]: p for p in manifest["plugins"]}
@@ -93,6 +170,19 @@ def test_knowledge_dirs_are_user_owned(amap_root):
     assert get_ownership(by_name["knowledge-long-term"]) == "user"
     # Templates remain framework-managed.
     assert get_ownership(by_name["knowledge-templates"]) == "framework"
+
+
+def test_manifest_declares_write_gate_plugins(amap_root):
+    manifest = load_manifest(amap_root)
+    by_name = {p["name"]: p for p in manifest["plugins"]}
+    assert by_name["write-gate-core"]["source"] == "hooks/write-gate/"
+    assert by_name["write-gate-core"]["requires_platform_capability"] == "write_gate_hook"
+    assert by_name["claude-code-write-gate-settings"]["requires_platform"] == "claude-code"
+    assert by_name["claude-code-write-gate-settings"]["requires_platform_capability"] == "write_gate_hook"
+    assert by_name["codex-write-gate-hooks"]["requires_platform"] == "codex"
+    assert by_name["codex-write-gate-hooks"]["requires_platform_capability"] == "write_gate_hook"
+    assert by_name["antigravity-write-gate-hooks"]["requires_platform"] == "antigravity"
+    assert by_name["antigravity-write-gate-hooks"]["requires_platform_capability"] == "write_gate_hook"
 
 
 def _write_resolved_config(target, content):
