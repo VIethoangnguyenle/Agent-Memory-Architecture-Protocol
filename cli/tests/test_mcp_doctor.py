@@ -75,3 +75,35 @@ def test_build_doctor_status_marks_missing_config_as_unavailable_and_not_probed(
 
     assert status.native_state == "unavailable"
     assert status.bridge_state == "not-probed"
+
+
+def test_doctor_fix_copies_known_good_antigravity_ide_config(tmp_path):
+    target = tmp_path / "proj"
+    home = tmp_path / "home"
+    write_resolved(target, platform="antigravity", mcps=["socraticode"])
+    source = home / ".gemini" / "antigravity" / "mcp_config.json"
+    source.parent.mkdir(parents=True)
+    source.write_text(json.dumps({"mcpServers": {"socraticode": {"command": "npx"}}}), encoding="utf-8")
+
+    run_doctor_mcp(str(target), fix=True, assume_yes=True, home=home)
+
+    dest = home / ".gemini" / "antigravity-cli" / "mcp_config.json"
+    assert dest.exists()
+    assert json.loads(dest.read_text(encoding="utf-8"))["mcpServers"]["socraticode"]["command"] == "npx"
+
+
+def test_doctor_fix_backs_up_existing_non_empty_destination(tmp_path):
+    target = tmp_path / "proj"
+    home = tmp_path / "home"
+    write_resolved(target, platform="antigravity", mcps=["socraticode"])
+    source = home / ".gemini" / "antigravity" / "mcp_config.json"
+    source.parent.mkdir(parents=True)
+    source.write_text(json.dumps({"mcpServers": {"socraticode": {"command": "npx"}}}), encoding="utf-8")
+    dest = home / ".gemini" / "antigravity-cli" / "mcp_config.json"
+    dest.parent.mkdir(parents=True)
+    dest.write_text(json.dumps({"mcpServers": {"old": {"command": "old"}}}), encoding="utf-8")
+
+    run_doctor_mcp(str(target), fix=True, assume_yes=True, home=home)
+
+    assert (dest.parent / "mcp_config.json.bak").exists()
+    assert "old" in (dest.parent / "mcp_config.json.bak").read_text(encoding="utf-8")

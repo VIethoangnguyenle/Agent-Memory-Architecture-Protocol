@@ -1,5 +1,6 @@
 """MCP doctor status and report generation."""
 
+import shutil
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -96,3 +97,35 @@ def write_report(target: Path, status: DoctorStatus) -> Path:
     report.parent.mkdir(parents=True, exist_ok=True)
     report.write_text(render_report(status), encoding="utf-8")
     return report
+
+
+def apply_fix(target: Path, home: Path, assume_yes: bool) -> Path | None:
+    resolved = load_resolved_config(target)
+    if resolved is None:
+        raise ValueError(f"No AMAP resolved-config.yaml found under {target}")
+    platform = resolved.get("platform", "generic")
+    if platform != "antigravity":
+        return None
+    adapter = get_mcp_adapter(platform)
+    candidates = adapter.config_candidates(target, home)
+    destination = next(item.path for item in candidates if item.scope == "cli")
+    source = None
+    for candidate in candidates:
+        if candidate.scope == "cli":
+            continue
+        config = load_mcp_config(candidate)
+        if config.valid:
+            source = config.path
+            break
+    if source is None:
+        return None
+    if not assume_yes:
+        answer = input(f"Copy {source} to {destination}? [y/N]: ").strip().lower()
+        if answer != "y":
+            return None
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    if destination.exists() and destination.read_text(encoding="utf-8").strip():
+        backup = destination.with_name(destination.name + ".bak")
+        shutil.copy2(destination, backup)
+    shutil.copy2(source, destination)
+    return destination
