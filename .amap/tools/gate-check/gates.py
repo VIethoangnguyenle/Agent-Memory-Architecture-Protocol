@@ -21,6 +21,12 @@ _BLAST = re.compile(r"blast-radius", re.IGNORECASE)
 # prose that merely happens to contain both "KG unavailable" and "MEDIUM".
 _DEGRADE = re.compile(r"KG unavailable.{0,40}MEDIUM", re.IGNORECASE)
 _NUMBERS = re.compile(r"(nodes?|edges?)\s*[:=]\s*\d+", re.IGNORECASE)
+# Agent-memory MCP evidence: either a health probe ("agent-memory: healthy")
+# or the compact degrade line ("agent-memory unavailable — skip recall/save").
+_MEMORY_OK = re.compile(r"agent-memory.{0,20}(healthy|ok|ready)", re.IGNORECASE)
+_MEMORY_DEGRADE = re.compile(
+    r"agent-memory unavailable.{0,40}(skip|recall|save)", re.IGNORECASE
+)
 # NOTE: self-asserted; hardening (only-when-index-empty) is deferred to the
 # index-aware validator follow-up (see decision-gates-followups spec).
 _NO_KNOWLEDGE = re.compile(r"no approved (dna|conventions).*low", re.IGNORECASE)
@@ -47,7 +53,12 @@ def validate_knowledge_checkpoint(
 
 
 def validate_mcp_status(text: str) -> Result:
-    if _NUMBERS.search(text) or _DEGRADE.search(text):
+    if (
+        _NUMBERS.search(text)
+        or _DEGRADE.search(text)
+        or _MEMORY_OK.search(text)
+        or _MEMORY_DEGRADE.search(text)
+    ):
         return Result(True)
     return Result(False, "MCP status lacks probe numbers and degrade line ('Runtime Ready' alone is invalid)")
 

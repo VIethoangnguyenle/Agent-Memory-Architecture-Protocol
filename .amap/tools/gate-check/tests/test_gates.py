@@ -67,6 +67,15 @@ def test_degrade_line_must_be_compact_not_rambling():
     assert g.validate_mcp_status("KG unavailable — grep fallback, MEDIUM").ok is True
 
 
+def test_mcp_status_accepts_agent_memory_probe_and_degrade():
+    assert g.validate_mcp_status("agent-memory: healthy").ok is True
+    assert g.validate_mcp_status(
+        "agent-memory unavailable — skip recall/save"
+    ).ok is True
+    # A bare label with no health word or degrade is still invalid.
+    assert g.validate_mcp_status("agent-memory").ok is False
+
+
 def test_phase_chain_requires_ordered_markers():
     done = "Pha 1 DONE\nPha 2 DONE (spec: openspec/changes/x/)\nPha 3 DONE"
     skipped = "Pha 1 DONE\nPha 3 DONE"
