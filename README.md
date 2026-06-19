@@ -1,386 +1,462 @@
-# 🧠 Agent Memory Architecture Protocol (AMAP)
+# Agent Memory Architecture Protocol
 
-> **Phiên bản 3.0** · Một protocol bộ nhớ và luồng làm việc có cấu trúc, giúp AI coding agent có context xuyên phiên, luồng công việc bắt buộc, và các rào chắn kiến trúc khi làm việc với codebase.
+> **AMAP v3.0** biến AI coding agent từ một cửa sổ chat biết viết code thành một worker có **bộ nhớ**, **workflow**, **guardrails**, và **audit trail**.
 
----
+AI agent rất giỏi sinh code. Vấn đề là nó thường quên: requirement cũ, quyết định kiến trúc, naming convention, blast radius, và cả lý do vì sao hôm qua bạn bảo nó không được làm một điều gì đó.
 
-## Vấn đề cần giải quyết
+AMAP là một protocol runtime cho repo phần mềm: nó scaffold một bộ file hướng dẫn, skills, workflows, rules, tools và knowledge layer để agent làm việc theo pha, dựa trên bằng chứng, và tích lũy tri thức qua nhiều phiên.
 
-Các AI coding agent hiện tại (Copilot, Gemini, Claude, Cursor...) đều mắc chung một vấn đề: **mất trí nhớ giữa các phiên làm việc**.
-
-- Quên quyết định kiến trúc từ cuộc trò chuyện trước
-- Nhảy thẳng vào viết code mà không hiểu yêu cầu
-- Bỏ qua naming convention và design pattern đã có trong dự án
-- Không thể đánh giá tác động (blast radius) khi thay đổi code
-- Không có khái niệm "luồng công việc" — chỉ có prompt → response
-
-**AMAP giải quyết điều này** bằng cách cung cấp một protocol có cấu trúc mà bất kỳ AI agent nào cũng có thể tuân theo — cho nó bộ nhớ làm việc, luồng công việc đa pha bắt buộc, và khả năng tích luỹ tri thức qua mỗi phiên.
-
----
-
-## Phạm vi của Framework
-
-AMAP cam kết 4 thuộc tính cốt lõi — mọi quyết định thiết kế đều phục vụ các thuộc tính này:
-
-1. **Generic** — Repo framework chỉ ship quy trình + skeleton, không lẫn nội dung business của
-   riêng dự án nào. Quy tắc phân loại file đầy đủ ở [docs/amap-file-ownership-policy.md](docs/amap-file-ownership-policy.md).
-2. **Knowledge-first** — Mọi quyết định dẫn dắt bởi tầng tri thức (memory hierarchy + MCP
-   integration), không phải bởi trí nhớ ngắn hạn của agent.
-3. **Long-term memory** — Tri thức tích luỹ qua mỗi task (`knowledge-snapshot.md`,
-   `conventions.yaml`, `author-dna.yaml`) — sống và tiến hoá trong dự án của bạn, không reset mỗi phiên.
-4. **IDE/agent-independent** — Hoạt động trên Claude Code, Gemini CLI, Codex, Cursor... — workflow
-   phụ thuộc *năng lực trừu tượng* (search, explore, query), không khoá vào tool cụ thể.
-
----
-
-## Cách hoạt động
-
-AMAP áp dụng **luồng 5 pha bắt buộc** cho mọi task:
-
-```
-Ideation → Requirement → Architecture → Spec → Apply
-    ↓           ↓             ↓           ↓       ↓
- ideation-   REQUIREMENT   EXPLORE      Spec    Thay đổi
- *.md        .md           _CONTEXT     kỹ thuật  code
-                           .md
+```txt
+Memory + Workflow + Guardrails = Agent làm việc có kỷ luật
 ```
 
-Mỗi pha có:
-- **Skill chuyên biệt** — module agent cho từng vai trò (Business Analyst, DB Explorer, Code Mapper, Architecture Reviewer...)
-- **Quy tắc bắt buộc** — agent không được bỏ qua pha hay nhảy vào code khi chưa có context
-- **Artifact bền vững** — tri thức được tích luỹ qua các phiên trong file có cấu trúc
-- **Tính minh bạch** — mọi quyết định, tool call, giả định đều được ghi log
+---
+
+## Bạn nhận được gì?
+
+- **Persistent memory**: requirement, explore context, architecture snapshot, conventions, author DNA và archive được lưu thành file trong repo.
+- **Phase-gated workflow**: agent đi qua `Ideation -> Requirement -> Architecture -> Spec -> Apply`, không nhảy thẳng vào code.
+- **Knowledge-first reasoning**: quyết định kỹ thuật dựa trên code, DB, docs và knowledge graph thay vì trí nhớ ngắn hạn.
+- **Guardrails có cấu trúc**: rules về flow, tool permission, PII, cost budget, convention, teaching moments và human confirmation.
+- **Multi-platform runtime**: render vào root native cho Antigravity, Codex, Claude Code hoặc generic `AGENTS.md`.
+- **Update an toàn**: framework-owned files được re-render, còn project knowledge và persona của bạn được giữ lại.
+
+AMAP không thay thế Claude, Codex, Cursor, Gemini hay bất kỳ AI coding agent nào. Nó là **hệ điều hành làm việc** để các agent đó đọc và tuân theo trong repo của bạn.
 
 ---
 
-## Tổng quan Kiến trúc
+## Quickstart
 
-```
-project-root/
-│
-├── AGENTS.md                          ← Meta-prompt chính (agent đọc file này đầu tiên;
-│                                          CLAUDE.md/.cursorrules cho Claude Code/Cursor)
-│
-└── {framework_root}/                  ← Toàn bộ framework + bộ nhớ cho platform đã chọn
-    ├── knowledge/                     ← Bộ nhớ Phân tầng (Memory Hierarchy)
-    │   ├── active/                    ← Working memory — context cho task đang xử lý
-    │   │   ├── REQUIREMENT.md         ← Yêu cầu đã chuẩn hoá
-    │   │   ├── EXPLORE_CONTEXT.md     ← Kết quả khám phá DB + code
-    │   │   ├── AGENT_TRANSPARENCY.md  ← Log minh bạch (audit trail)
-    │   │   ├── TOKEN_LOG.md           ← Theo dõi token theo từng pha
-    │   │   └── ideation/              ← Ý tưởng thô chưa thành ticket
-    │   ├── long-term/                 ← judgment sống + bản đồ kiến trúc (source-of-truth)
-    │   │   ├── knowledge-snapshot.md  ← Bản đồ kiến trúc hệ thống (tích luỹ qua mỗi task)
-    │   │   ├── conventions.yaml       ← Convention đặt tên + design pattern của dự án
-    │   │   ├── author-dna.yaml        ← Triết lý code của tác giả (judgment layer)
-    │   │   └── persona.yaml           ← Phong cách tương tác của agent (tuỳ chỉnh per-user)
-    │   ├── archive/                   ← Episodic memory — context task đã hoàn thành (theo ticket-id)
-    │   └── templates/                 ← Skeleton tĩnh để clone khi bootstrap (chỉ template)
-    │       ├── REQUIREMENT.tpl.md
-    │       ├── EXPLORE_CONTEXT.tpl.md
-    │       └── *.tpl.md               ← Checklist feature/fixbug/refactor/changerequest/ideation
-    ├── rules/                         ← Rào chắn (flow, tool, data, kiến trúc)
-    │   ├── RULES.md                   ← Manifest quy tắc (entry point)
-    │   ├── rules-flow.md              ← Ràng buộc luồng công việc
-    │   ├── rules-tool.md              ← Quyền truy cập MCP & tool
-    │   ├── rules-exec.md              ← Chi phí, budget & observability
-    │   ├── rules-knowledge.md         ← Vòng đời tri thức & quy ước đường dẫn
-    │   └── rules-guard.md             ← Guard trước khi gọi skill & teaching moments
-    ├── skills/                        ← Các module skill tái sử dụng (14 skills)
-    ├── workflows/                     ← Logic điều phối (12 workflow)
-    ├── procedures/                    ← Procedure bootstrap, context-loader & token-tracking
-    ├── tools/                         ← Công cụ hỗ trợ (skill lint, rule-projector, orchestrator)
-    ├── profiles/                      ← Execution mode config
-    └── resolved-config.yaml           ← Platform + MCP config (generated by amap init)
-```
-
-> 🔌 AMAP render runtime trực tiếp vào framework root của platform đã chọn:
-> Generic dùng `.amap/`, Antigravity và Codex dùng `.agents/`, Claude Code dùng `.claude/`.
-
----
-
-## Các khái niệm chính
-
-### 🔧 Skills (Năng lực Module hoá của Agent)
-
-| Skill | Vai trò | Khi nào dùng |
-|-------|---------|--------------|
-| `requirement-analyst` | Business Analyst — chuẩn hoá yêu cầu thành REQUIREMENT.md | Khi nhận ticket/task mới |
-| `spec-extract` | Doc Analyst — trích xuất spec từ wiki/PRD | Khi yêu cầu đến từ tài liệu |
-| `db-explorer` | DB Explorer — khám phá schema, constraint, trigger | Khi task chạm tầng dữ liệu |
-| `codebase-explorer` | Code Mapper — map yêu cầu → module/file liên quan | Sau khi đã khám phá DB |
-| `architecture-reviewer` | Arch Reviewer — phát hiện xung đột & rủi ro kiến trúc | Trước khi sinh spec |
-| `knowledge-curator` | Knowledge Manager — archive và tích luỹ tri thức | Sau khi task hoàn thành |
-| `convention-intelligence-builder` | Convention Scanner — trích xuất naming pattern | Khi onboard dự án mới |
-| `author-dna-builder` | DNA Builder — encode triết lý code của tác giả | Tạo judgment layer cho agent |
-| `spec-validator` | Spec Validator — kiểm tra spec trước/sau apply | Trước và sau khi thay đổi code |
-| `infra-tdd` | TDD Builder — Technical Design Document 5 tầng | Khi thay đổi ảnh hưởng hạ tầng |
-| `document-writer` | Doc Writer — tài liệu kỹ thuật | README, ADR, architecture doc |
-| `openspec-*` | Tích hợp OpenSpec — propose, explore, apply, archive | Sinh code từ spec |
-
-### 📋 Workflows (Lệnh điều phối)
-
-| Lệnh | Pha | Mô tả |
-|------|-----|-------|
-| `/task <ý-tưởng-hoặc-ticket>` | Pha 1 | Hiểu vấn đề, chuẩn hoá yêu cầu, khám phá DB/code/kiến trúc |
-| `/task spec <ticket>` | Pha 2 | Sinh spec kỹ thuật chi tiết |
-| `/task apply <ticket>` | Pha 3 | Apply spec vào code |
-| `/idea-to-task` | Pre-task | Chuyển ideation thô thành draft ticket |
-| `/index-source` | Tiện ích | Lập chỉ mục codebase cho tìm kiếm ngữ nghĩa (Socraticode) |
-| `/convention-scan` | Tiện ích | Quét và trích xuất convention của codebase |
-| `/approve-conventions` | Tiện ích | Commit `conventions.draft.yaml` → `conventions.yaml` sau khi review |
-| `/dna-scan` | Tiện ích | Quét và encode triết lý code của tác giả |
-| `/approve-dna` | Tiện ích | Commit `author-dna.draft.yaml` → `author-dna.yaml` sau khi review |
-| `/tdd <module>` | Standalone | Sinh Technical Design Document 4-tầng cho module hạ tầng |
-| `/opsx-explore` | OpenSpec | Vào explore mode — đào sâu ý tưởng, không viết code |
-| `/opsx-propose` | OpenSpec | Tạo change proposal + sinh toàn bộ artifact trong một bước |
-| `/opsx-apply` | OpenSpec | Implement task từ một OpenSpec change |
-| `/opsx-archive` | OpenSpec | Archive một change đã hoàn thành |
-
-### 🛡️ Rules (Rào chắn)
-
-Hệ thống quy tắc ngăn chặn các lỗi phổ biến của AI agent:
-
-- **Flow Rules** — Agent không được bỏ qua pha hoặc nhảy vào code khi chưa có context
-- **Tool Rules** — Truy cập DB chỉ đọc, thay đổi code chỉ qua spec đã duyệt
-- **Data Rules** — Không bao giờ log PII, dữ liệu mẫu giới hạn kích thước
-- **Architecture Rules** — Độ tin cậy gắn liền với mức độ khám phá thực tế
-- **Cost Rules** — Budget token theo pha với cảnh báo tự động
-- **Knowledge Rules** — Bắt buộc archive, thứ tự ưu tiên nguồn sự thật
-- **Guard Rules** — Kiểm tra trước khi gọi skill, bắt teaching moment, enforce convention
-
-### 🧬 Kho Tri thức Bền vững
-
-| Kho | Mục đích | Tích luỹ? |
-|-----|----------|-----------|
-| `knowledge-snapshot.md` | Bản đồ kiến trúc hệ thống (bảng, module, entry point, business rule) | ✅ Có — tích luỹ sau mỗi task |
-| `conventions.yaml` | Convention đặt tên, design pattern, upstream constraint | ✅ Có — cập nhật sau mỗi lần scan |
-| `author-dna.yaml` | Triết lý và sở thích code của tác giả | ✅ Có — làm giàu qua teaching moments |
-| `archive/{ticket-id}/` | Snapshot đầy đủ của context đã hoàn thành | ✅ Có — tăng theo mỗi task xong |
-
----
-
-## Bắt đầu nhanh
-
-### 1. Scaffold AMAP vào dự án
+### 1. Cài AMAP vào một dự án
 
 ```bash
-# Clone protocol
 git clone https://github.com/VIethoangnguyenle/Agent-Memory-Architecture-Protocol.git amap
 cd amap
 
-# Cài đặt + scaffold vào dự án trong một lệnh
 ./install.sh /path/to/your-project
 ```
 
-`install.sh` tự bootstrap virtualenv riêng (`.venv/`) cho CLI, không đụng tới
-môi trường Python của bạn. Sau đó nó hỏi 3 câu:
-1. **Platform** — Antigravity, Claude Code, Codex CLI, hoặc Generic
-2. **MCP servers** — Socraticode, Confluence, DB Remote (tuỳ chọn)
-3. **Ngôn ngữ** — Java, TypeScript, Python, Go...
+Installer sẽ:
 
-Rồi tự động copy/render toàn bộ framework với tool names đã resolve cho platform.
+1. Tạo virtualenv riêng tại `.venv/`.
+2. Hỏi platform: Antigravity, Claude Code, Codex CLI hoặc Generic.
+3. Hỏi MCP servers: Socraticode, Confluence, DB Remote nếu bạn có.
+4. Hỏi ngôn ngữ chính: Java, TypeScript, Python, Go, C# hoặc other.
+5. Render AMAP runtime vào framework root phù hợp với platform.
 
-**Cập nhật sau này** (bản AMAP mới, hoặc đổi IDE):
+Nếu target project đã có AMAP, cùng lệnh trên sẽ route sang `update` thay vì `init`.
 
 ```bash
-./install.sh /path/to/your-project          # refresh framework, giữ nguyên tuỳ biến của bạn
+./install.sh /path/to/your-project
+```
 
-# hoặc, từ repo amap, để đổi platform/MCP:
+Muốn đổi platform hoặc MCP sau này:
+
+```bash
 .venv/bin/python -m cli.amap update --target /path/to/your-project --reconfigure
 ```
 
-`install.sh` tự nhận diện dự án đã có AMAP (qua `.agents/resolved-config.yaml`,
-`.claude/resolved-config.yaml`, hoặc `.amap/resolved-config.yaml`)
-và route sang `update` thay vì `init` — chạy lại cùng một lệnh là an toàn.
-File framework (skills, workflows, rules) được re-render mỗi lần update; file
-của bạn trong `{framework_root}/knowledge/long-term/` và `{framework_root}/knowledge/active/`
-không bao giờ bị ghi đè.
+AMAP giữ nguyên các file user-owned trong `knowledge/long-term/` và `knowledge/active/`. Quy tắc sở hữu file đầy đủ nằm ở [docs/amap-file-ownership-policy.md](docs/amap-file-ownership-policy.md).
 
-> 📄 Quy tắc đầy đủ về sở hữu file (framework-owned / seeded-then-user-owned / per-dev /
-> generated) nằm ở [docs/amap-file-ownership-policy.md](docs/amap-file-ownership-policy.md).
+### 2. Tuỳ chỉnh persona
 
-### 2. Tuỳ chỉnh persona (tuỳ chọn)
+Chọn đúng framework root theo platform:
 
 ```bash
-cd your-project
-cp {framework_root}/knowledge/long-term/persona.template.yaml {framework_root}/knowledge/long-term/persona.yaml
-# Sửa persona.yaml theo phong cách tương tác mong muốn
+# Antigravity hoặc Codex
+cp .agents/knowledge/long-term/persona.template.yaml .agents/knowledge/long-term/persona.yaml
+
+# Claude Code
+cp .claude/knowledge/long-term/persona.template.yaml .claude/knowledge/long-term/persona.yaml
+
+# Generic
+cp .amap/knowledge/long-term/persona.template.yaml .amap/knowledge/long-term/persona.yaml
 ```
 
-> 💡 Muốn xem một `author-dna.yaml` đã điền đầy trông thế nào? Tham khảo
-> [docs/examples/author-dna-cleancode.yaml](docs/examples/author-dna-cleancode.yaml)
-> — ví dụ mã hoá SOLID / Clean Code / Design Patterns (chỉ tham khảo, không copy vào dự án).
+Sau đó sửa `persona.yaml` theo phong cách tương tác mong muốn. File này là per-developer và được gitignore.
 
-### 3. Quét convention và DNA (khuyến khích cho dự án có code sẵn)
+### 3. Onboard codebase hiện có
 
-```
-# Quét naming convention và design patterns
+Trong AI agent đã đọc AMAP runtime:
+
+```txt
 /convention-scan
+/approve-conventions
 
-# Quét và encode triết lý code của tác giả
 /dna-scan
+/approve-dna
 ```
 
-Sau bước này, `conventions.yaml` và `author-dna.yaml` sẽ được tạo — giúp agent hiểu phong cách codebase.
+Hai flow này tạo:
 
-### 4. Bắt đầu sử dụng với AI agent
+- `conventions.yaml`: naming, structure, upstream constraints và design patterns đã được approve.
+- `author-dna.yaml`: judgment layer về triết lý code của tác giả hoặc team.
 
-Agent sẽ đọc `AGENTS.md` ở root và tự động bootstrap:
+Muốn xem một `author-dna.yaml` đã điền đầy trông thế nào, xem [docs/examples/author-dna-cleancode.yaml](docs/examples/author-dna-cleancode.yaml).
 
-```
-# Bắt đầu với ý tưởng mới
+### 4. Bắt đầu một task
+
+```txt
 /task Thêm giới hạn số lệnh giao dịch mỗi ngày theo nhân viên
 
-# Bắt đầu với ticket có sẵn
 /task https://jira.example.com/browse/ABC-123
 
-# Sinh spec kỹ thuật
 /task spec ABC-123
 
-# Apply spec vào code
 /task apply ABC-123
 ```
 
----
-
-## Tương thích với các AI Agent
-
-AMAP hoạt động với bất kỳ AI coding agent nào có thể đọc file dự án. 4 platform hiện có
-adapter riêng trong `amap init` — chọn đúng platform khi init, CLI sẽ render entry
-point đúng tên file và scaffold runtime trực tiếp vào framework root native của platform.
-Platform không có adapter riêng (`generic`) vẫn hoạt động đầy đủ qua `AGENTS.md` + đọc prose.
-
-| AI Tool | Platform trong `amap init` | Framework root | Entry Point |
-|---------|------------------------------|----------------|-------------|
-| **Google Antigravity** | `antigravity` | `.agents/` | `AGENTS.md` |
-| **Claude Code** | `claude-code` | `.claude/` | `CLAUDE.md` |
-| **Generic** | `generic` | `.amap/` | `AGENTS.md` |
-| **Codex CLI (OpenAI)** | `codex` | `.agents/` | `AGENTS.md` |
-
-> Không có platform phù hợp? Chọn `generic` lúc init, hoặc tự thêm adapter mới — xem
-> [Có thể thêm platform tự custom không?](#có-thể-thêm-platform-tự-custom-không) trong FAQ.
-
-### Tích hợp MCP Server
-
-AMAP dùng CLI để resolve tool names tại thời điểm `amap init`. Khi chạy init, bạn chọn MCP nào available — CLI sẽ sinh skill/workflow files với tool names chính xác.
-
-| MCP Server | Capabilities | Khi nào cần |
-|-----------|-------------|-------------|
-| **Socraticode** | Semantic code search, dependency graph, symbol analysis | Hầu hết dự án |
-| **Confluence** | Wiki/document search | Dự án có tài liệu trên Confluence |
-| **DB Remote** | Database schema exploration (read-only) | Dự án có DB cần khám phá |
-
-Nếu thêm/bớt MCP sau này: chạy `.venv/bin/python -m cli.amap update --target /path/to/your-project --reconfigure` (từ repo amap) để re-scaffold mà không mất tuỳ biến hiện có.
+Agent sẽ tạo hoặc cập nhật các artifact trong `knowledge/active/`, log assumption/tool call vào `AGENT_TRANSPARENCY.md`, rồi archive context khi task hoàn thành.
 
 ---
 
-## Nguyên tắc Thiết kế
+## Vì sao AMAP tồn tại?
 
-1. **Luồng trước tự do** — Các pha có cấu trúc ngăn việc code vội vàng
-2. **Kiến trúc dựa trên bằng chứng** — Khám phá DB và code trước khi đề xuất thay đổi
-3. **Tích luỹ tri thức** — Mỗi task làm agent thông minh hơn cho task tiếp theo
-4. **Con người luôn trong vòng lặp** — Quyết định quan trọng luôn cần xác nhận của người dùng
-5. **Minh bạch mặc định** — Mọi hành động của agent đều được log và có thể audit
-6. **Enforce convention** — Naming và design pattern được mã hoá thành file, không dựa vào trí nhớ
-7. **Bắt teaching moment** — Khi người dùng sửa agent, bài học được ghi lại vĩnh viễn
+AI coding agent thường fail không phải vì không biết syntax. Nó fail vì thiếu state.
+
+| Failure mode | Khi không có AMAP | Với AMAP |
+|---|---|---|
+| Quên context phiên trước | Quyết định kiến trúc biến mất sau khi chat reset | `knowledge-snapshot.md` và archive giữ lại tri thức |
+| Code quá sớm | Agent nhảy vào diff khi requirement còn mơ hồ | `/task` buộc đi qua requirement và exploration |
+| Không nhớ convention | Naming và pattern phụ thuộc trí nhớ ngắn hạn | `conventions.yaml` và `author-dna.yaml` làm source of truth |
+| Không biết blast radius | Sửa một file nhưng bỏ qua module phụ thuộc | `codebase-explorer`, KG/MCP và architecture review tạo evidence |
+| Không audit được | Không rõ agent đã giả định gì | `AGENT_TRANSPARENCY.md` ghi tool call, confidence, blocker và decision |
+| Dễ làm mất tri thức | Bài học từ review chỉ nằm trong chat | teaching moments được capture vào knowledge layer |
+
+Thesis của AMAP: **agent đáng tin hơn khi project knowledge sống trong repo, workflow có phase gate, và mọi hành động quan trọng để lại dấu vết.**
 
 ---
 
-## Vòng đời Tri thức
+## Mental Model
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                    Task đang Active                     │
-│                                                         │
-│   REQUIREMENT.md ──→ EXPLORE_CONTEXT.md ──→ SPEC       │
-│        ↓                    ↓                  ↓        │
-│   requirement-        db-explorer +       openspec-     │
-│   analyst             codebase-explorer   propose       │
-│                             ↓                           │
-│                    architecture-reviewer                │
-└───────────────────────────┬─────────────────────────────┘
-                            │ Task hoàn thành
-                            ▼
-┌─────────────────────────────────────────────────────────┐
-│               knowledge-curator                         │
-│                                                         │
-│   1. Archive active/ → archive/{ticket-id}/             │
-│   2. Cập nhật knowledge-snapshot.md với phát hiện mới   │
-│   3. Reset active/ về template skeleton                 │
-│   4. Đánh dấu nếu convention cần quét lại              │
-└─────────────────────────────────────────────────────────┘
+AMAP có 3 lớp chính.
+
+### 1. Runtime Protocol
+
+Các file agent đọc để biết phải làm việc thế nào:
+
+- `AGENTS.md`, `CLAUDE.md` hoặc entry point tương ứng platform.
+- `rules/*.md`: flow, tool, data, cost, knowledge, guard rules.
+- `workflows/*.md`: `/task`, `/idea-to-task`, `/convention-scan`, `/dna-scan`, OpenSpec flows.
+- `skills/*/SKILL.md`: hướng dẫn theo vai trò.
+- `procedures/*.md`: bootstrap, context-loader, context-compressor, token tracking.
+
+### 2. Knowledge Layer
+
+Tri thức sống cùng repo:
+
+- `active/`: working memory cho task hiện tại.
+- `long-term/`: knowledge snapshot, conventions, author DNA, persona.
+- `archive/`: context đã hoàn thành theo ticket.
+- `templates/`: skeleton chuẩn để reset hoặc tạo artifact mới.
+
+### 3. Tooling Layer
+
+Các công cụ hỗ trợ runtime:
+
+- `skill-lint`: validate skill schema.
+- `rule-projector`: project rule có thể check cơ học.
+- `gate-check`: kiểm phase chain, knowledge checkpoint, handoff slice.
+- `microloop-orchestrator`: điều phối contract DAG cho apply phase phức tạp.
+- CLI `amap init/update/status`: scaffold, re-render, kiểm trạng thái install.
+
+---
+
+## Workflow chính
+
+AMAP áp dụng một flow bắt buộc cho task thực tế:
+
+```txt
+Ideation -> Requirement -> Architecture -> Spec -> Apply
+    |            |              |          |       |
+ ideation     REQUIREMENT   EXPLORE     OpenSpec  code
+ draft        .md           _CONTEXT    change    diff
+                            .md
 ```
 
+Mỗi pha có artifact riêng:
+
+| Pha | Mục tiêu | Artifact |
+|---|---|---|
+| Ideation | Biến ý tưởng thô thành phạm vi task | `active/ideation/ideation-*.md` |
+| Requirement | Chuẩn hoá yêu cầu, AC, risk, assumption | `active/REQUIREMENT.md` |
+| Architecture | Khám phá DB/code/flow, phát hiện rủi ro | `active/EXPLORE_CONTEXT.md` |
+| Spec | Sinh spec kỹ thuật và OpenSpec change | `openspec/changes/<id>/` |
+| Apply | Apply spec vào code có checkpoint và review | code diff + transparency log |
+
+Rule quan trọng: `/task apply` chỉ được đi tiếp khi spec đã có, architecture blocker đã resolve, và user đã confirm.
+
 ---
 
-## Ví dụ: Bootstrap Report trông như thế nào
+## Kiến trúc thư mục
 
-Khi agent bắt đầu làm việc trong dự án có AMAP, nó sẽ tạo báo cáo bootstrap:
+AMAP render runtime trực tiếp vào framework root của platform đã chọn:
 
+| Platform | Framework root | Entry point |
+|---|---|---|
+| Antigravity | `.agents/` | `AGENTS.md` |
+| Codex CLI | `.agents/` | `AGENTS.md` |
+| Claude Code | `.claude/` | `CLAUDE.md` |
+| Generic | `.amap/` | `AGENTS.md` |
+
+Layout sau khi scaffold:
+
+```txt
+project-root/
+|
+├── AGENTS.md / CLAUDE.md              # Entry point agent đọc đầu tiên
+|
+└── {framework_root}/
+    ├── knowledge/
+    │   ├── active/
+    │   │   ├── REQUIREMENT.md
+    │   │   ├── EXPLORE_CONTEXT.md
+    │   │   ├── AGENT_TRANSPARENCY.md
+    │   │   ├── TOKEN_LOG.md
+    │   │   └── ideation/
+    │   ├── long-term/
+    │   │   ├── knowledge-snapshot.md
+    │   │   ├── conventions.yaml
+    │   │   ├── author-dna.yaml
+    │   │   ├── persona.template.yaml
+    │   │   └── persona.yaml
+    │   ├── archive/
+    │   └── templates/
+    ├── rules/
+    ├── skills/
+    ├── workflows/
+    ├── procedures/
+    ├── tools/
+    ├── profiles/
+    └── resolved-config.yaml
 ```
-✅ Core: AGENTS.md v3.0 + RULES (manifest + 5 modules: flow, tool, exec, knowledge, guard)
-✅ Skills: [requirement-analyst | spec-extract | db-explorer | codebase-explorer |
-           architecture-reviewer | knowledge-curator | convention-intelligence-builder |
-           author-dna-builder | spec-validator | infra-tdd]
-✅ Workflows: [/task | /idea-to-task | /index-source]
-🔌 Platform: antigravity | MCPs: [socraticode]
-📋 Active context: [REQUIREMENT: trống | EXPLORE_CONTEXT: trống]
-🧬 Author DNA: approved
-📦 Archive: [3 tickets archived]
-Sẵn sàng nhận task!
+
+---
+
+## Skills
+
+AMAP ship một bộ skill module hoá theo vai trò.
+
+| Skill | Vai trò | Khi nào dùng |
+|---|---|---|
+| `requirement-analyst` | Chuẩn hoá yêu cầu | Khi nhận ticket/task mới |
+| `spec-extract` | Trích xuất spec từ docs | Khi input là wiki, PRD, Confluence |
+| `db-explorer` | Khám phá DB read-only | Khi task chạm schema, config, data |
+| `codebase-explorer` | Map yêu cầu sang codebase | Sau requirement hoặc DB exploration |
+| `architecture-reviewer` | Review boundary, coupling, risk | Trước khi sinh spec |
+| `knowledge-curator` | Archive và cập nhật knowledge | Sau task hoặc khi có teaching moment |
+| `convention-intelligence-builder` | Quét convention codebase | Khi onboard hoặc sau refactor lớn |
+| `author-dna-builder` | Encode judgment layer | Khi cần style/philosophy của tác giả |
+| `spec-validator` | Validate spec trước/sau apply | Trước và sau thay đổi code |
+| `infra-tdd` | Technical Design Document 5 tầng | Khi thay đổi ảnh hưởng kiến trúc/hạ tầng |
+| `document-writer` | Viết tài liệu kỹ thuật | README, ADR, architecture docs |
+| `openspec-*` | Tích hợp OpenSpec | Explore, propose, archive change |
+
+---
+
+## Workflows
+
+| Command | Mục đích |
+|---|---|
+| `/task <input>` | Pha 1: hiểu vấn đề, chuẩn hoá requirement, explore context |
+| `/task spec <ticket>` | Pha 2: sinh spec kỹ thuật |
+| `/task apply <ticket>` | Pha 3: apply spec vào code |
+| `/idea-to-task` | Chuyển ideation thành draft ticket |
+| `/index-source` | Index codebase cho semantic search |
+| `/convention-scan` | Quét convention codebase |
+| `/approve-conventions` | Promote `conventions.draft.yaml` thành `conventions.yaml` |
+| `/dna-scan` | Quét và encode author DNA |
+| `/approve-dna` | Promote `author-dna.draft.yaml` thành `author-dna.yaml` |
+| `/tdd <module>` | Sinh Technical Design Document |
+| `/opsx-explore` | OpenSpec explore mode |
+| `/opsx-propose` | Tạo proposal/design/tasks/spec delta |
+| `/opsx-apply` | Implement từ OpenSpec change |
+| `/opsx-archive` | Archive OpenSpec change đã xong |
+
+---
+
+## Rules và Guardrails
+
+AMAP không chỉ là một bộ prompt. Nó là rule system có manifest và sub-files:
+
+| Rule group | Bảo vệ điều gì |
+|---|---|
+| Flow rules | Không bỏ qua `/task`, không apply khi chưa có spec |
+| Tool rules | DB read-only, code write qua spec/apply, memory MCP có boundary |
+| Data rules | Không log PII, credential, token vào context files |
+| Architecture rules | Confidence kiến trúc phụ thuộc evidence từ code/DB/tools |
+| Execution rules | Budget tool call theo phase, hardstop khi loop |
+| Knowledge rules | Archive, source-of-truth priority, stale convention gates |
+| Guard rules | Precondition check, knowledge-before-code checkpoint, teaching moment capture |
+
+Các rule quan trọng được đánh dấu `[CRITICAL]`; rule nền hoặc tham khảo được đánh dấu `[REFERENCE]`.
+
+---
+
+## MCP Integration
+
+AMAP resolve tool names tại scaffold time. Khi bạn chạy `amap init`, CLI render skill/workflow với tool name đúng cho platform và MCP bạn chọn.
+
+| MCP server | Capability | Khi nào cần |
+|---|---|---|
+| Socraticode | Semantic code search, dependency graph, symbol analysis | Hầu hết dự án có codebase lớn |
+| Understand Anything | Knowledge graph/code exploration alternative | Khi dùng UA thay Socraticode |
+| Confluence | Wiki/document search | Dự án có docs trên Confluence |
+| DB Remote | Database schema exploration read-only | Dự án có DB cần khám phá |
+
+Nếu thêm hoặc bỏ MCP sau này:
+
+```bash
+.venv/bin/python -m cli.amap update --target /path/to/your-project --reconfigure
 ```
 
 ---
 
-## Câu hỏi thường gặp
+## Knowledge Lifecycle
 
-### Có thể dùng cho dự án private/enterprise không?
+```txt
+Task active
+|
+|-- REQUIREMENT.md
+|-- EXPLORE_CONTEXT.md
+|-- AGENT_TRANSPARENCY.md
+|-- TOKEN_LOG.md
+|
+|  /task spec
+|  /task apply
+v
+Task complete
+|
+|-- knowledge-curator archives active context
+|-- knowledge-snapshot.md gets new architecture facts
+|-- conventions.yaml may be marked stale after refactor
+|-- active/ resets to templates
+v
+Next task starts smarter
+```
 
-Có. AMAP là tầng protocol — không chứa code ứng dụng. Copy framework root đã scaffold (ví dụ `.amap/`, `.agents/`, hoặc `.claude/`) vào repo private của bạn rồi tuỳ chỉnh `knowledge-snapshot.md` theo kiến trúc hệ thống của bạn.
+Long-term stores:
 
-### AMAP có thay thế AI tool hiện tại không?
-
-Không. AMAP bổ sung cấu trúc cho AI tool hiện có. AI agent (Gemini, Claude, Cursor...) đọc các file protocol và tuân theo luồng — nó không thay thế agent.
-
-### Nếu AI agent không hỗ trợ AGENTS.md thì sao?
-
-Tạo file pointer cho tool cụ thể (xem bảng [Tương thích](#tương-thích-với-các-ai-agent)). File pointer chỉ cần trỏ agent về `AGENTS.md` để đọc hướng dẫn đầy đủ.
-
-### Làm sao ngăn rò rỉ dữ liệu nhạy cảm?
-
-AMAP có quy tắc dữ liệu sẵn (R-Data-1, R-Data-2) cấm agent log PII hoặc credential vào bất kỳ file context nào. Thư mục `active/` được gitignore mặc định.
-
-### Nhiều thành viên trong team có dùng chung được không?
-
-Có. File `persona.yaml` được gitignore — mỗi developer có phong cách tương tác riêng. Tri thức chung (`knowledge-snapshot.md`, `conventions.yaml`, `author-dna.yaml`) được commit và version-controlled.
-
-### Project mới hoàn toàn (không có code) thì sao?
-
-Chạy `amap init`, chọn platform và chỉ chọn MCP mà bạn đã setup. Agent sẽ dùng built-in tools (grep, file read) khi không có MCP. Sau khi có code, chạy `/index-source` để enable Socraticode.
-
-### Có thể thêm platform tự custom không?
-
-Có. Tạo file Python trong `cli/platforms/`, implement `BasePlatform` interface (tool mapping + capabilities), rồi đăng ký trong `cli/platforms/__init__.py`.
-
----
-
-## Đóng góp
-
-Dự án đang được phát triển tích cực. Hoan nghênh mọi đóng góp:
-
-1. Fork repository
-2. Tạo feature branch
-3. Gửi pull request với mô tả rõ ràng
+| Store | Chứa gì | Có commit không? |
+|---|---|---|
+| `knowledge-snapshot.md` | Bản đồ kiến trúc, module, table, rule, entry point | Có |
+| `conventions.yaml` | Naming, structure, upstream constraints | Có |
+| `author-dna.yaml` | Philosophy, preference, judgment principles | Có |
+| `persona.yaml` | Tone và interaction preference của từng developer | Không, gitignored |
+| `archive/{ticket-id}/` | Snapshot context của task đã xong | Tuỳ policy repo |
 
 ---
 
-## Giấy phép
+## Ví dụ Bootstrap Report
 
-MIT License — xem [LICENSE](LICENSE) để biết chi tiết.
+Khi agent bắt đầu một session trong repo có AMAP, nó bootstrap context và báo trạng thái:
+
+```txt
+Core: AGENTS.md v3.0 + RULES (manifest + flow/tool/exec/knowledge/guard)
+Skills: requirement-analyst | spec-extract | db-explorer | codebase-explorer | ...
+Workflows: /task | /idea-to-task | /index-source | /convention-scan | /dna-scan
+Platform: codex | MCPs: socraticode, db-remote
+Active context: REQUIREMENT empty | EXPLORE_CONTEXT empty
+Author DNA: approved
+Archive: 3 tickets
+Ready for task
+```
+
+---
+
+## Thiết kế đúng ở đâu?
+
+AMAP cam kết 4 thuộc tính:
+
+1. **Generic**: framework ship protocol và skeleton, không ship business logic của dự án cụ thể.
+2. **Knowledge-first**: reasoning đi qua memory hierarchy và evidence, không dựa vào short-term chat.
+3. **Long-term memory**: tri thức sống và tiến hoá trong repo qua mỗi task.
+4. **IDE/agent-independent**: workflow phụ thuộc capability trừu tượng, không khoá vào một agent duy nhất.
+
+Nguyên tắc vận hành:
+
+- **Flow trước tự do**: phase gate chặn code vội.
+- **Evidence trước opinion**: DB/code/docs/KG đi trước kết luận.
+- **Human-in-the-loop**: apply quan trọng cần user confirm.
+- **Transparency by default**: assumption, blocker, tool call và confidence được log.
+- **Convention as data**: naming và design preference được encode thành file.
+- **Teaching moment capture**: bài học từ review được đưa vào persistent knowledge.
+
+---
+
+## FAQ
+
+### Có dùng được cho repo private hoặc enterprise không?
+
+Có. AMAP là protocol layer; nó không cần chứa code ứng dụng. Bạn scaffold vào repo private, sau đó knowledge layer được tạo và quản lý trong chính repo đó.
+
+### AMAP có thay thế AI coding agent hiện tại không?
+
+Không. AMAP bổ sung memory, workflow và rules cho agent hiện có. Agent vẫn là Claude, Codex, Cursor, Gemini hoặc tool bạn chọn.
+
+### Nếu tool của tôi không hỗ trợ `AGENTS.md` thì sao?
+
+Dùng platform adapter nếu có. Nếu chưa có adapter, chọn `generic` để scaffold `AGENTS.md`, hoặc tạo pointer file cho tool của bạn trỏ về entry point đó.
+
+### Làm sao tránh rò rỉ dữ liệu nhạy cảm?
+
+Rules R-Data-1/R-Data-2 cấm log PII, credential, token vào context files. `db-explorer` chỉ được đọc schema/sample data giới hạn và không được thay đổi DB.
+
+### Team nhiều người dùng chung được không?
+
+Có. Knowledge chung như `knowledge-snapshot.md`, `conventions.yaml`, `author-dna.yaml` có thể version-controlled. `persona.yaml` là per-developer và được gitignore.
+
+### Dự án mới tinh, chưa có code thì sao?
+
+Vẫn dùng được. Chọn platform và MCP bạn có. Khi codebase bắt đầu hình thành, chạy `/index-source`, `/convention-scan`, và `/dna-scan` để enrich knowledge layer.
+
+### Có thêm platform custom được không?
+
+Có. Thêm platform trong `cli/platforms/`, implement `BasePlatform`, rồi đăng ký trong `cli/platforms/__init__.py`.
+
+### AMAP có bắt buộc dùng OpenSpec không?
+
+Runtime hiện có tích hợp OpenSpec cho propose/apply/archive. Các workflow AMAP vẫn tách rõ requirement, exploration, architecture review và knowledge lifecycle để giữ context trước khi đi vào OpenSpec change.
+
+---
+
+## Development
+
+Chạy test CLI:
+
+```bash
+python3 -m pytest cli/tests
+```
+
+Chạy skill lint:
+
+```bash
+python3 .amap/tools/skill-lint/validate_skills.py
+```
+
+Package metadata nằm trong [pyproject.toml](pyproject.toml). Manifest scaffold nằm trong [cli/plugin-manifest.yaml](cli/plugin-manifest.yaml).
+
+---
+
+## Contributing
+
+Đóng góp được chào đón:
+
+1. Fork repository.
+2. Tạo feature branch.
+3. Chạy test liên quan.
+4. Gửi pull request với mô tả rõ scope và validation.
+
+Khi thay đổi runtime `.amap/`, ưu tiên giữ instruction ngắn, portable, action-oriented và tránh rationale lịch sử trong file clone sang dự án khác.
+
+---
+
+## License
+
+MIT License. Xem [LICENSE](LICENSE).
 
 ---
 
 <p align="center">
-  <i>Xây dựng với ❤️ cho AI-assisted software engineering</i>
+  <strong>AMAP giúp agent không chỉ viết code, mà làm việc như một thành viên có trí nhớ của team.</strong>
 </p>
