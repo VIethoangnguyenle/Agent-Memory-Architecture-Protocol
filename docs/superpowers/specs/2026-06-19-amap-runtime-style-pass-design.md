@@ -25,7 +25,7 @@ Primary scope:
 
 - `.amap/rules/*.md`
 - `.amap/procedures/*.md`
-- `.amap/workflows/*.md`
+- `.amap/workflows/*.md`, excluding OpenSpec workflow files
 - `.amap/skills/*/SKILL.md`, excluding OpenSpec skill packages
 
 Secondary scope, only when directly referenced by a runtime skill:
@@ -44,6 +44,11 @@ Out of scope:
   - `.amap/skills/openspec-explore/`
   - `.amap/skills/openspec-propose/`
   - `.amap/skills/openspec-archive-change/`
+- OpenSpec workflow files:
+  - `.amap/workflows/opsx-explore.md`
+  - `.amap/workflows/opsx-propose.md`
+  - `.amap/workflows/opsx-apply.md`
+  - `.amap/workflows/opsx-archive.md`
 
 ## Style Rules
 
