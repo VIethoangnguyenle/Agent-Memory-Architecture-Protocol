@@ -18,7 +18,7 @@
   - `ABORT — <hướng dẫn>`: dừng hoàn toàn, thông báo user.
   - `WARN — <hướng dẫn>`: tiếp tục nhưng ghi cảnh báo vào AGENT_TRANSPARENCY.
 - Không được bypass `pre_conditions` dù context có vẻ đủ — guard phải chạy deterministically.
-- Lý do (Arthur AI): "Pre-LLM guardrails should be fast and deterministic." Guards ngăn lỗi lan truyền sang downstream skills.
+- Precondition guards phải chạy trước skill để lỗi không lan sang downstream skills.
 
 ### [CRITICAL] R-Guard-2: Knowledge-before-code gate (evidence-based)
 
@@ -78,8 +78,7 @@ Dấu hiệu ghi SAI level: entry author-dna phải liệt kê tên bảng/cột
 Điều kiện nhận biết: user dùng "không được", "phải dùng", "sai rồi", "thay bằng",
 hoặc sửa code agent trực tiếp kèm giải thích.
 
-Lý do: Incident 2026-06-08 — 13 rules học được chỉ ghi vào KI external (mất sau phiên),
-không vào `author-dna.yaml` (persistent).
+Teaching moment phải được ghi vào persistent project knowledge, không chỉ vào KI external hoặc context tạm thời.
 
 ### [CRITICAL] R-KI-1: KI external phải là pointer, không phải source
 
@@ -93,4 +92,4 @@ Khi bootstrap phát hiện external KI (vd: Cursor rules, `.cursorrules`, Antigr
 5. Nhắc lại mỗi bootstrap cho đến khi cleanup xong.
 
 Không được dùng "khuyến nghị" hay "có thể" — đây là hard enforcement.
-Lý do: KI external không version-controlled, không có DNA judgment layer, tạo false sense of completeness.
+External KI chỉ là pointer; source of truth luôn nằm trong `{{ platform.framework_root }}/knowledge/`.

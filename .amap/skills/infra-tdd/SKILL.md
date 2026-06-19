@@ -33,7 +33,7 @@ Kích hoạt skill khi:
 - Chuẩn hoá cách đội viết design document
 - Viết hoặc review **Architecture Decision Record (ADR)**
 - Tạo **sơ đồ kiến trúc** giải thích *tại sao* (không chỉ *cái gì*)
-- Review design doc hiện có và bổ sung tầng "decision rationale"
+- Review design doc hiện có và bổ sung tầng decision record
 - Chạy Socratic deep-dive trên quyết định kỹ thuật để lộ các giả định ẩn
 
 Trigger: `/tdd <module-name>`, "viết TDD", "thiết kế module", "design doc cho service", "ADR cho lựa chọn DB", "sơ đồ kiến trúc", "RFC hạ tầng", "chuẩn hoá tài liệu thiết kế".
@@ -60,7 +60,7 @@ Một TDD tốt phải trả lời **5 câu hỏi** theo thứ tự. Format **hy
 > **Nguyên tắc hybrid**: T0 viết bằng ngôn ngữ tự nhiên, KHÔNG dùng class name, pattern name, hay thuật ngữ kỹ thuật.
 > BA/PM chỉ cần đọc T0 là hiểu module làm gì. Dev đọc từ T1 trở đi để hiểu cách triển khai.
 
-Mọi section T1-T4 phải **kiểm chứng được** — reviewer phải có thể chỉ vào bất kỳ claim nào và hỏi "bạn biết điều này vì sao?" và tìm thấy bằng chứng (benchmark, citation, prototype, incident trước đó).
+Mọi section T1-T4 phải **kiểm chứng được** — reviewer phải có thể chỉ vào bất kỳ claim nào và hỏi "bạn biết điều này vì sao?" và tìm thấy bằng chứng (benchmark, citation, prototype, operational evidence).
 
 ## Cấu trúc 5 Tầng (Hybrid)
 
@@ -97,7 +97,7 @@ QUY TẮC: KHÔNG dùng thuật ngữ kỹ thuật — viết cho người khôn
 PHẢI ĐỌC: {{ platform.framework_root }}/knowledge/long-term/knowledge-snapshot.md
 PHẢI GỌI: codebase-explorer → map module liên quan trong hệ thống
 PHẢI GỌI: {{ tools.search_code }} → tìm component hiện tại và pain points
-NẾU CÓ: Tài liệu/ticket/incident → spec-extract hoặc đọc trực tiếp
+NẾU CÓ: Tài liệu/ticket/operational evidence → spec-extract hoặc đọc trực tiếp
 ```
 
 #### T2 — Kiến trúc
@@ -149,7 +149,7 @@ Hỏi user (hoặc đọc từ context):
 - Team sở hữu và stakeholder
 - Đây là greenfield, replacement, hay extension?
 - Ràng buộc cứng (compliance, latency, budget, deadline)
-- Tài liệu, incident, hoặc prototype trước đó cần link
+- Tài liệu, operational evidence, hoặc prototype cần link
 
 Nếu thiếu thông tin **quan trọng**, hỏi user. Nếu không, tiến hành với assumptions viết rõ vào T0/T1.
 

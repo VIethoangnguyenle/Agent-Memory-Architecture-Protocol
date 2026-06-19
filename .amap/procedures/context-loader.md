@@ -27,8 +27,8 @@ Tránh tình trạng agent dùng context cũ của task khác.
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
-> **Diet (khớp `bootstrap.md` PHASE 3/5)**: `knowledge-snapshot.md`, `conventions.yaml`, `author-dna.yaml`
-> KHÔNG được nạp toàn bộ ở context-loader nữa. Context-loader chỉ nạp `knowledge-index.yaml`
+> `knowledge-snapshot.md`, `conventions.yaml`, `author-dna.yaml`
+> KHÔNG được nạp toàn bộ ở context-loader. Context-loader chỉ nạp `knowledge-index.yaml`
 > (entry list nhẹ). Body của từng entry được kéo **just-in-time tại decision-gate**
 > (xem `procedures/decision-gate.md`) khi gate cần bằng chứng cho artifact-type hiện tại.
 > Nếu `knowledge-index.yaml` không tồn tại → WARN "chạy knowledge-index generator; gate sẽ kéo slice JIT" và hạ độ tin cậy kiến trúc.
@@ -63,7 +63,7 @@ slice = [ entry for entry in knowledge-index
 > 4. Nếu user chưa cleanup sau 2 phiên: nhắc lại mỗi bootstrap cho đến khi xử lý.
 >
 > **Không được** dùng nội dung từ KI file để code nếu nội dung đó mâu thuẫn với `{{ platform.framework_root }}/knowledge/`.
-> Lý do: KI external (vd một file `*-rules.md` do tool runtime sinh ra) thường không có DNA judgment layer → agent có thể sinh code sai pattern nếu dựa vào đó.
+> KI external chỉ là pointer; framework knowledge là source of truth.
 
 ---
 
@@ -290,8 +290,7 @@ IF [K] (Giữ spec):
 
 ## [M2] Knowledge-Index Domain Filtering — superseded bởi JIT slice tại decision-gate
 
-> **Diet**: Mục này trước đây filter `knowledge-snapshot.md` theo domain keyword khi file quá lớn.
-> Sau diet, context-loader không còn nạp full snapshot/conventions/author-dna để mà filter —
+> Context-loader không nạp full snapshot/conventions/author-dna để filter —
 > chỉ nạp `knowledge-index.yaml` (entry list nhẹ, không cần filter theo size).
 > Việc chọn đúng phần nội dung liên quan domain/artifact hiện tại đã chuyển thành
 > JIT slice pull tại `procedures/decision-gate.md` (entry có `applies_to` khớp artifact-type/domain),
