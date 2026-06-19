@@ -30,6 +30,10 @@ mcp_capabilities:
     provides: code_exploration
     display: "Understand Anything — Knowledge Graph (alternative to Socraticode)"
 
+  agent-memory:
+    provides: memory
+    display: "Agent Memory — Kinh nghiệm dài hạn (Qdrant, tham khảo sau task)"
+
 # ═══════════════════════════════════════════════════════════
 # Supported Languages
 # ═══════════════════════════════════════════════════════════

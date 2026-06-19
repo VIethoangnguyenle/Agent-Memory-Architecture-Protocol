@@ -123,6 +123,37 @@ def test_resolve_init_choices_rejects_invalid_platform(amap_root):
     assert "Unknown platform" in str(exc.value)
 
 
+def test_resolve_init_choices_accepts_agent_memory(amap_root):
+    manifest = load_manifest(amap_root)
+
+    platform_key, selected_mcps, language = resolve_init_choices(
+        manifest,
+        platform_key="generic",
+        selected_mcps=["agent-memory"],
+        language="python",
+        assume_yes=True,
+    )
+
+    assert selected_mcps == ["agent-memory"]
+
+
+def test_run_init_records_agent_memory_in_resolved_config(tmp_path, amap_root):
+    from cli.scaffold import load_resolved_config
+
+    target = tmp_path / "proj"
+    run_init(
+        target_dir=str(target),
+        amap_root=str(amap_root),
+        platform_key="generic",
+        selected_mcps=["agent-memory"],
+        language="other",
+        assume_yes=True,
+    )
+
+    resolved = load_resolved_config(target)
+    assert "agent-memory" in resolved["mcps"]
+
+
 def test_run_init_non_interactive_generic(tmp_path, amap_root):
     target = tmp_path / "proj"
 

@@ -11,6 +11,14 @@ Chỉ khi `status == "completed"` (không push cho stashed/cancelled).
 
 Trước khi gọi `memory_save`, curator PHẢI đi qua 3 tầng:
 
+### Tầng 0 — Pre-check (agent-memory có cấu hình không?)
+
+Đọc `resolved-config.yaml → mcps`. Nếu KHÔNG chứa `agent-memory`:
+→ Bỏ qua toàn bộ memory push, ghi vào AGENT_TRANSPARENCY: `[M7-SKIP] agent-memory chưa cấu hình`.
+→ KHÔNG gọi `memory_smart_search` hay `memory_save`.
+
+Nếu có `agent-memory` → tiếp sang Tầng 1.
+
 ### Tầng 1 — Gate (CÓ nên lưu không?)
 
 | Câu hỏi | Nếu KHÔNG → hành động |

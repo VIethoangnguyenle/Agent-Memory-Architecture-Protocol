@@ -43,9 +43,13 @@
 
 ### [CRITICAL] R-Tool-6: Agent Memory MCP — Ranh giới sử dụng
 
-Các tool MCP `agent-memory` chỉ là **lớp truy xuất phụ**.
-Chúng bổ sung — không bao giờ thay thế — Bootstrap Protocol, thứ tự ưu tiên context-loader P1→P4,
-hay `knowledge-snapshot.md` với tư cách nguồn sự thật chính thức.
+`agent-memory` là **lớp kinh nghiệm dài hạn** — những gì agent đã đúc kết và lưu lên
+Qdrant *sau* các task trước. Dữ liệu mang tính **tham khảo/advisory** ("trước đây TỪNG
+làm thế nào"), **không phải kiến thức chính** về hệ thống hiện tại.
+Nó bổ sung — không bao giờ thay thế — Bootstrap Protocol, thứ tự ưu tiên context-loader
+P1→P4, hay `knowledge-snapshot.md` với tư cách nguồn sự thật chính thức.
+Khi mâu thuẫn với kiến thức chính (`knowledge-snapshot.md`, db-explorer, KG),
+**kiến thức chính thắng tuyệt đối**.
 
 **Bootstrap PHẢI hoàn tất (§1 {{ platform.config_entry_point }}) trước khi gọi bất kỳ memory tool nào.**
 
@@ -82,6 +86,15 @@ Khi kết quả memory ảnh hưởng đến reasoning, agent PHẢI ghi vào `A
 - Tóm tắt kết quả
 - Độ tin cậy: `CAO | TRUNG-BÌNH | THẤP`
 - Ghi chú: `agent-memory recall — ảnh hưởng reasoning`
+
+#### Degrade khi agent-memory không cấu hình
+
+Nếu `resolved-config.yaml → mcps` KHÔNG chứa `agent-memory`:
+- Mọi `memory_smart_search` / `memory_recall` bị **bỏ qua** — KHÔNG gọi, KHÔNG bịa kết quả.
+- Ghi vào `AGENT_TRANSPARENCY.md`: `agent-memory unavailable — skip recall/save`.
+- M7 post-task push (xem `knowledge-curator`) tự bỏ qua ở Tầng 0 (pre-check).
+
+Đây là degrade-không-bịa, đồng dạng mô hình KG (`KG unavailable — grep fallback, MEDIUM`).
 
 #### Bảo vệ đường ghi (Write-path guard)
 
