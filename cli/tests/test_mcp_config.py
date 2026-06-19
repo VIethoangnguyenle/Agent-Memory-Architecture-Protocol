@@ -1,6 +1,7 @@
 import json
 
 from cli.mcp.adapters import McpConfigCandidate
+from cli.mcp import config as mcp_config
 from cli.mcp.config import load_mcp_config, redact_mapping, selected_server_matches, server_names
 
 
@@ -18,6 +19,19 @@ def test_load_json_mcp_servers(tmp_path):
 
 
 def test_load_codex_toml_mcp_servers(tmp_path):
+    path = tmp_path / "config.toml"
+    path.write_text(
+        '[mcp_servers.socraticode]\ncommand = "npx"\nargs = ["socraticode"]\n',
+        encoding="utf-8",
+    )
+    config = load_mcp_config(McpConfigCandidate(path, "workspace", "toml"))
+
+    assert config.valid is True
+    assert server_names(config) == ["socraticode"]
+
+
+def test_load_codex_toml_mcp_servers_without_tomllib(tmp_path, monkeypatch):
+    monkeypatch.setattr(mcp_config, "tomllib", None)
     path = tmp_path / "config.toml"
     path.write_text(
         '[mcp_servers.socraticode]\ncommand = "npx"\nargs = ["socraticode"]\n',
@@ -65,5 +79,5 @@ def test_redact_mapping_hides_secrets_recursively():
     assert redacted["headers"]["Authorization"] == "<redacted>"
     assert redacted["headers"]["X-Plain"] == "ok"
     assert redacted["env"]["TOKEN"] == "<redacted>"
-    assert redacted["env"]["NORMAL"] == "value"
+    assert redacted["env"]["NORMAL"] == "<redacted>"
     assert redacted["nested"][0]["api_key"] == "<redacted>"
