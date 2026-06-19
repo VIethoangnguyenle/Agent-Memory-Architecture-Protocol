@@ -28,3 +28,54 @@ def test_default_snapshot_auto_adds_cwd_and_prints_idle(tmp_path, capsys, monkey
     assert "AMAP runs" in out
     assert "idle" in out
     assert registry.load(reg) == [str(tmp_path.resolve())]
+
+
+def test_print_run_renders_active_and_stale(capsys):
+    from cli.commands.dashboard import _print_run
+    from cli.dashboard.reader import RunState
+
+    state = RunState(
+        project_path="/tmp/projX",
+        phase_state="phase-3-in-progress",
+        tasks_total=4,
+        tasks_done=2,
+        active_task="wire DI",
+        stale=True,
+    )
+    _print_run(state)
+
+    out = capsys.readouterr().out
+    assert "projX" in out
+    assert "2/4" in out
+    assert "(50%)" in out
+    assert "→ wire DI" in out
+    assert "[stale]" in out
+    assert "█████░░░░░" in out  # filled = 50 // 10 = 5
+
+
+def test_register_dedup_message(tmp_path, capsys, monkeypatch):
+    reg = tmp_path / "projects.yaml"
+    monkeypatch.setattr(registry, "default_registry_file", lambda: reg)
+    proj = tmp_path / "projA"
+    proj.mkdir()
+
+    run_dashboard(target=str(proj), action="register")
+    capsys.readouterr()  # clear first registration output
+    run_dashboard(target=str(proj), action="register")
+
+    assert "Already registered" in capsys.readouterr().out
+
+
+def test_unregister_messages(tmp_path, capsys, monkeypatch):
+    reg = tmp_path / "projects.yaml"
+    monkeypatch.setattr(registry, "default_registry_file", lambda: reg)
+    proj = tmp_path / "projA"
+    proj.mkdir()
+
+    run_dashboard(target=str(proj), action="register")
+    capsys.readouterr()
+    run_dashboard(target=str(proj), action="unregister")
+    assert "Unregistered" in capsys.readouterr().out
+
+    run_dashboard(target=str(proj), action="unregister")
+    assert "Not in registry" in capsys.readouterr().out
