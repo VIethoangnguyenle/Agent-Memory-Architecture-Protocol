@@ -7,13 +7,27 @@
   body{font-family:ui-monospace,Menlo,Consolas,monospace;background:#0f1115;color:#e6e6e6;margin:0;padding:24px}
   h1{font-size:14px;font-weight:600;color:#9ac7ff;margin:0 0 16px}
   #status{color:#778}
-  .runs{display:flex;flex-direction:column;gap:12px;max-width:560px}
-  .card{background:#1a1d24;border:1px solid #2a2f3a;border-radius:8px;padding:12px 14px}
+  .runs{display:flex;flex-direction:column;gap:12px;max-width:900px}
+  .card{background:#1a1d24;border:1px solid #2a2f3a;border-radius:8px;padding:12px 14px;animation:fadeIn .25s ease both}
   .name{font-weight:600;margin-bottom:6px}
   .bar{height:8px;background:#2a2f3a;border-radius:4px;overflow:hidden;margin:6px 0}
   .fill{height:100%;background:#4aa3ff;width:0;transition:width .3s}
   .meta{font-size:12px;color:#9aa3b2}
   .phase{color:#d9c98a}.active{color:#88cc88}.stale{color:#dd7777}.idle,.empty{color:#778}
+  .subagents{position:relative;margin-top:12px;padding-left:22px;display:grid;gap:10px}
+  .subagents:before{content:"";position:absolute;left:8px;top:4px;bottom:4px;width:2px;background:#3ecf8e;transform-origin:top;animation:drawLane .55s ease both}
+  .agent{position:relative;background:#121820;border:1px solid #2f4b5f;border-radius:8px;padding:10px 12px;animation:spawn .38s ease both;animation-delay:calc(var(--i) * .12s)}
+  .agent:before{content:"";position:absolute;left:-19px;top:17px;width:10px;height:10px;background:#3ecf8e;border:2px solid #0f1115;border-radius:50%;box-shadow:0 0 0 4px rgba(62,207,142,.16);animation:pulse 1.4s ease-in-out infinite}
+  .agent-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}
+  .agent-name{color:#9de7c2;font-weight:600}
+  .agent-tag{font-size:11px;color:#e9c46a}
+  details{margin-top:8px}
+  summary{cursor:pointer;color:#9ac7ff;font-size:12px}
+  pre{white-space:pre-wrap;overflow:auto;max-height:260px;background:#0b0d12;border:1px solid #27313d;border-radius:6px;padding:10px;color:#d7dde7;font-size:12px;line-height:1.45}
+  @keyframes fadeIn{from{opacity:.6}to{opacity:1}}
+  @keyframes drawLane{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+  @keyframes spawn{from{opacity:0;transform:translateY(-8px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+  @keyframes pulse{0%,100%{transform:scale(1);opacity:.8}50%{transform:scale(1.25);opacity:1}}
 </style>
 </head>
 <body>
@@ -22,15 +36,25 @@
 <script>
 const runsEl=document.getElementById('runs'),statusEl=document.getElementById('status');
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function subagents(r){
+  const agents=r.subagents||[];
+  if(!agents.length)return '';
+  return `<div class="subagents">${agents.map((a,i)=>`<div class="agent" style="--i:${i}">
+    <div class="agent-head"><span class="agent-name">subagent: ${esc(a.name||a.id)}</span><span class="agent-tag">dispatch ${i+1}/${agents.length}</span></div>
+    <div class="meta">${esc(a.path)}</div>
+    <details><summary>view prompt</summary><pre>${esc(a.prompt)}</pre></details>
+  </div>`).join('')}</div>`;
+}
 function render(runs){
   if(!runs.length){runsEl.innerHTML='<div class="empty">no projects registered &mdash; run: amap dashboard register</div>';return;}
   runsEl.innerHTML=runs.map(r=>{
     const idle=(r.phase_state===null&&r.tasks_total===0);
-    if(idle)return `<div class="card"><div class="name">${esc(r.name)} <span class="idle">&middot; idle</span></div><div class="meta">${esc(r.phase_state||'bootstrapped')}</div></div>`;
+    if(idle)return `<div class="card"><div class="name">${esc(r.name)} <span class="idle">&middot; idle</span></div><div class="meta">${esc(r.phase_state||'bootstrapped')}</div>${subagents(r)}</div>`;
     if(r.tasks_total===0)return `<div class="card">
       <div class="name">${esc(r.name)}${r.stale?' <span class="stale">[stale]</span>':''}</div>
       <div class="meta"><span class="phase">${esc(r.phase_state||'?')}</span> &middot; waiting for microloop TASK_QUEUE</div>
       ${r.updated_at?`<div class="meta">updated ${esc(r.updated_at)}</div>`:''}
+      ${subagents(r)}
     </div>`;
     const pct=r.progress_pct||0;
     return `<div class="card">
@@ -39,6 +63,7 @@ function render(runs){
       <div class="meta">${r.tasks_done}/${r.tasks_total} (${pct}%) &middot; <span class="phase">${esc(r.phase_state||'?')}</span></div>
       ${r.active_task?`<div class="meta active">&#9654; ${esc(r.active_task)}</div>`:''}
       ${r.updated_at?`<div class="meta">updated ${esc(r.updated_at)}</div>`:''}
+      ${subagents(r)}
     </div>`;
   }).join('');
 }

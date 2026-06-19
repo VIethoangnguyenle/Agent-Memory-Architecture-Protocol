@@ -9,11 +9,13 @@ from __future__ import annotations
 import json
 import time
 import webbrowser
+from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 from cli.dashboard import registry
 from cli.dashboard.reader import RunState, read_run
+from cli.scaffold import load_resolved_config
 
 DEFAULT_PORT = 7077
 POLL_SECONDS = 1.0
@@ -41,10 +43,63 @@ def snapshot(registry_file: Path) -> list[dict]:
     runs = []
     for p in registry.load(registry_file):
         try:
-            runs.append(serialize(read_run(p)))
+            run = serialize(read_run(p))
+            run["subagents"] = read_subagents(p)
+            runs.append(run)
         except Exception:
             runs.append({"name": Path(p).name, "project_path": p, "error": True})
     return runs
+
+
+def read_subagents(project_path: str) -> list[dict]:
+    """Read generated subagent handoff prompts from active knowledge artifacts."""
+    active = _active_dir(project_path)
+    if active is None:
+        return []
+    paths = []
+    paths.extend(active.glob("TASK_HANDOFF*.md"))
+    microloop = active / "microloop"
+    if microloop.exists():
+        paths.extend(microloop.glob("TASK_HANDOFF*.md"))
+    subagents = []
+    for path in sorted(set(paths), key=lambda p: (p.stat().st_mtime, p.name)):
+        try:
+            prompt = path.read_text(encoding="utf-8")
+        except OSError:
+            continue
+        subagents.append(
+            {
+                "id": _handoff_id(path),
+                "name": _handoff_id(path).replace("-", " "),
+                "path": str(path),
+                "prompt": prompt,
+                "updated_at": datetime.fromtimestamp(
+                    path.stat().st_mtime, timezone.utc
+                ).isoformat(),
+            }
+        )
+    return subagents
+
+
+def _active_dir(project_path: str) -> Path | None:
+    resolved = load_resolved_config(Path(project_path))
+    if resolved is None:
+        return None
+    return (
+        Path(project_path)
+        / resolved.get("framework_root", ".amap")
+        / "knowledge"
+        / "active"
+    )
+
+
+def _handoff_id(path: Path) -> str:
+    stem = path.stem
+    if stem == "TASK_HANDOFF":
+        return "subagent"
+    if stem.startswith("TASK_HANDOFF."):
+        return stem.split(".", 1)[1]
+    return stem
 
 
 def sse_format(json_str: str) -> bytes:

@@ -1,6 +1,7 @@
 """Tests for the dashboard SSE server."""
 import json
 import threading
+import textwrap
 import urllib.error
 import urllib.request
 from http.server import ThreadingHTTPServer
@@ -45,6 +46,44 @@ def test_snapshot_non_amap_project_is_idle(tmp_path):
     assert runs[0]["name"] == "p"
     assert runs[0]["phase_state"] is None
     assert runs[0]["tasks_total"] == 0
+
+
+def test_snapshot_includes_subagent_handoff_prompts(tmp_path):
+    reg = tmp_path / "projects.yaml"
+    proj = tmp_path / "p"
+    active = proj / ".amap" / "knowledge" / "active"
+    active.mkdir(parents=True)
+    (proj / ".amap" / "resolved-config.yaml").write_text(
+        "resolved:\n"
+        "  platform: antigravity\n"
+        "  framework_root: .amap\n"
+        "  language: python\n"
+        "  framework_version: '3.0'\n",
+        encoding="utf-8",
+    )
+    (proj / "AGENTS.md").write_text("# agents\n", encoding="utf-8")
+    (active / "TASK_HANDOFF.napas-human.md").write_text(
+        textwrap.dedent(
+            """\
+            # TASK_HANDOFF.napas-human
+
+            ## Task Objective
+            Create the human SRS.
+            """
+        ),
+        encoding="utf-8",
+    )
+    (active / "TASK_HANDOFF.napas-agent.md").write_text(
+        "# TASK_HANDOFF.napas-agent\n\n## Task Objective\nCreate the agent SRS.\n",
+        encoding="utf-8",
+    )
+    registry.register(reg, str(proj))
+
+    runs = server.snapshot(reg)
+
+    assert [a["id"] for a in runs[0]["subagents"]] == ["napas-human", "napas-agent"]
+    assert "Create the human SRS" in runs[0]["subagents"][0]["prompt"]
+    assert runs[0]["subagents"][1]["name"] == "napas agent"
 
 
 @pytest.fixture
