@@ -7,6 +7,7 @@ import os
 import subprocess
 import sys
 import urllib.error
+import urllib.parse
 import urllib.request
 from pathlib import Path
 
@@ -22,6 +23,26 @@ def parse_sse(response_text: str):
             except json.JSONDecodeError:
                 return None
     return None
+
+
+def parse_sse_events(response_text: str):
+    events = []
+    event_name = "message"
+    data_lines = []
+    for line in response_text.splitlines():
+        if line.startswith("event: "):
+            event_name = line[7:].strip() or "message"
+            continue
+        if line.startswith("data: "):
+            data_lines.append(line[6:])
+            continue
+        if not line and data_lines:
+            events.append((event_name, "\n".join(data_lines)))
+            event_name = "message"
+            data_lines = []
+    if data_lines:
+        events.append((event_name, "\n".join(data_lines)))
+    return events
 
 
 def emit(ok: bool, server: str, operation: str, result=None, error: str = "") -> int:
@@ -54,12 +75,57 @@ def request_payload(method: str, params: dict, req_id: int) -> str:
     return json.dumps({"jsonrpc": "2.0", "id": req_id, "method": method, "params": params}) + "\n"
 
 
+def notification_payload(method: str, params: dict) -> str:
+    return json.dumps({"jsonrpc": "2.0", "method": method, "params": params}) + "\n"
+
+
 def initialize_params() -> dict:
     return {
         "protocolVersion": PROTOCOL_VERSION,
         "capabilities": {},
         "clientInfo": {"name": "amap-mcp-bridge", "version": "1.0.0"},
     }
+
+
+def validate_response(method: str, response):
+    if response is None:
+        return f"{method} failed: no valid JSON-RPC response"
+    if not isinstance(response, dict) or response.get("jsonrpc") != "2.0":
+        return f"{method} failed: malformed JSON-RPC response"
+    if "error" in response:
+        message = response["error"]
+        if isinstance(message, dict):
+            message = message.get("message") or "server returned an error"
+        return f"{method} failed: {message}"
+    if "result" not in response:
+        return f"{method} failed: malformed JSON-RPC response"
+    return ""
+
+
+def discover_sse_message_endpoint(sse_url: str, headers: dict) -> str:
+    req = urllib.request.Request(
+        sse_url,
+        headers={**headers, "Accept": "text/event-stream"},
+        method="GET",
+    )
+    with urllib.request.urlopen(req, timeout=15) as resp:
+        body = resp.read().decode("utf-8")
+    for event_name, data in parse_sse_events(body):
+        if event_name == "endpoint":
+            return urllib.parse.urljoin(sse_url, data.strip())
+    raise ValueError("legacy SSE discovery failed: endpoint event missing")
+
+
+def resolve_http_endpoint(config: dict, headers: dict) -> str:
+    if config.get("serverUrl"):
+        url = config["serverUrl"]
+        if not url.endswith("/mcp"):
+            url = url.rstrip("/") + "/mcp"
+        return url
+    sse_url = config.get("sseUrl") or config.get("url")
+    if sse_url:
+        return discover_sse_message_endpoint(sse_url, headers)
+    raise ValueError("http server has no serverUrl")
 
 
 def call_stdio(config: dict, operation: str, tool_name: str | None, arguments: dict):
@@ -73,7 +139,7 @@ def call_stdio(config: dict, operation: str, tool_name: str | None, arguments: d
         [command, *args],
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
         text=True,
         env=env,
     )
@@ -92,13 +158,23 @@ def call_stdio(config: dict, operation: str, tool_name: str | None, arguments: d
             except json.JSONDecodeError:
                 continue
 
+    def notify(method: str, params: dict):
+        proc.stdin.write(notification_payload(method, params))
+        proc.stdin.flush()
+
     try:
         init = send("initialize", initialize_params(), 1)
-        if not init:
-            return None, "initialize failed"
+        error = validate_response("initialize", init)
+        if error:
+            return None, error
+        notify("notifications/initialized", {})
         if operation == "tools-list":
-            return send("tools/list", {}, 2), ""
-        return send("tools/call", {"name": tool_name, "arguments": arguments}, 2), ""
+            result = send("tools/list", {}, 2)
+            error = validate_response("tools/list", result)
+            return (result if not error else None), error
+        result = send("tools/call", {"name": tool_name, "arguments": arguments}, 2)
+        error = validate_response("tools/call", result)
+        return (result if not error else None), error
     finally:
         proc.terminate()
         try:
@@ -108,13 +184,13 @@ def call_stdio(config: dict, operation: str, tool_name: str | None, arguments: d
 
 
 def call_http(config: dict, operation: str, tool_name: str | None, arguments: dict):
-    url = config.get("serverUrl") or config.get("url")
-    if not url:
-        return None, "http server has no serverUrl"
-    if not url.endswith("/mcp"):
-        url = url.rstrip("/") + "/mcp"
     headers = dict(config.get("headers") or {})
     headers.update({"Content-Type": "application/json", "Accept": "application/json, text/event-stream"})
+
+    try:
+        url = resolve_http_endpoint(config, headers)
+    except (urllib.error.URLError, ValueError) as exc:
+        return None, str(exc)
 
     def post(method: str, params: dict, session_id: str | None = None):
         req_headers = dict(headers)
@@ -128,16 +204,38 @@ def call_http(config: dict, operation: str, tool_name: str | None, arguments: di
         )
         with urllib.request.urlopen(req, timeout=15) as resp:
             body = resp.read().decode("utf-8")
-            return parse_sse(body) or json.loads(body), resp.headers.get("mcp-session-id")
+            parsed = parse_sse(body) if body else None
+            if parsed is None and body:
+                parsed = json.loads(body)
+            return parsed, resp.headers.get("mcp-session-id")
+
+    def post_notification(method: str, params: dict, session_id: str | None = None):
+        req_headers = dict(headers)
+        if session_id:
+            req_headers["mcp-session-id"] = session_id
+        req = urllib.request.Request(
+            url,
+            data=notification_payload(method, params).encode("utf-8"),
+            headers=req_headers,
+            method="POST",
+        )
+        with urllib.request.urlopen(req, timeout=15):
+            return None
 
     try:
-        _, session = post("initialize", initialize_params())
+        init, session = post("initialize", initialize_params())
+        error = validate_response("initialize", init)
+        if error:
+            return None, error
+        post_notification("notifications/initialized", {}, session)
         if operation == "tools-list":
             result, _ = post("tools/list", {}, session)
+            error = validate_response("tools/list", result)
         else:
             result, _ = post("tools/call", {"name": tool_name, "arguments": arguments}, session)
-        return result, ""
-    except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as exc:
+            error = validate_response("tools/call", result)
+        return (result if not error else None), error
+    except (urllib.error.URLError, TimeoutError, json.JSONDecodeError, ValueError) as exc:
         return None, str(exc)
 
 
