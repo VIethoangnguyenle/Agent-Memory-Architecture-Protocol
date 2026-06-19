@@ -324,6 +324,20 @@ Mục tiêu: dùng OpenSpec để áp dụng spec đã được chấp thuận v
    - Nêu rõ đây là bước sẽ đề nghị thay đổi code theo spec.
    - Nếu user muốn, có thể giới hạn phạm vi (chỉ generate patch, không apply; hoặc chỉ apply một phần).
 5. Khi user đồng ý — **Orchestrate Hybrid Contract DAG micro-loop (SP1d)**:
+   - **Dashboard runtime contract bắt buộc (P5):**
+     - Trước khi dispatch executor/subagent đầu tiên, tạo `{{ platform.framework_root }}/knowledge/active/microloop/TASK_QUEUE.md`
+       từ danh sách node/task sẽ chạy, với `status: pending`, `handoff_path`, `result_path`, và `depends_on`.
+     - Append `task_queue_created` vào `{{ platform.framework_root }}/knowledge/active/microloop/ACTIVITY_LOG.jsonl`.
+     - Khi ghi `TASK_HANDOFF.<node-id>.md`, append `subagent_spawned` với `task_id`, label, và path.
+     - Ngay trước khi giao việc cho executor/subagent, update task trong `TASK_QUEUE.md` thành `in_progress`
+       và append `subagent_started`.
+     - Khi executor/subagent hoàn tất, ghi `microloop/TASK_RESULT.<node-id>.md`, update task thành `done`,
+       append `result_written` và `subagent_done`.
+     - Nếu executor/subagent không thể hoàn tất, update task thành `blocked`, ghi lý do vào
+       `TASK_RESULT.<node-id>.md`, append `subagent_blocked`, rồi dừng để user quyết định.
+     - Có thể dùng helpers trong `{{ platform.framework_root }}/tools/microloop-orchestrator/orchestrator.py`:
+       `initialize_runtime_queue`, `write_task_handoff`, `update_task_status`, `write_task_result`,
+       `append_activity_event`.
    a. Build `KNOWLEDGE_PACK.md` from REQUIREMENT, EXPLORE_CONTEXT, knowledge-snapshot,
       conventions, author-dna, OpenSpec artifacts, UA/KG evidence, db-explorer evidence, and relevant archive/memory.
       - If task complexity = `complex` and KG graph is unavailable/stale: BLOCK unless user explicitly overrides.
@@ -338,7 +352,9 @@ Mục tiêu: dùng OpenSpec để áp dụng spec đã được chấp thuận v
    c. Run Contract Lane sequentially:
       - Assemble `TASK_HANDOFF.<node-id>.md` with Knowledge Pack slice, DNA slice, convention slice,
         architecture boundary, allowed/read-only files, and feedback if retrying.
+      - After writing each handoff, record `subagent_spawned` in `ACTIVITY_LOG.jsonl`.
       - Dispatch executor by `{{ platform.framework_root }}/profiles/execution-mode.yaml`.
+      - Before dispatch, mark that node `in_progress`; after result, mark it `done` or `blocked`.
       - Run mechanical gate + semantic surface-check.
       - On PASS, generate/freeze `CONTRACT_SNAPSHOT.<node-id>.md` with contract_version.
       - On FAIL after max retries, mark node `blocked` and stop for user decision.

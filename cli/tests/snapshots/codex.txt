@@ -141,6 +141,7 @@
 .agents/tools/microloop-orchestrator/tests/test_hybrid_contract_dag.py
 .agents/tools/microloop-orchestrator/tests/test_outcome.py
 .agents/tools/microloop-orchestrator/tests/test_protocol.py
+.agents/tools/microloop-orchestrator/tests/test_runtime_contract.py
 .agents/tools/microloop-orchestrator/tests/test_slice.py
 .agents/tools/microloop-orchestrator/tests/test_stats.py
 .agents/tools/microloop-orchestrator/tests/test_toposort.py

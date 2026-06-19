@@ -4,6 +4,150 @@ All functions are pure logic. run_loop() takes dispatch_fn and gate_fn via
 dependency injection so the whole protocol is unit-testable with stubs —
 no Java, no real subagent.
 """
+import json
+from datetime import datetime, timezone
+from pathlib import Path
+
+import yaml
+
+
+VALID_RUNTIME_STATUS = {"pending", "in_progress", "done", "blocked", "stale"}
+
+
+def _now_iso():
+    return datetime.now(timezone.utc).isoformat()
+
+
+def _microloop_dir(active_dir):
+    path = Path(active_dir) / "microloop"
+    path.mkdir(parents=True, exist_ok=True)
+    return path
+
+
+def _queue_path(active_dir):
+    return _microloop_dir(active_dir) / "TASK_QUEUE.md"
+
+
+def _activity_log_path(active_dir):
+    return _microloop_dir(active_dir) / "ACTIVITY_LOG.jsonl"
+
+
+def _project_rel(framework_root, *parts):
+    return str(Path(framework_root, "knowledge", "active", *parts))
+
+
+def append_activity_event(active_dir, event, **fields):
+    """Append one dashboard activity event to microloop/ACTIVITY_LOG.jsonl."""
+    record = {"ts": fields.pop("ts", _now_iso()), "event": event}
+    record.update({k: v for k, v in fields.items() if v is not None})
+    path = _activity_log_path(active_dir)
+    with path.open("a", encoding="utf-8") as f:
+        f.write(json.dumps(record, ensure_ascii=False, sort_keys=True) + "\n")
+    return record
+
+
+def initialize_runtime_queue(active_dir, ticket_id, spec_path, tasks,
+                             execution_mode="subagent", framework_root=".agents"):
+    """Create dashboard-visible TASK_QUEUE.md before dispatching subagents."""
+    normalized = []
+    for task in topo_sort(tasks):
+        task_id = task["id"]
+        normalized.append({
+            "id": task_id,
+            "desc": task.get("desc", task_id),
+            "depends_on": task.get("depends_on", []),
+            "status": task.get("status", "pending"),
+            "retries": task.get("retries", 0),
+            "handoff_path": task.get(
+                "handoff_path",
+                _project_rel(framework_root, f"TASK_HANDOFF.{task_id}.md"),
+            ),
+            "result_path": task.get(
+                "result_path",
+                _project_rel(framework_root, "microloop", f"TASK_RESULT.{task_id}.md"),
+            ),
+        })
+    queue = {
+        "ticket_id": ticket_id,
+        "spec_path": spec_path,
+        "execution_mode": execution_mode,
+        "tasks": normalized,
+    }
+    path = _queue_path(active_dir)
+    path.write_text(yaml.safe_dump(queue, sort_keys=False, allow_unicode=True), encoding="utf-8")
+    append_activity_event(
+        active_dir,
+        "task_queue_created",
+        ticket_id=ticket_id,
+        tasks_total=len(normalized),
+    )
+    return queue
+
+
+def load_runtime_queue(active_dir):
+    path = _queue_path(active_dir)
+    return yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+
+
+def save_runtime_queue(active_dir, queue):
+    path = _queue_path(active_dir)
+    path.write_text(yaml.safe_dump(queue, sort_keys=False, allow_unicode=True), encoding="utf-8")
+    return queue
+
+
+def write_task_handoff(active_dir, task_id, prompt, label=None):
+    """Write TASK_HANDOFF.<task_id>.md and emit subagent_spawned."""
+    path = Path(active_dir) / f"TASK_HANDOFF.{task_id}.md"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(prompt, encoding="utf-8")
+    append_activity_event(
+        active_dir,
+        "subagent_spawned",
+        task_id=task_id,
+        label=label,
+        path=str(path),
+    )
+    return path
+
+
+def update_task_status(active_dir, task_id, status, event=None):
+    """Update one task status in TASK_QUEUE.md and append a lifecycle event."""
+    if status not in VALID_RUNTIME_STATUS:
+        raise ValueError(f"bad runtime task status: {status}")
+    queue = load_runtime_queue(active_dir)
+    tasks = queue.get("tasks", [])
+    task = next((t for t in tasks if t.get("id") == task_id), None)
+    if task is None:
+        raise ValueError(f"task {task_id} not in queue")
+    task["status"] = status
+    task["updated_at"] = _now_iso()
+    if status == "in_progress" and not task.get("started_at"):
+        task["started_at"] = task["updated_at"]
+    if status in {"done", "blocked"}:
+        task["finished_at"] = task["updated_at"]
+    save_runtime_queue(active_dir, queue)
+    append_activity_event(
+        active_dir,
+        event or f"task_{status}",
+        ticket_id=queue.get("ticket_id"),
+        task_id=task_id,
+        status=status,
+    )
+    return queue
+
+
+def write_task_result(active_dir, task_id, body, status="done"):
+    """Write TASK_RESULT.<task_id>.md, update queue status, and emit result events."""
+    path = _microloop_dir(active_dir) / f"TASK_RESULT.{task_id}.md"
+    path.write_text(body, encoding="utf-8")
+    append_activity_event(active_dir, "result_written", task_id=task_id, path=str(path))
+    update_task_status(
+        active_dir,
+        task_id,
+        status,
+        event="subagent_done" if status == "done" else "subagent_blocked",
+    )
+    return path
 
 
 def topo_sort(tasks):
