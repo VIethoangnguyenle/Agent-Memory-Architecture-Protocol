@@ -74,6 +74,13 @@ def test_mcp_status_accepts_agent_memory_probe_and_degrade():
     ).ok is True
     # A bare label with no health word or degrade is still invalid.
     assert g.validate_mcp_status("agent-memory").ok is False
+    # Hardening: negated/stale prose must NOT count as a healthy probe.
+    assert g.validate_mcp_status("agent-memory is not healthy").ok is False
+    # Hardening: rambling prose must NOT satisfy the degrade line.
+    assert g.validate_mcp_status(
+        "agent-memory unavailable, we decided to skip the recall step but later "
+        "did save anyway after extensive debugging"
+    ).ok is False
 
 
 def test_phase_chain_requires_ordered_markers():

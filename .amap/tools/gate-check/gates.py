@@ -23,9 +23,14 @@ _DEGRADE = re.compile(r"KG unavailable.{0,40}MEDIUM", re.IGNORECASE)
 _NUMBERS = re.compile(r"(nodes?|edges?)\s*[:=]\s*\d+", re.IGNORECASE)
 # Agent-memory MCP evidence: either a health probe ("agent-memory: healthy")
 # or the compact degrade line ("agent-memory unavailable — skip recall/save").
-_MEMORY_OK = re.compile(r"agent-memory.{0,20}(healthy|ok|ready)", re.IGNORECASE)
+# Health probe: the canonical line is "agent-memory: healthy" — the status word
+# immediately follows the label, so we anchor tightly (optional colon + spaces)
+# to reject negated/stale prose like "agent-memory is not healthy".
+_MEMORY_OK = re.compile(r"agent-memory:?\s*(healthy|ok|ready)\b", re.IGNORECASE)
+# Degrade line: canonical is "agent-memory unavailable — skip recall/save" (~3 chars
+# between anchors). Keep the bound tight (like _DEGRADE) to reject rambling prose.
 _MEMORY_DEGRADE = re.compile(
-    r"agent-memory unavailable.{0,40}(skip|recall|save)", re.IGNORECASE
+    r"agent-memory unavailable.{0,15}(skip|recall|save)", re.IGNORECASE
 )
 # NOTE: self-asserted; hardening (only-when-index-empty) is deferred to the
 # index-aware validator follow-up (see decision-gates-followups spec).
