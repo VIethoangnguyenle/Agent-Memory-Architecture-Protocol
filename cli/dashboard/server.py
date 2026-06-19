@@ -12,6 +12,9 @@ import webbrowser
 from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from typing import Optional
+
+import yaml
 
 from cli.dashboard import registry
 from cli.dashboard.reader import RunState, read_run
@@ -44,44 +47,175 @@ def snapshot(registry_file: Path) -> list[dict]:
     for p in registry.load(registry_file):
         try:
             run = serialize(read_run(p))
-            run["subagents"] = read_subagents(p)
+            runtime = read_runtime(p)
+            run.update(runtime)
+            run["stale"] = run["stale"] or runtime["stale"]
             runs.append(run)
         except Exception:
             runs.append({"name": Path(p).name, "project_path": p, "error": True})
     return runs
 
 
-def read_subagents(project_path: str) -> list[dict]:
-    """Read generated subagent handoff prompts from active knowledge artifacts."""
+def read_runtime(project_path: str) -> dict:
+    """Read dashboard runtime artifacts beyond the core RunState."""
     active = _active_dir(project_path)
     if active is None:
-        return []
-    paths = []
-    paths.extend(active.glob("TASK_HANDOFF*.md"))
-    microloop = active / "microloop"
-    if microloop.exists():
-        paths.extend(microloop.glob("TASK_HANDOFF*.md"))
+        return {"subagents": [], "events": [], "errors": [], "stale": False}
+    tasks, queue_errors = _read_queue(active)
+    result_paths = _collect_artifacts(active, "TASK_RESULT*.md")
+    results = {_result_id(p): p for p in result_paths}
+    handoff_paths = _collect_artifacts(active, "TASK_HANDOFF*.md")
+    handoffs = {_handoff_id(p): p for p in handoff_paths}
+
     subagents = []
-    for path in sorted(set(paths), key=lambda p: (p.stat().st_mtime, p.name)):
-        try:
-            prompt = path.read_text(encoding="utf-8")
-        except OSError:
+    seen = set()
+    for task in tasks:
+        task_id = str(task.get("id") or task.get("desc") or "task")
+        seen.add(task_id)
+        handoff_path = _path_from_task(project_path, task.get("handoff_path")) or handoffs.get(task_id)
+        result_path = _path_from_task(project_path, task.get("result_path")) or results.get(task_id)
+        subagents.append(
+            _subagent_record(
+                task_id,
+                status=task.get("status") or "pending",
+                desc=task.get("desc"),
+                handoff_path=handoff_path,
+                result_path=result_path,
+            )
+        )
+
+    for task_id, handoff_path in handoffs.items():
+        if task_id in seen:
+            continue
+        seen.add(task_id)
+        result_path = results.get(task_id)
+        subagents.append(
+            _subagent_record(
+                task_id,
+                status="done" if result_path else "spawned",
+                handoff_path=handoff_path,
+                result_path=result_path,
+            )
+        )
+
+    for task_id, result_path in results.items():
+        if task_id in seen:
             continue
         subagents.append(
-            {
-                "id": _handoff_id(path),
-                "name": _handoff_id(path).replace("-", " "),
-                "path": str(path),
-                "prompt": prompt,
-                "updated_at": datetime.fromtimestamp(
-                    path.stat().st_mtime, timezone.utc
-                ).isoformat(),
-            }
+            _subagent_record(task_id, status="done", result_path=result_path)
         )
-    return subagents
+
+    events, event_errors = _read_events(active)
+    errors = queue_errors + event_errors
+    return {
+        "subagents": subagents,
+        "events": events,
+        "errors": errors,
+        "stale": bool(errors),
+    }
 
 
-def _active_dir(project_path: str) -> Path | None:
+def read_subagents(project_path: str) -> list[dict]:
+    """Read generated subagent handoff prompts from active knowledge artifacts."""
+    return read_runtime(project_path)["subagents"]
+
+
+def _read_queue(active: Path) -> tuple[list[dict], list[str]]:
+    queue_path = active / "microloop" / "TASK_QUEUE.md"
+    if not queue_path.exists():
+        return [], []
+    try:
+        queue = yaml.safe_load(queue_path.read_text(encoding="utf-8")) or {}
+    except yaml.YAMLError as exc:
+        return [], [f"{queue_path}: {exc}"]
+    if not isinstance(queue, dict):
+        return [], [f"{queue_path}: expected mapping"]
+    tasks = queue.get("tasks", [])
+    if not isinstance(tasks, list):
+        return [], [f"{queue_path}: tasks must be a list"]
+    return [t for t in tasks if isinstance(t, dict)], []
+
+
+def _read_events(active: Path) -> tuple[list[dict], list[str]]:
+    log_path = active / "microloop" / "ACTIVITY_LOG.jsonl"
+    if not log_path.exists():
+        return [], []
+    events = []
+    errors = []
+    for lineno, line in enumerate(log_path.read_text(encoding="utf-8").splitlines(), 1):
+        if not line.strip():
+            continue
+        try:
+            event = json.loads(line)
+        except json.JSONDecodeError as exc:
+            errors.append(f"{log_path}:{lineno}: {exc.msg}")
+            continue
+        if isinstance(event, dict):
+            events.append(event)
+        else:
+            errors.append(f"{log_path}:{lineno}: expected object")
+    return events, errors
+
+
+def _collect_artifacts(active: Path, pattern: str) -> list[Path]:
+    paths = list(active.glob(pattern))
+    microloop = active / "microloop"
+    if microloop.exists():
+        paths.extend(microloop.glob(pattern))
+    return sorted(set(paths), key=lambda p: (p.stat().st_mtime, p.name))
+
+
+def _subagent_record(
+    task_id: str,
+    *,
+    status: str,
+    desc: Optional[str] = None,
+    handoff_path: Optional[Path] = None,
+    result_path: Optional[Path] = None,
+) -> dict:
+    prompt = _read_optional_text(handoff_path)
+    result = _read_optional_text(result_path)
+    updated = _latest_mtime([p for p in (handoff_path, result_path) if p is not None])
+    return {
+        "id": task_id,
+        "name": task_id.replace("-", " "),
+        "desc": desc,
+        "status": status,
+        "path": str(handoff_path) if handoff_path else None,
+        "handoff_path": str(handoff_path) if handoff_path else None,
+        "result_path": str(result_path) if result_path else None,
+        "prompt": prompt,
+        "result": result,
+        "updated_at": updated,
+    }
+
+
+def _read_optional_text(path: Optional[Path]) -> Optional[str]:
+    if path is None or not path.exists():
+        return None
+    try:
+        return path.read_text(encoding="utf-8")
+    except OSError:
+        return None
+
+
+def _latest_mtime(paths: list[Path]) -> Optional[str]:
+    existing = [p.stat().st_mtime for p in paths if p.exists()]
+    if not existing:
+        return None
+    return datetime.fromtimestamp(max(existing), timezone.utc).isoformat()
+
+
+def _path_from_task(project_path: str, value) -> Optional[Path]:
+    if not value:
+        return None
+    path = Path(str(value))
+    if path.is_absolute():
+        return path
+    return Path(project_path) / path
+
+
+def _active_dir(project_path: str) -> Optional[Path]:
     resolved = load_resolved_config(Path(project_path))
     if resolved is None:
         return None
@@ -98,6 +232,15 @@ def _handoff_id(path: Path) -> str:
     if stem == "TASK_HANDOFF":
         return "subagent"
     if stem.startswith("TASK_HANDOFF."):
+        return stem.split(".", 1)[1]
+    return stem
+
+
+def _result_id(path: Path) -> str:
+    stem = path.stem
+    if stem == "TASK_RESULT":
+        return "subagent"
+    if stem.startswith("TASK_RESULT."):
         return stem.split(".", 1)[1]
     return stem
 

@@ -12,6 +12,22 @@ from cli.dashboard import registry, server
 from cli.dashboard.reader import RunState
 
 
+def _make_amap_project(tmp_path, name="p"):
+    proj = tmp_path / name
+    active = proj / ".amap" / "knowledge" / "active"
+    active.mkdir(parents=True)
+    (proj / ".amap" / "resolved-config.yaml").write_text(
+        "resolved:\n"
+        "  platform: antigravity\n"
+        "  framework_root: .amap\n"
+        "  language: python\n"
+        "  framework_version: '3.0'\n",
+        encoding="utf-8",
+    )
+    (proj / "AGENTS.md").write_text("# agents\n", encoding="utf-8")
+    return proj, active
+
+
 def test_serialize_includes_name_and_progress():
     s = RunState(
         project_path="/tmp/projX",
@@ -50,18 +66,7 @@ def test_snapshot_non_amap_project_is_idle(tmp_path):
 
 def test_snapshot_includes_subagent_handoff_prompts(tmp_path):
     reg = tmp_path / "projects.yaml"
-    proj = tmp_path / "p"
-    active = proj / ".amap" / "knowledge" / "active"
-    active.mkdir(parents=True)
-    (proj / ".amap" / "resolved-config.yaml").write_text(
-        "resolved:\n"
-        "  platform: antigravity\n"
-        "  framework_root: .amap\n"
-        "  language: python\n"
-        "  framework_version: '3.0'\n",
-        encoding="utf-8",
-    )
-    (proj / "AGENTS.md").write_text("# agents\n", encoding="utf-8")
+    proj, active = _make_amap_project(tmp_path)
     (active / "TASK_HANDOFF.napas-human.md").write_text(
         textwrap.dedent(
             """\
@@ -86,6 +91,77 @@ def test_snapshot_includes_subagent_handoff_prompts(tmp_path):
     assert runs[0]["subagents"][1]["name"] == "napas agent"
 
 
+def test_snapshot_merges_queue_result_and_activity_log(tmp_path):
+    reg = tmp_path / "projects.yaml"
+    proj, active = _make_amap_project(tmp_path)
+    microloop = active / "microloop"
+    microloop.mkdir()
+    (active / "TASK_HANDOFF.napas-human.md").write_text(
+        "# TASK_HANDOFF.napas-human\n\nPrompt human.\n", encoding="utf-8"
+    )
+    (active / "TASK_HANDOFF.napas-agent.md").write_text(
+        "# TASK_HANDOFF.napas-agent\n\nPrompt agent.\n", encoding="utf-8"
+    )
+    (microloop / "TASK_RESULT.napas-human.md").write_text(
+        "# TASK_RESULT.napas-human\n\nstatus: done\n\n## Summary\nHuman done.\n",
+        encoding="utf-8",
+    )
+    (microloop / "TASK_QUEUE.md").write_text(
+        textwrap.dedent(
+            """\
+            ticket_id: SME-TRANSFER-002
+            execution_mode: subagent
+            tasks:
+              - id: napas-human
+                desc: Create human SRS
+                status: done
+                handoff_path: .amap/knowledge/active/TASK_HANDOFF.napas-human.md
+                result_path: .amap/knowledge/active/microloop/TASK_RESULT.napas-human.md
+              - id: napas-agent
+                desc: Create agent SRS
+                status: in_progress
+                handoff_path: .amap/knowledge/active/TASK_HANDOFF.napas-agent.md
+            """
+        ),
+        encoding="utf-8",
+    )
+    (microloop / "ACTIVITY_LOG.jsonl").write_text(
+        '{"ts":"2026-06-19T23:50:00+07:00","event":"subagent_spawned","task_id":"napas-human"}\n'
+        '{"ts":"2026-06-19T23:51:00+07:00","event":"subagent_started","task_id":"napas-agent"}\n',
+        encoding="utf-8",
+    )
+    registry.register(reg, str(proj))
+
+    run = server.snapshot(reg)[0]
+
+    assert run["tasks_total"] == 2
+    assert run["tasks_done"] == 1
+    assert run["active_task"] == "Create agent SRS"
+    assert [a["status"] for a in run["subagents"]] == ["done", "in_progress"]
+    assert run["subagents"][0]["result"].startswith("# TASK_RESULT.napas-human")
+    assert run["subagents"][1]["result"] is None
+    assert [e["event"] for e in run["events"]] == [
+        "subagent_spawned",
+        "subagent_started",
+    ]
+    assert run["errors"] == []
+
+
+def test_snapshot_bad_activity_log_marks_stale(tmp_path):
+    reg = tmp_path / "projects.yaml"
+    proj, active = _make_amap_project(tmp_path)
+    microloop = active / "microloop"
+    microloop.mkdir()
+    (microloop / "ACTIVITY_LOG.jsonl").write_text('{"event":"ok"}\nnot-json\n', encoding="utf-8")
+    registry.register(reg, str(proj))
+
+    run = server.snapshot(reg)[0]
+
+    assert run["stale"] is True
+    assert run["events"] == [{"event": "ok"}]
+    assert "ACTIVITY_LOG.jsonl:2" in run["errors"][0]
+
+
 @pytest.fixture
 def running_server(tmp_path):
     reg = tmp_path / "projects.yaml"
@@ -108,6 +184,7 @@ def test_index_served(running_server):
         assert r.status == 200
         assert r.headers["Cache-Control"] == "no-store"
         assert "AMAP" in body
+        assert "view result" in body
 
 
 def test_api_runs_json(running_server):

@@ -21,6 +21,12 @@
   .agent-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}
   .agent-name{color:#9de7c2;font-weight:600}
   .agent-tag{font-size:11px;color:#e9c46a}
+  .badge{font-size:11px;border:1px solid #43505f;border-radius:999px;padding:2px 7px;color:#b7c3d0}
+  .status-done{color:#9de7c2;border-color:#2f6f57}.status-in_progress{color:#e9c46a;border-color:#7b6530}.status-blocked,.status-stale{color:#ff9b9b;border-color:#7a3b45}.status-spawned{color:#9ac7ff;border-color:#355f83}
+  .timeline{margin-top:12px;border-top:1px solid #2a2f3a;padding-top:10px;display:grid;gap:6px}
+  .event{font-size:12px;color:#aab4c1}
+  .event:before{content:"";display:inline-block;width:6px;height:6px;background:#9ac7ff;border-radius:50%;margin-right:8px;vertical-align:1px}
+  .errors{margin-top:10px;color:#ff9b9b;font-size:12px}
   details{margin-top:8px}
   summary{cursor:pointer;color:#9ac7ff;font-size:12px}
   pre{white-space:pre-wrap;overflow:auto;max-height:260px;background:#0b0d12;border:1px solid #27313d;border-radius:6px;padding:10px;color:#d7dde7;font-size:12px;line-height:1.45}
@@ -40,21 +46,35 @@ function subagents(r){
   const agents=r.subagents||[];
   if(!agents.length)return '';
   return `<div class="subagents">${agents.map((a,i)=>`<div class="agent" style="--i:${i}">
-    <div class="agent-head"><span class="agent-name">subagent: ${esc(a.name||a.id)}</span><span class="agent-tag">dispatch ${i+1}/${agents.length}</span></div>
-    <div class="meta">${esc(a.path)}</div>
-    <details><summary>view prompt</summary><pre>${esc(a.prompt)}</pre></details>
+    <div class="agent-head"><span class="agent-name">subagent: ${esc(a.name||a.id)}</span><span class="badge status-${esc(a.status||'spawned')}">${esc(a.status||'spawned')}</span></div>
+    ${a.desc?`<div class="meta active">${esc(a.desc)}</div>`:''}
+    <div class="meta">${esc(a.handoff_path||a.path||'handoff pending')}</div>
+    ${a.prompt?`<details><summary>view prompt</summary><pre>${esc(a.prompt)}</pre></details>`:''}
+    ${a.result?`<details><summary>view result</summary><pre>${esc(a.result)}</pre></details>`:''}
   </div>`).join('')}</div>`;
+}
+function timeline(r){
+  const events=r.events||[];
+  if(!events.length)return '';
+  return `<div class="timeline">${events.slice(-12).map(e=>`<div class="event">${esc(e.ts||'')} ${esc(e.event||'event')} ${e.task_id?`&middot; ${esc(e.task_id)}`:''}</div>`).join('')}</div>`;
+}
+function errors(r){
+  const list=r.errors||[];
+  if(!list.length)return '';
+  return `<div class="errors">${list.map(esc).join('<br>')}</div>`;
 }
 function render(runs){
   if(!runs.length){runsEl.innerHTML='<div class="empty">no projects registered &mdash; run: amap dashboard register</div>';return;}
   runsEl.innerHTML=runs.map(r=>{
     const idle=(r.phase_state===null&&r.tasks_total===0);
-    if(idle)return `<div class="card"><div class="name">${esc(r.name)} <span class="idle">&middot; idle</span></div><div class="meta">${esc(r.phase_state||'bootstrapped')}</div>${subagents(r)}</div>`;
+    if(idle)return `<div class="card"><div class="name">${esc(r.name)} <span class="idle">&middot; idle</span></div><div class="meta">${esc(r.phase_state||'bootstrapped')}</div>${subagents(r)}${timeline(r)}${errors(r)}</div>`;
     if(r.tasks_total===0)return `<div class="card">
       <div class="name">${esc(r.name)}${r.stale?' <span class="stale">[stale]</span>':''}</div>
       <div class="meta"><span class="phase">${esc(r.phase_state||'?')}</span> &middot; waiting for microloop TASK_QUEUE</div>
       ${r.updated_at?`<div class="meta">updated ${esc(r.updated_at)}</div>`:''}
       ${subagents(r)}
+      ${timeline(r)}
+      ${errors(r)}
     </div>`;
     const pct=r.progress_pct||0;
     return `<div class="card">
@@ -64,6 +84,8 @@ function render(runs){
       ${r.active_task?`<div class="meta active">&#9654; ${esc(r.active_task)}</div>`:''}
       ${r.updated_at?`<div class="meta">updated ${esc(r.updated_at)}</div>`:''}
       ${subagents(r)}
+      ${timeline(r)}
+      ${errors(r)}
     </div>`;
   }).join('');
 }
