@@ -43,9 +43,13 @@
 
 ### [CRITICAL] R-Tool-6: Agent Memory MCP — Ranh giới sử dụng
 
-Các tool MCP `agent-memory` chỉ là **lớp truy xuất phụ**.
-Chúng bổ sung — không bao giờ thay thế — Bootstrap Protocol, thứ tự ưu tiên context-loader P1→P4,
-hay `knowledge-snapshot.md` với tư cách nguồn sự thật chính thức.
+`agent-memory` là **lớp kinh nghiệm dài hạn** — những gì agent đã đúc kết và lưu lên
+Qdrant *sau* các task trước. Dữ liệu mang tính **tham khảo/advisory** ("trước đây TỪNG
+làm thế nào"), **không phải kiến thức chính** về hệ thống hiện tại.
+Nó bổ sung — không bao giờ thay thế — Bootstrap Protocol, thứ tự ưu tiên context-loader
+P1→P4, hay `knowledge-snapshot.md` với tư cách nguồn sự thật chính thức.
+Khi mâu thuẫn với kiến thức chính (`knowledge-snapshot.md`, db-explorer, KG),
+**kiến thức chính thắng tuyệt đối**.
 
 **Bootstrap PHẢI hoàn tất (§1 {{ platform.config_entry_point }}) trước khi gọi bất kỳ memory tool nào.**
 
