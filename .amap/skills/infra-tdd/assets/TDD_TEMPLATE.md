@@ -86,7 +86,7 @@ flowchart TB
 
 > Mô tả vấn đề kinh doanh hoặc kỹ thuật đang gặp phải.
 > Bao gồm: ai bị ảnh hưởng, mức độ nghiêm trọng, tần suất xảy ra.
-> Nêu bằng chứng (metrics, incidents, user feedback) — không chỉ giả định.
+> Nêu bằng chứng (metrics, production evidence, user feedback) — không chỉ giả định.
 
 ### Mục tiêu đo lường được
 
@@ -276,7 +276,7 @@ sequenceDiagram
 **Trade-off chấp nhận**: {ghi rõ cái mất khi chọn C thay vì A hoặc B}
 
 **Evidence / Bằng chứng**:
-- {link benchmark, PoC, incident, production data}
+- {link benchmark, PoC, production evidence}
 - {source: UA Knowledge Graph node / Socraticode search / DB schema}
 
 ### Chi tiết — Quyết định D2: {tên}
@@ -413,7 +413,7 @@ Chạy trước khi đánh dấu TDD là "Ready for Review":
 - [ ] Tiêu chí đánh giá có **trọng số**
 - [ ] Trade-off **được đặt tên** (không chỉ "option A tốt hơn")
 - [ ] ADR files riêng biệt, bất biến, có lifecycle status
-- [ ] Mỗi ADR có **evidence/bằng chứng** (benchmark, incident, PoC)
+- [ ] Mỗi ADR có **evidence/bằng chứng** (benchmark, production evidence, PoC)
 - [ ] **Knowledge tools đã được sử dụng** — claim nào đến từ UA/Socraticode/DB?
 
 ### T4 — Vận hành

@@ -211,8 +211,7 @@ FOR EACH entry trong snapshot có status:active:
 ```
 
 > Agent đọc HTML comment để biết confidence, nhưng content vẫn là Markdown readable.
-
-**Lý do**: `confidence:low` là signal nhẹ — agent vẫn dùng entry nhưng biết cần cẩn thận. Chỉ evidence mâu thuẫn mới thay đổi `status`.
+> `confidence:low` là signal nhẹ; chỉ evidence mâu thuẫn mới thay đổi `status`.
 
 ### 3.4 `restore_from_archive(ticket_id)`
 
@@ -348,7 +347,7 @@ FUNCTION rotate_transparency_log():
     → Compact các entry cũ bằng summary line
 ```
 
-> **Lý do**: Task kéo dài nhiều phiên có thể tích lũy 10+ bootstrap reports. Agent đọc lại toàn bộ → tốn token vô ích.
+> Task kéo dài nhiều phiên chỉ giữ bootstrap report gần nhất trong active context; full log nằm trong archive.
 
 ---
 

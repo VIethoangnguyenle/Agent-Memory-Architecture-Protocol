@@ -18,7 +18,7 @@
 - **Apply-entry:** `/task apply` có precondition `phase_done(spec)` AND spec artifact tại
   `openspec/changes/<id>/` AND không còn `[BLOCKER-ARCH]` chưa resolve trong AGENT_TRANSPARENCY.md
   (BLOCKER cuối phải có `[BLOCKER-ARCH RESOLVED]` tương ứng). Thiếu/BLOCKER chưa resolve → ABORT.
-  Lý do "scope rõ nên bỏ spec" KHÔNG hợp lệ — spec artifact là bắt buộc, không phải phán đoán agent.
+  "Scope rõ nên bỏ spec" KHÔNG hợp lệ — spec artifact là bắt buộc, không phải phán đoán agent.
 - **Completion:** KHÔNG phát "Done" cho tới khi phase-chain self-check pass:
   `python3 {{ platform.framework_root }}/tools/gate-check/cli.py phase-chain knowledge/active/AGENT_TRANSPARENCY.md`
   (kiểm marker `Pha 1/2/3 DONE` liên tục từ 1). Build-pass + bookkeeping thuộc sub-spec verify riêng.
@@ -49,7 +49,7 @@
     3. **Tiếp tục flow** dựa trên assumption, không chờ data được sửa.
   - Nếu lỗi cấu hình cần user/DBA xử lý: đề xuất rõ action (ví dụ: câu SQL backfill) và
     chuyển trạng thái task sang **PENDING-BACKFILL** trong AGENT_TRANSPARENCY.
-- Lý do: Loop scan DB vô tận không tự giải quyết được lỗi cấu hình — chỉ tốn token và block tiến độ.
+- Sau hardstop, không tiếp tục scan cùng một dữ liệu/cấu hình trong phiên hiện tại.
 
 
 ---

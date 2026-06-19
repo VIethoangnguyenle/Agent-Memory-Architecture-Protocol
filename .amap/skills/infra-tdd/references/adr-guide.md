@@ -75,7 +75,7 @@ Mỗi claim trong ADR nên có nguồn. Evidence bao gồm:
 | Loại evidence | Ví dụ | Độ tin cậy |
 |---------------|-------|------------|
 | Benchmark/PoC | "PoC cho thấy P99 = 45ms với 10K TPS" | Rất cao |
-| Production data | "Incident INC-234: Redis crash gây 30 phút downtime" | Rất cao |
+| Production data | "Production outage report: Redis crash gây 30 phút downtime" | Rất cao |
 | UA Knowledge Graph | "Node X có 15 incoming dependencies → blast radius cao" | Cao |
 | Socraticode search | "Pattern Y xuất hiện trong 23 files → convention mạnh" | Cao |
 | DB schema analysis | "Table Z có 12M rows, no partition → query chậm" | Cao |
@@ -90,7 +90,7 @@ Sau khi status = `Accepted`:
 - Nếu quyết định sai → viết ADR mới với status `Superseded by ADR-NNNN`
 - ADR cũ giữ nguyên với status `Deprecated` hoặc `Superseded by ADR-NNNN`
 
-Lý do: ADR là historical record. Sửa đổi = xóa lịch sử.
+ADR đã accepted là record bất biến. Quyết định mới phải được ghi bằng ADR mới.
 
 ---
 
@@ -221,7 +221,7 @@ data lên Kafka → Worker Service render file → upload MinIO → callback qua
 | Alternatives là straw man | "Alt A: Không làm gì" khi rõ ràng phải làm | Chọn alternatives team thực sự đã cân nhắc |
 | Không có trọng số | Mọi tiêu chí bằng nhau → vô nghĩa | Gán trọng số, buộc prioritize |
 | Trade-off = "không có" | Mọi quyết định đều có cái mất | Hỏi: "Cái gì sẽ khó hơn vì quyết định này?" |
-| Evidence = "ai cũng biết" | Opinion, không phải evidence | Dẫn nguồn: benchmark, incident, code, docs |
+| Evidence = "ai cũng biết" | Opinion, không phải evidence | Dẫn nguồn: benchmark, production evidence, code, docs |
 | Sửa ADR đã accepted | Mất lịch sử quyết định | Viết ADR mới supersedes cái cũ |
 | ADR quá dài (> 2 trang) | Gộp nhiều quyết định | Tách thành nhiều ADR, mỗi cái 1 quyết định |
 | Bỏ section "Hệ quả" | Không biết cái mất khi deploy | Luôn viết cả tích cực lẫn tiêu cực |

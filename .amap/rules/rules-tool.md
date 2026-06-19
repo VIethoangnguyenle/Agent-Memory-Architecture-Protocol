@@ -126,8 +126,6 @@ artifact-type của node) và pass:
   enforcement sau) gác cửa cuối cho rule `mechanically_checkable`.
 - Thiếu slice/context trong khi chạy → subagent ghi `CONTEXT_REQUEST.<node-id>.md`, KHÔNG tự explore.
 
-Lý do: codebase lớn cần knowledge-first evidence đã verify; executor không tự suy đoán
-hay mở rộng blast radius.
+Executor phải dùng knowledge slice đã verify; không tự suy đoán hoặc mở rộng blast radius.
 
 ---
-

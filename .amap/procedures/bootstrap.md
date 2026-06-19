@@ -18,10 +18,10 @@ READ: {{ platform.framework_root }}/rules/rules-exec.md         ← data/arch/co
 READ: {{ platform.framework_root }}/rules/rules-knowledge.md    ← knowledge lifecycle + path
 READ: {{ platform.framework_root }}/rules/rules-guard.md        ← pre-invoke guards (đọc SAU cùng)
 ```
-Logou
+
 ### PHASE 0.5 — External KI Conflict Check
 
-> Ngăn "false sense of completeness" khi agent runtime có hệ thống KI external (vd: Cursor rules, GitHub Copilot instructions, Antigravity knowledge, v.v.)
+> External KI (vd: Cursor rules, GitHub Copilot instructions, Antigravity knowledge, v.v.) chỉ được dùng làm pointer.
 
 ```
 DETECT external KI:
@@ -49,10 +49,7 @@ IF external KI NOT detected:
   → tiếp tục bình thường
 ```
 
-**Lý do**: Một class lỗi đã quan sát được — agent dựa vào KI external (vd một file `*-rules.md` do tool
-runtime sinh ra: không version-controlled, không có DNA judgment layer) thay vì
-`{{ platform.framework_root }}/knowledge/long-term/conventions.yaml`. External KI tạo ảo giác "đã đủ context" trong khi thiếu
-hoàn toàn judgment layer.
+**Constraint**: Nếu KI external mâu thuẫn với `{{ platform.framework_root }}/knowledge/`, luôn ưu tiên framework knowledge.
 
 **Periodic re-scan**: Ngoài bootstrap, cũng chạy scan này khi:
 - `knowledge-curator` chạy `archive_active_context` (kiểm tra xem có KI mới xuất hiện).
@@ -70,7 +67,7 @@ READ {{ platform.framework_root }}/skills/skill-index.yaml
   ON ERROR (file corrupt): SKIP + WARN
 ```
 
-> **Lý do lazy-load**: Đọc `skill-index.yaml` (index tĩnh) thay vì quét toàn bộ 20+ file `SKILL.md` (2,000-6,000 dòng) giúp giảm bootstrap latency và token overhead (Bookkeeping Diet). Full instructions chỉ được đọc khi skill thực sự được kích hoạt.
+> Full skill instructions chỉ được đọc khi trigger condition match.
 
 ---
 

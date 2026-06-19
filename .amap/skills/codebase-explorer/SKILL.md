@@ -225,7 +225,7 @@ Chỉ đọc phần cần thiết, không đọc toàn bộ codebase.
 >
 > → Agent **PHẢI** gọi `db-explorer` hoặc dùng MCP `db-remote` trực tiếp để **verify data thực tế** trước khi ghi kết luận gap vào EXPLORE_CONTEXT.
 
-**Lý do**: Chỉ nhìn code sẽ dẫn tới kết luận sai về scope thay đổi. Ví dụ: code có enum thiếu entry nhưng DB config đã sẵn sàng → gap thực tế nhỏ hơn nhiều so với suy luận từ code alone.
+Không kết luận gap chỉ từ code nếu gap đó có thể được verify bằng DB.
 
 **Checklist tối thiểu khi trigger**:
 1. Xác định bảng config/data liên quan từ Factory/Entity name.
@@ -286,4 +286,3 @@ Trong `{{ platform.framework_root }}/knowledge/active/AGENT_TRANSPARENCY.md`:
 - **[G2] Identifier consistency**: Dùng cùng loại identifier (node_id hoặc file path) xuyên suốt phiên. Đoán identifier sẽ gây lỗi.
 - **[G3] Provider lag**: Nếu user vừa edit code, provider có thể chưa cập nhật (<5s delay). Khi kết quả cũ cho file mới sửa, yêu cầu provider refresh.
 - **[G4] Null operations**: Khi provider không hỗ trợ operation (mapping = null), không được suy luận kết quả. Ghi hạn chế rõ ràng.
-

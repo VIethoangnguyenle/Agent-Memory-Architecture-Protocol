@@ -95,8 +95,7 @@ Agent infrastructure (skills, workflows, scripts, rules) nằm ở `{{ platform.
     - User chạy `/convention-scan [U]`, HOẶC
     - User xác nhận rõ ràng "bỏ qua re-scan, tiếp tục" (ghi lý do vào AGENT_TRANSPARENCY)
   - Không block `/task <input>` (Pha 1 exploration vẫn OK — chưa sinh code)
-- Lý do: conventions.yaml stale là silent failure — agent không biết mình dùng rule cũ.
-  Khác với token overhead (có thể detect), staleness không có warning tự nhiên.
+- Re-scan gate bảo vệ các pha sinh spec/code khỏi `conventions.yaml` stale.
 
 ---
 

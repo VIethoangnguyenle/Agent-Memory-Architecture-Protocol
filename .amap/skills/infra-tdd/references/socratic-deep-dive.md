@@ -116,7 +116,7 @@ Khi không có MCP tools, chạy deep-dive bằng câu hỏi trực tiếp từ 
 | F2 | Nếu {dependency} chết 30 phút, user experience ra sao? |
 | F3 | Có single point of failure nào không? |
 | F4 | Recovery time (RTO) mục tiêu là bao lâu? Hiện tại đạt được không? |
-| F5 | Lần cuối hệ thống tương tự gặp incident là khi nào? Root cause là gì? |
+| F5 | Sự cố vận hành tương tự gần nhất là gì? Root cause là gì? |
 
 **Với UA**: Dùng `{{ tools.get_dependencies }}(direction="in")` để tìm mọi thứ phụ thuộc module này → single point of failure.
 

@@ -82,7 +82,7 @@ Cách xác định tier:
 - Khi vượt 100%:
   - **Hardstop** — dừng pha, cập nhật `AGENT_TRANSPARENCY.md`, hỏi user có muốn tiếp tục không.
   - Không được tự mở rộng budget mà không có xác nhận của user.
-- Lý do: Ngăn agent loop không giới hạn khi gặp KG query mơ hồ hoặc sparse results.
+- Budget hardstop áp dụng cả khi KG query mơ hồ hoặc kết quả sparse.
 
 ### [CRITICAL] R-Exec-3b: Hybrid Contract DAG context-request budget
 

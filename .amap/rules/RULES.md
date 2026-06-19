@@ -15,7 +15,7 @@
   4. Hướng dẫn trong từng `SKILL.md`.
   5. Chat trực tiếp với user.
 
-## Importance Markers (Rule Diet)
+## Importance Markers
 
 Để tối ưu hóa sự chú ý (attention) của agent, các rule được đánh dấu:
 - `[CRITICAL]`: Core constraint, **không được vi phạm** trong bất kỳ hoàn cảnh nào.
