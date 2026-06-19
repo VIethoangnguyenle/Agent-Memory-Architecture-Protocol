@@ -44,6 +44,24 @@ def test_extracts_path_from_antigravity_toolcall_payload():
     assert wg.extract_target_paths(payload) == [Path("src/App.java")]
 
 
+def test_extracts_targetfile_from_antigravity_toolcall_payload():
+    payload = {
+        "toolCall": {
+            "name": "replace_file_content",
+            "args": {"TargetFile": "src/App.java"},
+        }
+    }
+    assert wg.extract_target_paths(payload) == [Path("src/App.java")]
+
+
+def test_extracts_targetfile_from_antigravity_tool_input_payload():
+    payload = {
+        "tool_name": "write_to_file",
+        "tool_input": {"TargetFile": "src/App.java"},
+    }
+    assert wg.extract_target_paths(payload) == [Path("src/App.java")]
+
+
 def test_allows_framework_and_openspec_artifact_writes(tmp_path):
     assert wg.evaluate_write(tmp_path, Path(".amap/knowledge/active/KNOWLEDGE_CHECKPOINT.md")).ok is True
     assert wg.evaluate_write(tmp_path, Path("openspec/changes/x/specs/foo/spec.md")).ok is True
