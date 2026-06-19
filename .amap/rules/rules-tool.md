@@ -87,6 +87,15 @@ Khi kết quả memory ảnh hưởng đến reasoning, agent PHẢI ghi vào `A
 - Độ tin cậy: `CAO | TRUNG-BÌNH | THẤP`
 - Ghi chú: `agent-memory recall — ảnh hưởng reasoning`
 
+#### Degrade khi agent-memory không cấu hình
+
+Nếu `resolved-config.yaml → mcps` KHÔNG chứa `agent-memory`:
+- Mọi `memory_smart_search` / `memory_recall` bị **bỏ qua** — KHÔNG gọi, KHÔNG bịa kết quả.
+- Ghi vào `AGENT_TRANSPARENCY.md`: `agent-memory unavailable — skip recall/save`.
+- M7 post-task push (xem `knowledge-curator`) tự bỏ qua ở Tầng 0 (pre-check).
+
+Đây là degrade-không-bịa, đồng dạng mô hình KG (`KG unavailable — grep fallback, MEDIUM`).
+
 #### Bảo vệ đường ghi (Write-path guard)
 
 Gọi `memory_save` hoặc `memory_governance_delete` ngoài `knowledge-curator` post-task hook là **CẤM**.
