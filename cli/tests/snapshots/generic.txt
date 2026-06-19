@@ -20,7 +20,9 @@
 .amap/knowledge/templates/INTEGRATION_REQUEST.tpl.md
 .amap/knowledge/templates/KNOWLEDGE_CHECKPOINT.tpl.md
 .amap/knowledge/templates/KNOWLEDGE_PACK.tpl.md
+.amap/knowledge/templates/NODE_CHECKPOINT.tpl.md
 .amap/knowledge/templates/REQUIREMENT.tpl.md
+.amap/knowledge/templates/TASK_HANDOFF.tpl.md
 .amap/knowledge/templates/TOKEN_LOG.tpl.md
 .amap/knowledge/templates/changerequest.tpl.md
 .amap/knowledge/templates/feature.tpl.md

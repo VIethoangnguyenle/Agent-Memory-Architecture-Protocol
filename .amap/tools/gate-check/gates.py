@@ -6,6 +6,8 @@ checkpoint/report — never whether a tool was 'called'. See spec §2.
 import re
 from dataclasses import dataclass
 
+import yaml
+
 
 @dataclass
 class Result:
@@ -79,4 +81,43 @@ def validate_handoff_slice(text: str) -> Result:
     m = re.search(r"##\s+Applicable DNA/Conventions[ \t]*\n(.*?)(?=\n##\s|\Z)", text, re.DOTALL)
     if not m or not _RULE_ID.search(m.group(1)):
         return Result(False, "handoff missing non-empty 'Applicable DNA/Conventions' with rule-ids")
+    return Result(True)
+
+
+_SECTION = r"##\s+{name}[ \t]*\n(.*?)(?=\n##\s|\Z)"
+
+
+def _section_has_text(text: str, name: str) -> bool:
+    pattern = re.compile(_SECTION.format(name=re.escape(name)), re.DOTALL | re.IGNORECASE)
+    match = pattern.search(text)
+    return bool(match and match.group(1).strip())
+
+
+def validate_context_request(text: str) -> Result:
+    """Validate a subagent CONTEXT_REQUEST (YAML schema shared with the
+    microloop-orchestrator contract: request_type=='context' + substantive
+    'missing' evidence and a 'blocked_reason')."""
+    try:
+        data = yaml.safe_load(text) or {}
+    except yaml.YAMLError as exc:
+        return Result(False, f"context request is not valid YAML: {exc}")
+    if not isinstance(data, dict):
+        return Result(False, "context request must be a YAML mapping")
+    if data.get("request_type") != "context":
+        return Result(False, "context request must set request_type: context")
+    missing = data.get("missing")
+    if not isinstance(missing, list) or not missing:
+        return Result(False, "context request must list non-empty 'missing' evidence")
+    if not str(data.get("blocked_reason") or "").strip():
+        return Result(False, "context request must explain 'blocked_reason'")
+    return Result(True)
+
+
+def validate_node_checkpoint(text: str) -> Result:
+    required = ("Files Changed", "Requirement Satisfied", "Evidence Used", "Verification")
+    missing = [name for name in required if not _section_has_text(text, name)]
+    if missing:
+        return Result(False, f"node checkpoint missing sections: {', '.join(missing)}")
+    if not _RULE_ID.search(text):
+        return Result(False, "node checkpoint missing rule-id evidence")
     return Result(True)
