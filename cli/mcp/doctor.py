@@ -46,13 +46,19 @@ def build_doctor_status(target: Path, home: Path) -> DoctorStatus:
             native_state="unavailable",
             matched=[],
             missing=selected,
-            bridge_state="unavailable",
+            bridge_state="not-probed",
             recommendation="create or link a valid MCP config with amap doctor mcp --fix",
         )
 
     matched, missing = selected_server_matches(best_config, selected)
-    native_state = "configured" if matched else "unavailable"
-    bridge_state = "probe-not-run" if matched else "unavailable"
+    if matched and not missing:
+        native_state = "configured"
+    elif matched:
+        native_state = "partial"
+    else:
+        native_state = "unavailable"
+
+    bridge_state = "not-probed"
     return DoctorStatus(
         platform=platform,
         framework_root=framework_root,

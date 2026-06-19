@@ -3,6 +3,7 @@ import json
 import yaml
 
 from cli.commands.doctor import run_doctor_mcp
+from cli.mcp.doctor import build_doctor_status
 
 
 def write_resolved(target, platform="antigravity", mcps=None):
@@ -33,6 +34,7 @@ def test_doctor_writes_report_for_missing_native_config(tmp_path):
     assert "Platform: antigravity" in text
     assert "socraticode" in text
     assert "native: unavailable" in text
+    assert "bridge: not-probed" in text
 
 
 def test_doctor_matches_selected_server_in_existing_config(tmp_path):
@@ -47,3 +49,29 @@ def test_doctor_matches_selected_server_in_existing_config(tmp_path):
     text = (target / ".agents" / "knowledge" / "active" / "mcp-doctor-report.md").read_text(encoding="utf-8")
     assert "matched: socraticode" in text
     assert "missing: db-remote" in text
+    assert "native: partial" in text
+    assert "bridge: not-probed" in text
+
+
+def test_build_doctor_status_marks_partial_native_state_for_partial_match(tmp_path):
+    target = tmp_path / "proj"
+    home = tmp_path / "home"
+    write_resolved(target, mcps=["socraticode", "db-remote"])
+    cfg = target / ".agents" / "mcp_config.json"
+    cfg.write_text(json.dumps({"mcpServers": {"socraticode": {"command": "npx"}}}), encoding="utf-8")
+
+    status = build_doctor_status(target, home)
+
+    assert status.native_state == "partial"
+    assert status.bridge_state == "not-probed"
+
+
+def test_build_doctor_status_marks_missing_config_as_unavailable_and_not_probed(tmp_path):
+    target = tmp_path / "proj"
+    home = tmp_path / "home"
+    write_resolved(target)
+
+    status = build_doctor_status(target, home)
+
+    assert status.native_state == "unavailable"
+    assert status.bridge_state == "not-probed"
