@@ -11,6 +11,7 @@ Dashboard cần chuyển từ "đọc artifact rời rạc và suy luận" sang 
 để khi agent chính sinh subagent, chạy task, fail gate, hoặc hoàn tất, UI thấy được ngay:
 
 - agent cha đang ở bước nào và vừa làm gì;
+- parent brain/cuộc trò chuyện IDE của agent cha đang chứa quyết định gì;
 - phase hiện tại của task chính;
 - progress thật `x/N`;
 - subagent nào được spawn;
@@ -26,6 +27,7 @@ Contract này vẫn là filesystem-first, local-only, không thêm dependency ru
 | File | Vai trò | Người ghi | Dashboard đọc |
 |------|---------|-----------|----------------|
 | `AGENT_TRANSPARENCY.md` | phase, ticket, confidence, cảnh báo | workflow/task runner | có |
+| `PARENT_BRAIN.md` | mirror ngắn của IDE brain/cuộc trò chuyện với human cho agent cha | parent runtime hoặc IDE adapter | có |
 | `microloop/TASK_QUEUE.md` | danh sách task, status, active task, progress | microloop orchestrator | có |
 | `TASK_HANDOFF.*.md` | prompt/handoff giao cho subagent | orchestrator | có |
 | `microloop/TASK_HANDOFF.*.md` | prompt/handoff theo node khi Pha 3 chạy | orchestrator | có |
@@ -33,6 +35,11 @@ Contract này vẫn là filesystem-first, local-only, không thêm dependency ru
 | `microloop/ACTIVITY_LOG.jsonl` | event timeline append-only cho agent cha và subagent | orchestrator và hooks | có |
 
 Dashboard không ghi các file này.
+
+`PARENT_BRAIN.md` là mirror dashboard-readable. Source of truth trực quan vẫn là brain/conversation
+của IDE/runtime (ví dụ Antigravity brain, Claude/Codex conversation). Khi runtime có API/path ổn định,
+adapter nên sync phần cần xem sang file này thay vì để dashboard phụ thuộc trực tiếp vào storage nội bộ
+của từng IDE.
 
 ## 3. Schema: `TASK_QUEUE.md`
 
@@ -140,6 +147,7 @@ Event names:
 
 - `phase_changed`
 - `parent_note`
+- `parent_brain_updated`
 - `spec_started`
 - `spec_done`
 - `apply_started`
@@ -176,6 +184,12 @@ The dashboard reader should build a single project snapshot:
   "tasks_done": 1,
   "active_task": "Create agent-readable SRS for Napas transfer",
   "progress_pct": 50,
+  "parent_brain": {
+    "source": "ide-brain-mirror",
+    "path": ".agents/knowledge/active/PARENT_BRAIN.md",
+    "content": "# PARENT_BRAIN\n...",
+    "updated_at": "2026-06-19T23:49:00+07:00"
+  },
   "subagents": [
     {
       "id": "napas-human",
@@ -194,15 +208,17 @@ The dashboard reader should build a single project snapshot:
 Priority rules:
 
 1. If `TASK_QUEUE.md` exists, task/subagent status comes from it.
-2. If handoff files exist but no queue exists, show subagents as `spawned` and phase-only progress.
-3. If result exists but queue status is missing, infer result presence as `done` only for display, not for progress math.
-4. Malformed artifact marks the run `stale` and adds an error badge; one bad file must not break the whole dashboard.
+2. If `PARENT_BRAIN.md` exists, show it as the parent-agent primary context.
+3. If handoff files exist but no queue exists, show subagents as `spawned` and phase-only progress.
+4. If result exists but queue status is missing, infer result presence as `done` only for display, not for progress math.
+5. Malformed artifact marks the run `stale` and adds an error badge; one bad file must not break the whole dashboard.
 
 ## 8. UI Requirements
 
 P6 UI consumes this contract and displays:
 
 - run card: phase, ticket, progress bar, updated time;
+- parent brain panel: IDE brain/conversation mirror, path, updated time;
 - parent-agent timeline: phase/spec/apply/archive events with `actor: parent`;
 - subagent lane: animated spawn nodes, status badges, prompt drawer, result drawer;
 - timeline: event stream from `ACTIVITY_LOG.jsonl`;
@@ -214,6 +230,7 @@ The UI must avoid showing `0/0 (0%)` when no `TASK_QUEUE.md` exists. It should s
 ## 9. Acceptance Criteria
 
 - A fixture project with two `TASK_HANDOFF.*.md` files but no queue shows two spawned subagents and phase-only status.
+- A fixture project with `PARENT_BRAIN.md` shows parent context separate from subagent prompts.
 - A fixture project with `TASK_QUEUE.md` containing two tasks shows `0/2`, then `1/2`, then `2/2` as statuses change.
 - A fixture project with `TASK_RESULT.*.md` shows result drawers.
 - A fixture project with `ACTIVITY_LOG.jsonl` shows a chronological timeline.

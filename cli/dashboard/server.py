@@ -60,12 +60,19 @@ def read_runtime(project_path: str) -> dict:
     """Read dashboard runtime artifacts beyond the core RunState."""
     active = _active_dir(project_path)
     if active is None:
-        return {"subagents": [], "events": [], "errors": [], "stale": False}
+        return {
+            "parent_brain": None,
+            "subagents": [],
+            "events": [],
+            "errors": [],
+            "stale": False,
+        }
     tasks, queue_errors = _read_queue(active)
     result_paths = _collect_artifacts(active, "TASK_RESULT*.md")
     results = {_result_id(p): p for p in result_paths}
     handoff_paths = _collect_artifacts(active, "TASK_HANDOFF*.md")
     handoffs = {_handoff_id(p): p for p in handoff_paths}
+    parent_brain = _read_parent_brain(active)
 
     subagents = []
     seen = set()
@@ -108,6 +115,7 @@ def read_runtime(project_path: str) -> dict:
     events, event_errors = _read_events(active)
     errors = queue_errors + event_errors
     return {
+        "parent_brain": parent_brain,
         "subagents": subagents,
         "events": events,
         "errors": errors,
@@ -155,6 +163,27 @@ def _read_events(active: Path) -> tuple[list[dict], list[str]]:
         else:
             errors.append(f"{log_path}:{lineno}: expected object")
     return events, errors
+
+
+def _read_parent_brain(active: Path) -> Optional[dict]:
+    for path in (active / "PARENT_BRAIN.md", active / "PARENT_CONVERSATION.md"):
+        content = _read_optional_text(path)
+        if content:
+            return {
+                "source": _parent_brain_source(content) or "ide-brain-mirror",
+                "path": str(path),
+                "content": content,
+                "updated_at": _latest_mtime([path]),
+            }
+    return None
+
+
+def _parent_brain_source(content: str) -> Optional[str]:
+    for line in content.splitlines():
+        stripped = line.strip()
+        if stripped.lower().startswith("source:"):
+            return stripped.split(":", 1)[1].strip().strip("'\"") or None
+    return None
 
 
 def _collect_artifacts(active: Path, pattern: str) -> list[Path]:

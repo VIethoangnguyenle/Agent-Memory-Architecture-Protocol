@@ -32,6 +32,10 @@ def _activity_log_path(active_dir):
     return _microloop_dir(active_dir) / "ACTIVITY_LOG.jsonl"
 
 
+def _parent_brain_path(active_dir):
+    return Path(active_dir) / "PARENT_BRAIN.md"
+
+
 def _project_rel(framework_root, *parts):
     return str(Path(framework_root, "knowledge", "active", *parts))
 
@@ -56,6 +60,43 @@ def record_parent_event(active_dir, event, phase=None, summary=None, **fields):
         summary=summary,
         **fields,
     )
+
+
+def write_parent_brain(active_dir, body, source="ide-brain-mirror", append=False, **fields):
+    """Write a dashboard-visible mirror of the parent IDE brain/conversation."""
+    path = _parent_brain_path(active_dir)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    updated_at = _now_iso()
+    body = str(body).rstrip()
+    if append and path.exists():
+        current = path.read_text(encoding="utf-8").rstrip()
+        content = f"{current}\n\n{body}\n" if current else f"{body}\n"
+    else:
+        content = (
+            "# PARENT_BRAIN\n\n"
+            f"source: {source}\n"
+            f"updated_at: {updated_at}\n\n"
+            f"{body}\n"
+        )
+    path.write_text(content, encoding="utf-8")
+    summary = fields.pop("summary", None) or _first_nonempty_line(body) or "Parent brain updated."
+    record_parent_event(
+        active_dir,
+        "parent_brain_updated",
+        summary=summary,
+        source=source,
+        path=str(path),
+        **fields,
+    )
+    return path
+
+
+def _first_nonempty_line(text):
+    for line in str(text).splitlines():
+        stripped = line.strip()
+        if stripped:
+            return stripped[:160]
+    return None
 
 
 def initialize_runtime_queue(active_dir, ticket_id, spec_path, tasks,

@@ -91,6 +91,32 @@ def test_snapshot_includes_subagent_handoff_prompts(tmp_path):
     assert runs[0]["subagents"][1]["name"] == "napas agent"
 
 
+def test_snapshot_includes_parent_brain_mirror(tmp_path):
+    reg = tmp_path / "projects.yaml"
+    proj, active = _make_amap_project(tmp_path)
+    (active / "PARENT_BRAIN.md").write_text(
+        textwrap.dedent(
+            """\
+            # PARENT_BRAIN
+
+            source: antigravity-brain
+
+            Human asked why parent progress is invisible.
+            Parent decided to mirror IDE brain into dashboard.
+            """
+        ),
+        encoding="utf-8",
+    )
+    registry.register(reg, str(proj))
+
+    run = server.snapshot(reg)[0]
+
+    assert run["parent_brain"]["source"] == "antigravity-brain"
+    assert run["parent_brain"]["path"].endswith("PARENT_BRAIN.md")
+    assert "mirror IDE brain" in run["parent_brain"]["content"]
+    assert run["parent_brain"]["updated_at"]
+
+
 def test_snapshot_merges_queue_result_and_activity_log(tmp_path):
     reg = tmp_path / "projects.yaml"
     proj, active = _make_amap_project(tmp_path)
@@ -189,6 +215,7 @@ def test_index_served(running_server):
         assert r.headers["Cache-Control"] == "no-store"
         assert "AMAP" in body
         assert "view result" in body
+        assert "parent brain" in body
         assert "event-parent" in body
 
 

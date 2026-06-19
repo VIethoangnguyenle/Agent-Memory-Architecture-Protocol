@@ -328,6 +328,9 @@ Mục tiêu: dùng OpenSpec để áp dụng spec đã được chấp thuận v
      - Log cả vòng đời của agent cha vào `{{ platform.framework_root }}/knowledge/active/microloop/ACTIVITY_LOG.jsonl`,
        không chỉ subagent. Dùng `actor: parent` cho các event như `phase_changed`,
        `parent_note`, `spec_started`, `spec_done`, `apply_started`, `archive_started`, `archive_done`.
+     - Mirror context trực quan của agent cha từ IDE brain/cuộc trò chuyện với human vào
+       `{{ platform.framework_root }}/knowledge/active/PARENT_BRAIN.md` khi bắt đầu apply và khi có quyết định mới.
+       Nếu dùng helper Python, gọi `write_parent_brain(...)`; event tương ứng là `parent_brain_updated`.
      - Trước khi dispatch executor/subagent đầu tiên, tạo `{{ platform.framework_root }}/knowledge/active/microloop/TASK_QUEUE.md`
        từ danh sách node/task sẽ chạy, với `status: pending`, `handoff_path`, `result_path`, và `depends_on`.
      - Append `task_queue_created` vào `{{ platform.framework_root }}/knowledge/active/microloop/ACTIVITY_LOG.jsonl`.
@@ -340,7 +343,7 @@ Mục tiêu: dùng OpenSpec để áp dụng spec đã được chấp thuận v
        `TASK_RESULT.<node-id>.md`, append `subagent_blocked`, rồi dừng để user quyết định.
      - Có thể dùng helpers trong `{{ platform.framework_root }}/tools/microloop-orchestrator/orchestrator.py`:
        `initialize_runtime_queue`, `write_task_handoff`, `update_task_status`, `write_task_result`,
-       `append_activity_event`, `record_parent_event`.
+       `append_activity_event`, `record_parent_event`, `write_parent_brain`.
    a. Build `KNOWLEDGE_PACK.md` from REQUIREMENT, EXPLORE_CONTEXT, knowledge-snapshot,
       conventions, author-dna, OpenSpec artifacts, UA/KG evidence, db-explorer evidence, and relevant archive/memory.
       - If task complexity = `complex` and KG graph is unavailable/stale: BLOCK unless user explicitly overrides.

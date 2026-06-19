@@ -30,6 +30,12 @@ def test_runtime_contract_emits_queue_handoff_result_and_events(tmp_path):
         summary="Parent entered apply phase.",
         ticket_id="SME-TRANSFER-002",
     )
+    orchestrator.write_parent_brain(
+        active,
+        "Human asked for parent progress from the IDE brain.",
+        source="antigravity-brain",
+        ticket_id="SME-TRANSFER-002",
+    )
     orchestrator.write_task_handoff(active, "napas-human", "# TASK_HANDOFF.napas-human\n")
     orchestrator.write_task_handoff(active, "napas-agent", "# TASK_HANDOFF.napas-agent\n")
     orchestrator.update_task_status(active, "napas-human", "in_progress", event="subagent_started")
@@ -45,12 +51,14 @@ def test_runtime_contract_emits_queue_handoff_result_and_events(tmp_path):
     assert [task["id"] for task in queue["tasks"]] == ["napas-human", "napas-agent"]
     assert statuses == {"napas-human": "done", "napas-agent": "pending"}
     assert (active / "TASK_HANDOFF.napas-human.md").exists()
+    assert "source: antigravity-brain" in (active / "PARENT_BRAIN.md").read_text(encoding="utf-8")
     assert (active / "microloop" / "TASK_RESULT.napas-human.md").exists()
     assert loaded["tasks"][0]["handoff_path"] == ".agents/knowledge/active/TASK_HANDOFF.napas-human.md"
     assert loaded["tasks"][0]["result_path"] == ".agents/knowledge/active/microloop/TASK_RESULT.napas-human.md"
     assert [event["event"] for event in events] == [
         "task_queue_created",
         "phase_changed",
+        "parent_brain_updated",
         "subagent_spawned",
         "subagent_spawned",
         "subagent_started",
@@ -59,7 +67,9 @@ def test_runtime_contract_emits_queue_handoff_result_and_events(tmp_path):
     ]
     assert events[0]["actor"] == "parent"
     assert events[1]["actor"] == "parent"
-    assert events[2]["actor"] == "subagent"
+    assert events[2]["actor"] == "parent"
+    assert events[2]["source"] == "antigravity-brain"
+    assert events[3]["actor"] == "subagent"
 
 
 def test_update_task_status_rejects_unknown_task(tmp_path):
