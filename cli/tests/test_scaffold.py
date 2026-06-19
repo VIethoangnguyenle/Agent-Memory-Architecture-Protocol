@@ -35,6 +35,20 @@ def test_has_capability(amap_root):
     assert has_capability([], caps, "code_exploration") is False
 
 
+def test_manifest_declares_agent_memory_capability(amap_root):
+    manifest = load_manifest(amap_root)
+    caps = manifest["mcp_capabilities"]
+    assert "agent-memory" in caps
+    assert caps["agent-memory"]["provides"] == "memory"
+
+
+def test_has_capability_recognizes_memory(amap_root):
+    manifest = load_manifest(amap_root)
+    caps = manifest["mcp_capabilities"]
+    assert has_capability(["agent-memory"], caps, "memory") is True
+    assert has_capability([], caps, "memory") is False
+
+
 def test_resolve_source_path_maps_skills(amap_root):
     p = resolve_source_path(amap_root, "skills/codebase-explorer/")
     assert p == amap_root / ".amap/skills/codebase-explorer/"
