@@ -331,3 +331,9 @@ def test_cli_teaching_moment_exit_codes(tmp_path):
     assert cli.main(["teaching-moment", str(f)]) == 0
     f.write_text(_tm("status:\nnote:"), encoding="utf-8")
     assert cli.main(["teaching-moment", str(f)]) == 1
+
+
+def test_seeded_template_fails_teaching_moment_validator():
+    tpl = Path(__file__).resolve().parents[3] / "knowledge" / "templates" / "AGENT_TRANSPARENCY.tpl.md"
+    content = tpl.read_text(encoding="utf-8")
+    assert g.validate_teaching_moment(content).ok is False
