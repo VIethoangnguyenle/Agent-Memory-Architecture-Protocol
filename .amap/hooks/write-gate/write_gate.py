@@ -24,6 +24,7 @@ _DYNAMIC = re.compile(r"[\$`*?]")
 _REDIRECT_RE = re.compile(r"(?<![0-9>])>>?\|?\s*([^\s|&;<>]+)")
 _SEGMENT_RE = re.compile(r"[\n;]|\|\||&&|(?<!>)\|")
 _DEVNULL = {"/dev/null", "/dev/stdout", "/dev/stderr"}
+_SHELL_TOOLS = {"bash", "shell", "local_shell", "run_command", "run_terminal_cmd"}
 
 
 @dataclass
@@ -156,6 +157,24 @@ def _git_ignored(project_root: Path, path: Path) -> bool:
     return result.returncode == 0
 
 
+def _tool_name(payload: dict) -> str:
+    return payload.get("tool_name") or (payload.get("toolCall") or {}).get("name") or ""
+
+
+def _is_shell_tool(name: str) -> bool:
+    return name.lower() in _SHELL_TOOLS
+
+
+def _command_text(payload: dict) -> str:
+    tool_input = payload.get("tool_input") or {}
+    tool_args = (payload.get("toolCall") or {}).get("args") or {}
+    return tool_input.get("command") or tool_args.get("CommandLine") or tool_args.get("command") or ""
+
+
+def _warn(message: str) -> None:
+    print(message, file=sys.stderr)
+
+
 def extract_target_paths(payload: dict):
     tool_input = payload.get("tool_input") or {}
     tool_call = payload.get("toolCall") or {}
@@ -254,15 +273,32 @@ def main(argv=None, stdin_text=None):
     args = parser.parse_args(argv)
     raw = stdin_text if stdin_text is not None else sys.stdin.read()
     payload = json.loads(raw or "{}")
-    targets = extract_target_paths(payload)
-    if not targets:
-        decision = Decision(False, "Unable to identify target path for write-gate payload")
+    root = Path.cwd()
+
+    if _is_shell_tool(_tool_name(payload)):
+        targets, unresolved = parse_shell_writes(_command_text(payload))
+        targets = [t for t in targets if not _git_ignored(root, t)]
+        if not targets:
+            if unresolved:
+                _warn("write-gate: shell write with unresolved path — allowed (heuristic).")
+            decision = Decision(True)
+        else:
+            decisions = [
+                evaluate_write(root, target, framework_root=args.framework_root)
+                for target in targets
+            ]
+            decision = next((item for item in decisions if not item.ok), Decision(True))
     else:
-        decisions = [
-            evaluate_write(Path.cwd(), target, framework_root=args.framework_root)
-            for target in targets
-        ]
-        decision = next((item for item in decisions if not item.ok), Decision(True))
+        targets = extract_target_paths(payload)
+        if not targets:
+            decision = Decision(False, "Unable to identify target path for write-gate payload")
+        else:
+            decisions = [
+                evaluate_write(root, target, framework_root=args.framework_root)
+                for target in targets
+            ]
+            decision = next((item for item in decisions if not item.ok), Decision(True))
+
     return _print_runtime_decision(args.runtime, decision)
 
 

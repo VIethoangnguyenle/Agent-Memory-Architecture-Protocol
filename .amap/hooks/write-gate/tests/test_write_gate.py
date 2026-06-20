@@ -269,3 +269,58 @@ def test_git_ignored_false_for_tracked_source(tmp_path):
 
 def test_git_ignored_false_when_not_a_git_repo(tmp_path):
     assert wg._git_ignored(tmp_path, Path("coverage/lcov.info")) is False
+
+
+def test_bash_write_to_code_blocks_without_checkpoint(tmp_path, monkeypatch, capsys):
+    monkeypatch.chdir(tmp_path)
+    payload = {"tool_name": "Bash", "tool_input": {"command": "echo x > src/App.java"}}
+    code = wg.main(["--framework-root", ".amap"], stdin_text=json.dumps(payload))
+    captured = capsys.readouterr()
+    assert code == 2
+    assert "KNOWLEDGE_CHECKPOINT" in captured.err
+
+
+def test_bash_write_to_code_allows_with_valid_checkpoint(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    checkpoint = tmp_path / ".amap" / "knowledge" / "active" / "KNOWLEDGE_CHECKPOINT.md"
+    checkpoint.parent.mkdir(parents=True)
+    checkpoint.write_text(
+        "## DNA\nSP-6 staircase\n"
+        "## Codebase evidence\nnode_id: svc.UserService#42\nblast-radius: 3 nodes\n",
+        encoding="utf-8",
+    )
+    payload = {"tool_name": "Bash", "tool_input": {"command": "tee src/App.java"}}
+    code = wg.main(["--framework-root", ".amap"], stdin_text=json.dumps(payload))
+    assert code == 0
+
+
+def test_bash_readonly_command_allowed_fail_open(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    payload = {"tool_name": "Bash", "tool_input": {"command": "grep -r foo src && ls"}}
+    code = wg.main(["--framework-root", ".amap"], stdin_text=json.dumps(payload))
+    assert code == 0
+
+
+def test_bash_write_to_gitignored_path_allowed(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    subprocess.run(["git", "init", "-q"], cwd=str(tmp_path), check=True)
+    (tmp_path / ".gitignore").write_text("coverage/\n", encoding="utf-8")
+    payload = {"tool_name": "Bash", "tool_input": {"command": "echo x > coverage/lcov.info"}}
+    code = wg.main(["--framework-root", ".amap"], stdin_text=json.dumps(payload))
+    assert code == 0
+
+
+def test_bash_write_to_framework_artifact_allowed(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    payload = {"tool_name": "Bash", "tool_input": {"command": "echo x > .amap/knowledge/active/REQUIREMENT.md"}}
+    code = wg.main(["--framework-root", ".amap"], stdin_text=json.dumps(payload))
+    assert code == 0
+
+
+def test_bash_dynamic_write_warns_and_allows(tmp_path, monkeypatch, capsys):
+    monkeypatch.chdir(tmp_path)
+    payload = {"tool_name": "Bash", "tool_input": {"command": 'tee "$TARGET"'}}
+    code = wg.main(["--framework-root", ".amap"], stdin_text=json.dumps(payload))
+    captured = capsys.readouterr()
+    assert code == 0
+    assert "unresolved" in captured.err.lower()
