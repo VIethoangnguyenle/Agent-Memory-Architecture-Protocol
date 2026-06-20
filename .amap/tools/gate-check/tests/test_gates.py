@@ -1,5 +1,6 @@
 import importlib.util
 from pathlib import Path
+from textwrap import dedent
 
 MOD = Path(__file__).resolve().parents[1] / "gates.py"
 spec = importlib.util.spec_from_file_location("gates", MOD)
@@ -245,7 +246,7 @@ def _teaching_moment_section(body: str) -> str:
     return (
         "# AGENT_TRANSPARENCY\n\n"
         "## Teaching Moment Check\n\n"
-        f"{body.strip()}\n\n"
+        f"{dedent(body).strip()}\n\n"
         "## Violation Log\n\n"
     )
 
