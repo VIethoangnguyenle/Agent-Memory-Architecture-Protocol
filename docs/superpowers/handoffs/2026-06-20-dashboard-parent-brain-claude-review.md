@@ -117,3 +117,24 @@ This file is runtime state in the target project, not part of this repo commit.
 Implement an Antigravity best-effort sync adapter that reads a stable local
 conversation/brain source when available and writes the task-relevant summary into
 `PARENT_BRAIN.md`. The dashboard contract and UI are already ready for that.
+
+## Follow-Up Implemented By Codex
+
+Commit pending after this handoff:
+
+- Added `cli/dashboard/brain.py`.
+- Added `amap dashboard sync-brain --target <project> --brain-platform antigravity`.
+- The adapter reads:
+  - `~/.gemini/antigravity-cli/cache/last_conversations.json`
+  - `~/.gemini/antigravity/brain/<conversation-id>/...`
+- It mirrors recent text artifacts into:
+  - `<framework_root>/knowledge/active/PARENT_BRAIN.md`
+- It appends a parent event:
+  - `parent_brain_updated`
+
+New tests:
+
+```bash
+/usr/bin/python3 -m pytest cli/tests/test_dashboard_brain.py -q
+/usr/bin/python3 -m pytest cli/tests/test_dashboard_command.py -q
+```

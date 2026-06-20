@@ -112,3 +112,29 @@ def test_serve_action_dispatches(monkeypatch):
     run_dashboard(target="/tmp/x", action="serve", port=9000, no_browser=True)
 
     assert calls == {"target": "/tmp/x", "port": 9000, "open_browser": False}
+
+
+def test_sync_brain_action_dispatches(monkeypatch, capsys):
+    calls = {}
+
+    class Result:
+        written = True
+        reason = "ok"
+        path = "/tmp/x/.agents/knowledge/active/PARENT_BRAIN.md"
+        source = "antigravity-brain"
+        artifact_count = 2
+
+    def fake_sync_parent_brain(target, platform="antigravity"):
+        calls.update(target=target, platform=platform)
+        return Result()
+
+    import cli.dashboard.brain as brain_mod
+
+    monkeypatch.setattr(brain_mod, "sync_parent_brain", fake_sync_parent_brain)
+
+    run_dashboard(target="/tmp/x", action="sync-brain", brain_platform="antigravity")
+
+    out = capsys.readouterr().out
+    assert calls == {"target": "/tmp/x", "platform": "antigravity"}
+    assert "Synced parent brain" in out
+    assert "antigravity-brain" in out

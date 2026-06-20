@@ -21,11 +21,26 @@ def run_dashboard(
     path: Optional[str] = None,
     port: int = 7077,
     no_browser: bool = False,
+    brain_platform: str = "antigravity",
 ) -> None:
     if action == "serve":
         from cli.dashboard import server
 
         server.serve(target=target, port=port, open_browser=not no_browser)
+        return
+
+    if action == "sync-brain":
+        from cli.dashboard import brain
+
+        result = brain.sync_parent_brain(target, platform=brain_platform)
+        if result.written:
+            print(
+                f"\n  ✓ Synced parent brain: {result.path}"
+                f"\n    source: {result.source}"
+                f"\n    artifacts: {result.artifact_count}\n"
+            )
+        else:
+            print(f"\n  ⚠️  Parent brain not synced: {result.reason}\n")
         return
 
     reg = registry.default_registry_file()

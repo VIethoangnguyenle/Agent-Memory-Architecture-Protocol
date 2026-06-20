@@ -113,9 +113,9 @@ def main():
     dashboard_parser.add_argument(
         "action",
         nargs="?",
-        choices=["register", "unregister", "list", "serve"],
+        choices=["register", "unregister", "list", "serve", "sync-brain"],
         default=None,
-        help="register/unregister/list/serve; omit to print a progress snapshot",
+        help="register/unregister/list/serve/sync-brain; omit to print a progress snapshot",
     )
     dashboard_parser.add_argument(
         "--target", default=".", help="Project directory (default: current directory)",
@@ -128,6 +128,12 @@ def main():
     )
     dashboard_parser.add_argument(
         "--no-browser", action="store_true", help="Do not auto-open the browser on serve",
+    )
+    dashboard_parser.add_argument(
+        "--brain-platform",
+        choices=["antigravity"],
+        default="antigravity",
+        help="IDE brain source for dashboard sync-brain (default: antigravity)",
     )
 
     # ─── doctor ───
@@ -174,6 +180,7 @@ def main():
             path=args.path,
             port=args.port,
             no_browser=args.no_browser,
+            brain_platform=args.brain_platform,
         )
     elif args.command == "doctor" and args.doctor_command == "mcp":
         from cli.commands.doctor import run_doctor_mcp
