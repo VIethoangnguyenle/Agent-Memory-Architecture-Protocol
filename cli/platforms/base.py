@@ -30,6 +30,7 @@ REQUIRED_TOOL_KEYS = frozenset({
     "get_page",
     "list_spaces",
     "get_space_pages",
+    "db_query",
     "search_web",
     "read_url",
 })

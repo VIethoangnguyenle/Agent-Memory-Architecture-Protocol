@@ -43,6 +43,9 @@ class AntigravityPlatform(BasePlatform):
         "list_spaces":       "mcp_confluence-servicehub_confluence_list_spaces",
         "get_space_pages":   "mcp_confluence-servicehub_confluence_get_space_pages",
 
+        # ── Database (db_access MCP — server-level reference) ──
+        "db_query":          "db-remote",
+
         # ── Web & Browser ──
         "search_web":        "search_web",
         "read_url":          "read_url_content",

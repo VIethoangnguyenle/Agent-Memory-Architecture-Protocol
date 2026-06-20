@@ -63,7 +63,7 @@ skills:
     name: db-explorer
     version: '1.0'
     description: >
-      Khám phá logic tầng database (SQL + NoSQL) bằng MCP db-remote để cập nhật EXPLORE_CONTEXT.
+      Khám phá logic tầng database (SQL + NoSQL) bằng MCP {{ tools.db_query }} để cập nhật EXPLORE_CONTEXT.
       Dùng khi cần hiểu schema, constraint, data flow ở tầng DB cho task hiện tại.
       KHÔNG dùng cho: khám phá code/module (→ codebase-explorer),
       review kiến trúc tổng thể (→ architecture-reviewer), viết tài liệu (→ document-writer).
@@ -71,7 +71,7 @@ skills:
       - file: "{{ platform.framework_root }}/knowledge/active/REQUIREMENT.md"
         condition: not_skeleton
         on_fail: "ABORT — chạy requirement-analyst trước"
-      - tool: db-remote
+      - tool: "{{ tools.db_query }}"
         condition: exists
         on_fail: "WARN — không có DB access, ghi vào AGENT_TRANSPARENCY và hạ Độ tin cậy xuống THẤP"
   -
@@ -181,6 +181,13 @@ skills:
       Dùng khi đầu vào là tài liệu dài, wiki nhiều trang, hoặc PRD cần parse.
       KHÔNG dùng cho: ticket có sẵn đã rõ scope (→ requirement-analyst),
       ideation/brainstorm (→ openspec-explore), khám phá DB schema (→ db-explorer).
+    pre_conditions:
+      - file: "{{ platform.framework_root }}/knowledge/active/AGENT_TRANSPARENCY.md"
+        condition: exists
+        on_fail: "ABORT — bootstrap chưa chạy, gọi `/task` trước"
+      - input: doc_url_or_text
+        condition: not_empty
+        on_fail: "ABORT — thiếu tài liệu nguồn để extract"
   -
     name: spec-validator
     version: '1.1'

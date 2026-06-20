@@ -117,3 +117,13 @@ def test_get_tool_fails_for_unknown_required_operation():
         platform.get_tool("not_a_real_tool")
 
     assert "not_a_real_tool" in str(exc.value)
+
+
+def test_all_platforms_map_db_query():
+    for key, cls in PLATFORMS.items():
+        assert "db_query" in cls().tool_mapping, f"{key} missing db_query mapping"
+
+
+def test_db_query_resolves_in_render_context():
+    ctx = get_platform("claude-code").build_render_context(["db-remote"], "python")
+    assert ctx["tools"]["db_query"] == "db-remote"

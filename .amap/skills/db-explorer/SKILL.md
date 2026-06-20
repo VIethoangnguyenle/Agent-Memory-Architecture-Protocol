@@ -2,7 +2,7 @@
 name: db-explorer
 version: '1.0'
 description: >
-  Khám phá logic tầng database (SQL + NoSQL) bằng MCP db-remote để cập nhật EXPLORE_CONTEXT.
+  Khám phá logic tầng database (SQL + NoSQL) bằng MCP {{ tools.db_query }} để cập nhật EXPLORE_CONTEXT.
   Dùng khi cần hiểu schema, constraint, data flow ở tầng DB cho task hiện tại.
   KHÔNG dùng cho: khám phá code/module (→ codebase-explorer),
   review kiến trúc tổng thể (→ architecture-reviewer), viết tài liệu (→ document-writer).
@@ -10,7 +10,7 @@ pre_conditions:
   - file: "{{ platform.framework_root }}/knowledge/active/REQUIREMENT.md"
     condition: not_skeleton
     on_fail: "ABORT — chạy requirement-analyst trước"
-  - tool: db-remote
+  - tool: "{{ tools.db_query }}"
     condition: exists
     on_fail: "WARN — không có DB access, ghi vào AGENT_TRANSPARENCY và hạ Độ tin cậy xuống THẤP"
 ---
@@ -47,7 +47,7 @@ Dùng `db-explorer` khi:
 
 > [!IMPORTANT]
 > **Quy tắc Chống Hallucination & Thiết kế Bảng mới:**
-> 1. Đối với các bảng ĐÃ TỒN TẠI: Tuyệt đối không được đoán mò (hallucinate) cấu trúc. Phải lấy cấu trúc chính xác từ MCP `db-remote` hoặc thông qua các file JPA `@Entity` từ `codebase-explorer`. Nếu `@Entity` không có cột đó, không được giả định là DB có.
+> 1. Đối với các bảng ĐÃ TỒN TẠI: Tuyệt đối không được đoán mò (hallucinate) cấu trúc. Phải lấy cấu trúc chính xác từ MCP `{{ tools.db_query }}` hoặc thông qua các file JPA `@Entity` từ `codebase-explorer`. Nếu `@Entity` không có cột đó, không được giả định là DB có.
 > 2. Đối với các bảng MỚI: Yêu cầu tính năng mới thường đi kèm thiết kế bảng mới. Tuy nhiên, trước khi thiết kế, PHẢI khám phá kỹ các bảng liên quan (bảng cha/con, hoặc bảng có chức năng tương tự) để học hỏi "góc nhìn" và "convention" thiết kế (ví dụ: cách đặt tên, các cột audit bắt buộc, quan hệ khóa ngoại). Không thiết kế bảng lệch tông so với hệ thống hiện tại.
 
 ---
@@ -69,7 +69,7 @@ Dùng `db-explorer` khi:
   - Luồng xử lý chạm tới dữ liệu.
 - (Tuỳ chọn) `{{ platform.framework_root }}/knowledge/active/EXPLORE_CONTEXT.md` và `{{ platform.framework_root }}/knowledge/long-term/knowledge-snapshot.md`:
   - Thông tin database đã từng được khám phá.
-- Khả năng truy cập database qua MCP `db-remote` (hoặc provider tương tự):
+- Khả năng truy cập database qua MCP `{{ tools.db_query }}` (hoặc provider tương tự):
   - Ít nhất phải có quyền **đọc metadata** (schema, catalog, system views).
   - Đọc sample data chỉ khi an toàn và được phép.
 
@@ -77,7 +77,7 @@ Dùng `db-explorer` khi:
 
 ## 4. Công cụ
 
-Sử dụng MCP `db-remote` (hoặc MCP tương đương) ở mức tổng quát:
+Sử dụng MCP `{{ tools.db_query }}` (hoặc MCP tương đương) ở mức tổng quát:
 
 - **Đối với SQL database** (ví dụ: Oracle, PostgreSQL, MySQL, SQL Server...):
   - Liệt kê database/schema.
@@ -146,7 +146,7 @@ Ngoài ra:
 
 ### Bước 2 — Xác định database / schema liên quan
 
-1. Dùng MCP `db-remote` để:
+1. Dùng MCP `{{ tools.db_query }}` để:
    - Liệt kê database / schema / namespace sẵn có.
 2. Kết hợp với:
    - `{{ platform.framework_root }}/knowledge/long-term/knowledge-snapshot.md` (nếu có).
@@ -308,7 +308,7 @@ Trong `{{ platform.framework_root }}/knowledge/active/AGENT_TRANSPARENCY.md`:
 
 ## Gotchas
 
-- **[G1] Oracle schema prefix bắt buộc**: Mọi query Oracle PHẢI có schema prefix (`SCHEMA.TABLE`). Query không prefix sẽ bị MCP db-remote block hoặc trả kết quả sai schema.
+- **[G1] Oracle schema prefix bắt buộc**: Mọi query Oracle PHẢI có schema prefix (`SCHEMA.TABLE`). Query không prefix sẽ bị MCP {{ tools.db_query }} block hoặc trả kết quả sai schema.
 - **[G2] MongoDB collection names case-sensitive**: `userProfiles` ≠ `UserProfiles`. Luôn dùng `mongo_list_collections` trước khi query để lấy tên chính xác.
 - **[G3] Timeout cho query nặng**: Query `sql_read` có timeout mặc định ngắn. Nếu scan bảng lớn (>100k rows), dùng `FETCH FIRST {n} ROWS ONLY` hoặc `WHERE ROWNUM <= {n}`.
-- **[G4] Không thể write**: MCP db-remote chỉ hỗ trợ SELECT/find. Mọi INSERT/UPDATE/DELETE/DDL sẽ bị block. Không cần thử — chỉ ghi nhận schema/data pattern.
+- **[G4] Không thể write**: MCP {{ tools.db_query }} chỉ hỗ trợ SELECT/find. Mọi INSERT/UPDATE/DELETE/DDL sẽ bị block. Không cần thử — chỉ ghi nhận schema/data pattern.

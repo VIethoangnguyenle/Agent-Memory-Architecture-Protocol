@@ -35,6 +35,9 @@ class CursorPlatform(BasePlatform):
         "graph_stats":       "codebase_graph_stats",
         "graph_build":       "codebase_graph_build",
 
+        # ── Database (db_access MCP — server-level reference) ──
+        "db_query":          "db-remote",
+
         # ── Web ──
         "search_web":        "web_search",
         "read_url":          "fetch_url",
