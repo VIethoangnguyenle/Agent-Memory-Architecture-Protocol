@@ -77,6 +77,22 @@ def validate_phase_chain(text: str) -> Result:
     return Result(False, f"phase markers not contiguous from 1: found {seen}")
 
 
+def validate_apply_gate(text: str) -> Result:
+    """Apply-entry evidence (R-Flow-2): spec phase complete + no open blocker.
+
+    PASS requires a 'Pha 2 DONE' marker and that every '[BLOCKER-ARCH]' has a
+    matching '[BLOCKER-ARCH RESOLVED]'. Unlike validate_phase_chain, a 'Pha 1
+    DONE'-only transparency does NOT pass — code writes need the spec phase done.
+    """
+    if not re.search(r"Pha\s*2\s*DONE", text):
+        return Result(False, "apply-gate: no 'Pha 2 DONE' marker (spec phase not complete)")
+    opens = text.count("[BLOCKER-ARCH]")
+    resolved = text.count("[BLOCKER-ARCH RESOLVED]")
+    if opens > resolved:
+        return Result(False, f"apply-gate: {opens - resolved} unresolved [BLOCKER-ARCH]")
+    return Result(True)
+
+
 def validate_handoff_slice(text: str) -> Result:
     m = re.search(r"##\s+Applicable DNA/Conventions[ \t]*\n(.*?)(?=\n##\s|\Z)", text, re.DOTALL)
     if not m or not _RULE_ID.search(m.group(1)):
