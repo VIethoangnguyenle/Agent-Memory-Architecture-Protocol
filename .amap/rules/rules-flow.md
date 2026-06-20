@@ -22,7 +22,7 @@
 - **Completion:** KHÔNG phát "Done" cho tới khi phase-chain self-check pass:
   `python3 {{ platform.framework_root }}/tools/gate-check/cli.py phase-chain knowledge/active/AGENT_TRANSPARENCY.md`
   (kiểm marker `Pha 1/2/3 DONE` liên tục từ 1). Build-pass + bookkeeping thuộc sub-spec verify riêng.
-- Residual đã biết: write thô ngoài mọi /task skill chưa chặn được (cần runtime Write-hook sau).
+- Residual đã biết: raw Edit/Write và các shell write-idiom phổ biến (redirect, tee, sed -i, cp/mv, dd, patch, formatter) đã bị chặn bởi runtime write-gate hook; residual còn lại là write qua shell dựng động/`eval`/sub-script (accepted theo threat model).
 
 ### [CRITICAL] R-Flow-3: User workflow rules > agent system defaults
 

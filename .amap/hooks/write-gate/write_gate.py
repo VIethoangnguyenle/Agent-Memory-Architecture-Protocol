@@ -10,6 +10,8 @@ import argparse
 import importlib.util
 import json
 import re
+import shlex
+import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -18,6 +20,11 @@ import yaml
 
 
 _PATCH_FILE_RE = re.compile(r"^\*\*\* (?:Add|Update|Delete) File: (.+)$", re.MULTILINE)
+_DYNAMIC = re.compile(r"[\$`*?]")
+_REDIRECT_RE = re.compile(r"(?<!>)>>?\|?\s*([^\s|&;<>()]+)")
+_SEGMENT_RE = re.compile(r"[\n;]|\|\||&&|(?<!>)\|")
+_DEVNULL = {"/dev/null", "/dev/stdout", "/dev/stderr"}
+_SHELL_TOOLS = {"bash", "shell", "local_shell", "run_command", "run_terminal_cmd"}
 
 
 @dataclass
@@ -48,6 +55,124 @@ def _path_from_value(value):
 
 def _paths_from_patch_command(command: str):
     return [Path(match.strip()) for match in _PATCH_FILE_RE.findall(command or "")]
+
+
+def _is_dynamic(token: str) -> bool:
+    return bool(_DYNAMIC.search(token)) or "$(" in token
+
+
+def _t3_targets(verb: str, args: list) -> list:
+    """Return write targets for a known write command, or [None] if the verb
+    writes but no concrete target is parseable."""
+    nonflag = [a for a in args if not a.startswith("-")]
+    if verb == "tee":
+        return nonflag or [None]
+    if verb == "sed":
+        if any(a == "-i" or a.startswith("-i") for a in args):
+            return nonflag[1:] if len(nonflag) > 1 else [None]
+        return []
+    if verb in ("cp", "mv", "install"):
+        return [nonflag[-1]] if nonflag else [None]
+    if verb == "dd":
+        return [a[3:] for a in args if a.startswith("of=")]
+    if verb == "git":
+        if args[:1] == ["apply"]:
+            return [None]
+        if args[:1] == ["checkout"] and "--" in args:
+            return args[args.index("--") + 1:] or [None]
+        if args[:1] == ["restore"]:
+            return [a for a in args[1:] if not a.startswith("-")] or [None]
+        return []
+    if verb == "prettier":
+        return (nonflag or [None]) if "--write" in args else []
+    if verb == "gofmt":
+        return (nonflag or [None]) if "-w" in args else []
+    if verb == "black":
+        return nonflag or [None]
+    if verb == "ruff":
+        if "--fix" in args or "format" in args:
+            return [a for a in nonflag if a not in ("format", "check")] or [None]
+        return []
+    return []
+
+
+def parse_shell_writes(command: str):
+    """Heuristically extract concrete write targets from a shell command.
+
+    Returns (paths, unresolved):
+    - paths: list[Path] of concrete write targets (deduped, order-preserving).
+    - unresolved: True if a recognized write verb had a dynamic/unparseable path.
+    """
+    command = command or ""
+    raw_paths = []
+    unresolved = False
+
+    raw_paths.extend(_paths_from_patch_command(command))
+
+    for seg in _SEGMENT_RE.split(command):
+        seg = seg.strip()
+        if not seg:
+            continue
+        for match in _REDIRECT_RE.finditer(seg):
+            target = match.group(1)
+            if target in _DEVNULL:
+                continue
+            if _is_dynamic(target):
+                unresolved = True
+            else:
+                raw_paths.append(Path(target))
+        try:
+            tokens = shlex.split(seg)
+        except ValueError:
+            tokens = seg.split()
+        if not tokens:
+            continue
+        verb = Path(tokens[0]).name
+        for target in _t3_targets(verb, tokens[1:]):
+            if target is None or _is_dynamic(target):
+                unresolved = True
+            else:
+                raw_paths.append(Path(target))
+
+    seen, paths = set(), []
+    for p in raw_paths:
+        key = p.as_posix()
+        if key not in seen:
+            seen.add(key)
+            paths.append(p)
+    return paths, unresolved
+
+
+def _git_ignored(project_root: Path, path: Path) -> bool:
+    """True if `path` is git-ignored under project_root. Not-a-git-repo, missing
+    git, or any error degrades to False (treat as a gated, non-ignored path)."""
+    try:
+        result = subprocess.run(
+            ["git", "check-ignore", "-q", path.as_posix()],
+            cwd=str(project_root),
+            capture_output=True,
+        )
+    except (FileNotFoundError, OSError):
+        return False
+    return result.returncode == 0
+
+
+def _tool_name(payload: dict) -> str:
+    return payload.get("tool_name") or (payload.get("toolCall") or {}).get("name") or ""
+
+
+def _is_shell_tool(name: str) -> bool:
+    return name.lower() in _SHELL_TOOLS
+
+
+def _command_text(payload: dict) -> str:
+    tool_input = payload.get("tool_input") or {}
+    tool_args = (payload.get("toolCall") or {}).get("args") or {}
+    return tool_input.get("command") or tool_args.get("CommandLine") or tool_args.get("command") or ""
+
+
+def _warn(message: str) -> None:
+    print(message, file=sys.stderr)
 
 
 def extract_target_paths(payload: dict):
@@ -148,15 +273,32 @@ def main(argv=None, stdin_text=None):
     args = parser.parse_args(argv)
     raw = stdin_text if stdin_text is not None else sys.stdin.read()
     payload = json.loads(raw or "{}")
-    targets = extract_target_paths(payload)
-    if not targets:
-        decision = Decision(False, "Unable to identify target path for write-gate payload")
+    root = Path.cwd()
+
+    if _is_shell_tool(_tool_name(payload)):
+        targets, unresolved = parse_shell_writes(_command_text(payload))
+        targets = [t for t in targets if not _git_ignored(root, t)]
+        if not targets:
+            if unresolved:
+                _warn("write-gate: shell write with unresolved path — allowed (heuristic).")
+            decision = Decision(True)
+        else:
+            decisions = [
+                evaluate_write(root, target, framework_root=args.framework_root)
+                for target in targets
+            ]
+            decision = next((item for item in decisions if not item.ok), Decision(True))
     else:
-        decisions = [
-            evaluate_write(Path.cwd(), target, framework_root=args.framework_root)
-            for target in targets
-        ]
-        decision = next((item for item in decisions if not item.ok), Decision(True))
+        targets = extract_target_paths(payload)
+        if not targets:
+            decision = Decision(False, "Unable to identify target path for write-gate payload")
+        else:
+            decisions = [
+                evaluate_write(root, target, framework_root=args.framework_root)
+                for target in targets
+            ]
+            decision = next((item for item in decisions if not item.ok), Decision(True))
+
     return _print_runtime_decision(args.runtime, decision)
 
 

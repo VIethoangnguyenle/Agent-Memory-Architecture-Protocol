@@ -1,5 +1,6 @@
 import importlib.util
 import json
+import subprocess
 from pathlib import Path
 
 
@@ -154,3 +155,202 @@ def test_main_blocks_with_antigravity_json_decision(tmp_path, monkeypatch, capsy
     captured = capsys.readouterr()
     assert code == 0
     assert json.loads(captured.out)["decision"] == "deny"
+
+
+def test_parse_redirect_write():
+    paths, unresolved = wg.parse_shell_writes("echo x > src/App.java")
+    assert paths == [Path("src/App.java")]
+    assert unresolved is False
+
+
+def test_parse_append_redirect():
+    paths, _ = wg.parse_shell_writes("echo x >> src/App.java")
+    assert paths == [Path("src/App.java")]
+
+
+def test_parse_ignores_devnull_and_fd_redirect():
+    paths, unresolved = wg.parse_shell_writes("run_tests > /dev/null 2>&1")
+    assert paths == []
+    assert unresolved is False
+
+
+def test_parse_tee():
+    paths, _ = wg.parse_shell_writes("echo x | tee src/App.java")
+    assert paths == [Path("src/App.java")]
+
+
+def test_parse_sed_inplace():
+    paths, _ = wg.parse_shell_writes("sed -i 's/a/b/' src/App.java")
+    assert paths == [Path("src/App.java")]
+
+
+def test_parse_cp_and_mv_dest():
+    assert wg.parse_shell_writes("cp /tmp/x src/App.java")[0] == [Path("src/App.java")]
+    assert wg.parse_shell_writes("mv old.java src/App.java")[0] == [Path("src/App.java")]
+
+
+def test_parse_dd_of():
+    paths, _ = wg.parse_shell_writes("dd if=/tmp/x of=src/App.java")
+    assert paths == [Path("src/App.java")]
+
+
+def test_parse_patch_format():
+    paths, _ = wg.parse_shell_writes("*** Add File: src/App.java\n+code\n")
+    assert paths == [Path("src/App.java")]
+
+
+def test_parse_prettier_write():
+    paths, _ = wg.parse_shell_writes("prettier --write src/App.js")
+    assert paths == [Path("src/App.js")]
+
+
+def test_parse_readonly_command_has_no_writes():
+    paths, unresolved = wg.parse_shell_writes("grep -r foo src && ls -la")
+    assert paths == []
+    assert unresolved is False
+
+
+def test_parse_dynamic_path_is_unresolved():
+    paths, unresolved = wg.parse_shell_writes('tee "$TARGET"')
+    assert paths == []
+    assert unresolved is True
+
+
+def test_parse_git_apply_is_unresolved():
+    paths, unresolved = wg.parse_shell_writes("git apply fix.patch")
+    assert paths == []
+    assert unresolved is True
+
+
+def test_parse_gofmt_write():
+    assert wg.parse_shell_writes("gofmt -w main.go")[0] == [Path("main.go")]
+
+
+def test_parse_ruff_fix_and_format():
+    assert wg.parse_shell_writes("ruff --fix src/app.py")[0] == [Path("src/app.py")]
+    assert wg.parse_shell_writes("ruff format src/app.py")[0] == [Path("src/app.py")]
+
+
+def test_parse_black_write():
+    assert wg.parse_shell_writes("black src/app.py")[0] == [Path("src/app.py")]
+
+
+def test_parse_install_dest():
+    assert wg.parse_shell_writes("install -m 644 src/x build/x")[0] == [Path("build/x")]
+
+
+def test_parse_git_checkout_and_restore():
+    assert wg.parse_shell_writes("git checkout -- src/App.java")[0] == [Path("src/App.java")]
+    assert wg.parse_shell_writes("git restore src/App.java")[0] == [Path("src/App.java")]
+
+
+def test_parse_verb_via_absolute_path():
+    assert wg.parse_shell_writes("/usr/bin/sed -i 's/a/b/' src/App.java")[0] == [Path("src/App.java")]
+
+
+def test_parse_force_redirect():
+    assert wg.parse_shell_writes("echo x >| src/App.java")[0] == [Path("src/App.java")]
+
+
+def test_parse_stderr_redirect_to_file_is_caught():
+    paths, _ = wg.parse_shell_writes("npm run build 2> src/App.java")
+    assert paths == [Path("src/App.java")]
+
+
+def test_parse_stdout_fd_redirect_to_file_is_caught():
+    paths, _ = wg.parse_shell_writes("cmd 1> out.txt")
+    assert paths == [Path("out.txt")]
+
+
+def test_parse_fd_duplication_not_a_target():
+    paths, unresolved = wg.parse_shell_writes("cmd 2>&1")
+    assert paths == []
+    assert unresolved is False
+
+
+def test_parse_subshell_redirect_strips_paren():
+    paths, _ = wg.parse_shell_writes("(echo x > src/App.java)")
+    assert paths == [Path("src/App.java")]
+
+
+def _init_git_repo(root):
+    subprocess.run(["git", "init", "-q"], cwd=str(root), check=True)
+    (root / ".gitignore").write_text("coverage/\ndist/\n", encoding="utf-8")
+
+
+def test_git_ignored_true_for_ignored_path(tmp_path):
+    _init_git_repo(tmp_path)
+    assert wg._git_ignored(tmp_path, Path("coverage/lcov.info")) is True
+
+
+def test_git_ignored_false_for_tracked_source(tmp_path):
+    _init_git_repo(tmp_path)
+    assert wg._git_ignored(tmp_path, Path("src/App.java")) is False
+
+
+def test_git_ignored_false_when_not_a_git_repo(tmp_path):
+    assert wg._git_ignored(tmp_path, Path("coverage/lcov.info")) is False
+
+
+def test_bash_write_to_code_blocks_without_checkpoint(tmp_path, monkeypatch, capsys):
+    monkeypatch.chdir(tmp_path)
+    payload = {"tool_name": "Bash", "tool_input": {"command": "echo x > src/App.java"}}
+    code = wg.main(["--framework-root", ".amap"], stdin_text=json.dumps(payload))
+    captured = capsys.readouterr()
+    assert code == 2
+    assert "KNOWLEDGE_CHECKPOINT" in captured.err
+
+
+def test_bash_write_to_code_allows_with_valid_checkpoint(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    checkpoint = tmp_path / ".amap" / "knowledge" / "active" / "KNOWLEDGE_CHECKPOINT.md"
+    checkpoint.parent.mkdir(parents=True)
+    checkpoint.write_text(
+        "## DNA\nSP-6 staircase\n"
+        "## Codebase evidence\nnode_id: svc.UserService#42\nblast-radius: 3 nodes\n",
+        encoding="utf-8",
+    )
+    payload = {"tool_name": "Bash", "tool_input": {"command": "tee src/App.java"}}
+    code = wg.main(["--framework-root", ".amap"], stdin_text=json.dumps(payload))
+    assert code == 0
+
+
+def test_bash_readonly_command_allowed_fail_open(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    payload = {"tool_name": "Bash", "tool_input": {"command": "grep -r foo src && ls"}}
+    code = wg.main(["--framework-root", ".amap"], stdin_text=json.dumps(payload))
+    assert code == 0
+
+
+def test_bash_write_to_gitignored_path_allowed(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    subprocess.run(["git", "init", "-q"], cwd=str(tmp_path), check=True)
+    (tmp_path / ".gitignore").write_text("coverage/\n", encoding="utf-8")
+    payload = {"tool_name": "Bash", "tool_input": {"command": "echo x > coverage/lcov.info"}}
+    code = wg.main(["--framework-root", ".amap"], stdin_text=json.dumps(payload))
+    assert code == 0
+
+
+def test_bash_write_to_framework_artifact_allowed(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    payload = {"tool_name": "Bash", "tool_input": {"command": "echo x > .amap/knowledge/active/REQUIREMENT.md"}}
+    code = wg.main(["--framework-root", ".amap"], stdin_text=json.dumps(payload))
+    assert code == 0
+
+
+def test_bash_dynamic_write_warns_and_allows(tmp_path, monkeypatch, capsys):
+    monkeypatch.chdir(tmp_path)
+    payload = {"tool_name": "Bash", "tool_input": {"command": 'tee "$TARGET"'}}
+    code = wg.main(["--framework-root", ".amap"], stdin_text=json.dumps(payload))
+    captured = capsys.readouterr()
+    assert code == 0
+    assert "unresolved" in captured.err.lower()
+
+
+def test_bash_stderr_redirect_to_code_blocks_without_checkpoint(tmp_path, monkeypatch, capsys):
+    monkeypatch.chdir(tmp_path)
+    payload = {"tool_name": "Bash", "tool_input": {"command": "npm run build 2> src/App.java"}}
+    code = wg.main(["--framework-root", ".amap"], stdin_text=json.dumps(payload))
+    captured = capsys.readouterr()
+    assert code == 2
+    assert "KNOWLEDGE_CHECKPOINT" in captured.err
