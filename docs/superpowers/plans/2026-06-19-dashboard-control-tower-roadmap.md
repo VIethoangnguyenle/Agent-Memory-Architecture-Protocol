@@ -14,14 +14,16 @@
 - phase/ticket đọc từ `AGENT_TRANSPARENCY.md`
 - progress đọc từ `microloop/TASK_QUEUE.md` nếu có
 - subagent prompt đọc từ `TASK_HANDOFF.*.md`
-- UI có animation spawn lane và prompt drawer
+- subagent result đọc từ `microloop/TASK_RESULT.*.md`
+- parent brain đọc từ `PARENT_BRAIN.md`
+- Antigravity best-effort brain sync qua `amap dashboard sync-brain`
+- UI có animation spawn lane, prompt/result drawer, parent brain panel, event timeline
 
 Vấn đề còn lại:
 
 - Progress vẫn phụ thuộc `TASK_QUEUE.md`; Pha 1/Pha 2 không có queue nên đúng là chưa có `x/N`.
-- Subagent status hiện mới suy luận từ handoff file, chưa có lifecycle chuẩn.
-- Chưa có result drawer và event timeline.
-- Framework target như `BA-Framework` cần emit runtime contract đầy đủ khi chạy Pha 3.
+- Antigravity brain sync là best-effort vì IDE chỉ ghi text artifacts trong một số tình huống.
+- Ảnh chụp/screenshot PR release chưa được đính kèm trong repo.
 
 ## Milestone P3.5: Stabilize Current Dashboard
 
@@ -80,6 +82,8 @@ Done criteria:
 - Dashboard shows handoff-only state without pretending progress exists.
 - Dashboard shows true task progress when queue exists.
 
+Status: done on branch `dashboard-p3-server`.
+
 ## Milestone P5: Emit Contract From Framework Workflows
 
 Target:
@@ -108,6 +112,8 @@ Done criteria:
 
 - A real task shows live progress in the dashboard without manual file edits.
 - Subagent nodes show prompt, status, and result.
+
+Status: done on branch `dashboard-p3-server`.
 
 ## Milestone P6: UI V2
 
@@ -138,6 +144,8 @@ Done criteria:
   - Which one is running/done/blocked?
   - What result did each produce?
 
+Status: done on branch `dashboard-p3-server`.
+
 ## Milestone P7: Reliability
 
 Scope:
@@ -161,6 +169,8 @@ Done criteria:
 - One broken project/file never breaks other project cards.
 - User sees the file path and short reason for stale/error.
 
+Status: done on branch `dashboard-p3-server`.
+
 ## Milestone P8: Packaging And Release
 
 Scope:
@@ -182,7 +192,9 @@ Done criteria:
 - Fresh user can run the dashboard and understand each state.
 - PR has tests, docs, and screenshots or terminal evidence.
 
+Status: docs done on branch `dashboard-p3-server`; PR screenshot/evidence remains a release step.
+
 ## Recommended Next Move
 
-Do P4 first. It defines the stable data contract. After P4, P5 can make real framework runs
-emit the contract, and P6 can safely build a richer UI without guessing from artifact names.
+Attach PR evidence: terminal output for `/api/runs` and `/events`, plus one browser screenshot
+of a project with parent brain, subagent prompt/result, and event timeline.
