@@ -46,7 +46,7 @@
 - **#2 — `/opsx:apply` cửa sau** ✅ **DONE** (C-23, PR #13, branch `apply-gate`, stacked trên #12).
 - **#3 — gate chưa wired vào workflow** ✅ **DONE** (C-23, cùng PR #13). Mở rộng write-gate thành apply-gate: `validate_apply_gate` (Pha 2 DONE + no open `[BLOCKER-ARCH]`) cắm vào `evaluate_write`. Spec/plan: `2026-06-20-apply-gate-*`.
 - **#4 — skill phá hủy thiếu `pre_conditions:` máy đọc** ⬜ TODO (codex). knowledge-curator (reset `active/`) + spec-extract guard chỉ là prose; 8/14 skill không có `pre_conditions`, 0/14 khai báo `outputs:`.
-- **#5 — R-DNA-7 teaching-moment không có hook** ⬜ TODO (codex). Chỉ sống trong author-dna-builder + rule text; Pha 3/knowledge-curator không có bước capture → phụ thuộc agent tự nhớ. Cần brainstorm (behavioral).
+- **#5 — R-DNA-7 teaching-moment không có hook** ✅ **DONE** (C-24, branch `teaching-moment-checkpoint`). "Deterministic acknowledgment, not detection": validator `gate-check teaching-moment` (section `## Teaching Moment Check` với status none|captured|declined|pending-confirmation), template seed non-passing, knowledge-curator PRE-CHECK ABORT trước archive. Spec/plan: `2026-06-20-teaching-moment-checkpoint-*`. Giới hạn: archive không bị runtime-hook chặn → call site honor-code.
 - **#6 — `db-remote` hard-coded + orphan `document-writer`** ⬜ TODO (codex). db-explorer/codebase-explorer hard-code `db-remote` trong khi KG tools template `{{ tools.* }}`; `document-writer` không workflow nào gọi.
 
 > Residual đã chấp nhận trong #1–#3: `eval`/dynamic-shell writes (threat model); R-Apply-1 confirm + spec-validator pre-apply (concern riêng, có thể spec sau).
