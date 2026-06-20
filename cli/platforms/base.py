@@ -3,6 +3,8 @@
 from abc import ABC, abstractmethod
 from typing import Dict, List, Optional, Set
 
+from cli import FRAMEWORK_VERSION
+
 
 REQUIRED_TOOL_KEYS = frozenset({
     "read_file",
@@ -180,5 +182,5 @@ class BasePlatform(ABC):
             "capabilities": self.capabilities,
             "mcps": mcps,
             "language": language,
-            "framework_version": "3.0",
+            "framework_version": FRAMEWORK_VERSION,
         }

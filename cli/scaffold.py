@@ -10,6 +10,7 @@ from typing import List, Optional
 
 import yaml
 
+from cli import FRAMEWORK_VERSION
 from cli.renderer import render_string
 from cli.renderer import _TEXT_EXTENSIONS as _RENDERED_SUFFIXES
 
@@ -84,7 +85,7 @@ def generate_resolved_config(
                 "framework_root": platform.framework_root,
                 "mcps": selected_mcps,
                 "language": language,
-                "framework_version": "3.0",
+                "framework_version": FRAMEWORK_VERSION,
             }},
             f, default_flow_style=False, allow_unicode=True,
         )
