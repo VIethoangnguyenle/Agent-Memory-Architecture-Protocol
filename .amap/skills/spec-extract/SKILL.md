@@ -6,6 +6,13 @@ description: >
   Dùng khi đầu vào là tài liệu dài, wiki nhiều trang, hoặc PRD cần parse.
   KHÔNG dùng cho: ticket có sẵn đã rõ scope (→ requirement-analyst),
   ideation/brainstorm (→ openspec-explore), khám phá DB schema (→ db-explorer).
+pre_conditions:
+  - file: "{{ platform.framework_root }}/knowledge/active/AGENT_TRANSPARENCY.md"
+    condition: exists
+    on_fail: "ABORT — bootstrap chưa chạy, gọi `/task` trước"
+  - input: doc_url_or_text
+    condition: not_empty
+    on_fail: "ABORT — thiếu tài liệu nguồn để extract"
 ---
 
 # Spec Extract — Tài liệu → REQUIREMENT
