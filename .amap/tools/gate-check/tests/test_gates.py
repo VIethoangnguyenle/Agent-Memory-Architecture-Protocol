@@ -239,3 +239,213 @@ def test_cli_apply_gate_exit_codes(tmp_path):
     assert cli.main(["apply-gate", str(f)]) == 0
     f.write_text("Pha 1 DONE\n", encoding="utf-8")
     assert cli.main(["apply-gate", str(f)]) == 1
+
+
+def _teaching_moment_section(body: str) -> str:
+    return (
+        "# AGENT_TRANSPARENCY\n\n"
+        "## Teaching Moment Check\n\n"
+        f"{body.strip()}\n\n"
+        "## Violation Log\n\n"
+    )
+
+
+def test_teaching_moment_passes_none_with_active_assertion():
+    text = _teaching_moment_section(
+        """
+        status: none
+        note: no correction-with-principle observed in this session
+        target_updates:
+        warn:
+        reason:
+        """
+    )
+    assert g.validate_teaching_moment(text).ok is True
+
+
+def test_teaching_moment_passes_captured_with_targets():
+    text = _teaching_moment_section(
+        """
+        status: captured
+        note: user confirmed the split and long-term updates were written
+        target_updates:
+          - author-dna.yaml: HP-12 prefer composition for lifecycle decoupling
+          - conventions.yaml: CP-08 mapper stays pure
+        warn:
+        reason:
+        """
+    )
+    assert g.validate_teaching_moment(text).ok is True
+
+
+def test_teaching_moment_passes_declined_with_warn_and_reason():
+    text = _teaching_moment_section(
+        """
+        status: declined
+        note:
+        target_updates:
+        warn: [R-DNA-7] Teaching moment chua capture: mapper must stay pure.
+        reason: user declined capture
+        """
+    )
+    assert g.validate_teaching_moment(text).ok is True
+
+
+def test_teaching_moment_passes_pending_confirmation_with_warn_and_reason():
+    text = _teaching_moment_section(
+        """
+        status: pending-confirmation
+        note:
+        target_updates:
+        warn: [R-DNA-7] Teaching moment chua capture: factory boundary excludes validation logic.
+        reason: awaiting user confirmation
+        """
+    )
+    assert g.validate_teaching_moment(text).ok is True
+
+
+def test_teaching_moment_rejects_missing_section():
+    result = g.validate_teaching_moment("# AGENT_TRANSPARENCY\n\n## Phase State\n\n")
+    assert result.ok is False
+    assert "section missing" in result.reason
+
+
+def test_teaching_moment_rejects_seeded_blank_status():
+    text = _teaching_moment_section(
+        """
+        <!-- Fill this section before archive. Do not pre-fill status: none. -->
+        status:
+        note:
+        target_updates:
+        warn:
+        reason:
+        """
+    )
+    result = g.validate_teaching_moment(text)
+    assert result.ok is False
+    assert "status must be one of" in result.reason
+
+
+def test_teaching_moment_rejects_invalid_status():
+    text = _teaching_moment_section(
+        """
+        status: maybe
+        note: checked
+        target_updates:
+        warn:
+        reason:
+        """
+    )
+    result = g.validate_teaching_moment(text)
+    assert result.ok is False
+    assert "status must be one of" in result.reason
+
+
+def test_teaching_moment_rejects_none_without_real_note():
+    blank = _teaching_moment_section(
+        """
+        status: none
+        note:
+        target_updates:
+        warn:
+        reason:
+        """
+    )
+    placeholder = _teaching_moment_section(
+        """
+        status: none
+        note: fill before archive
+        target_updates:
+        warn:
+        reason:
+        """
+    )
+    assert g.validate_teaching_moment(blank).ok is False
+    assert g.validate_teaching_moment(placeholder).ok is False
+
+
+def test_teaching_moment_rejects_captured_without_target_updates():
+    text = _teaching_moment_section(
+        """
+        status: captured
+        note: user confirmed the split
+        target_updates:
+        warn:
+        reason:
+        """
+    )
+    result = g.validate_teaching_moment(text)
+    assert result.ok is False
+    assert "target_updates" in result.reason
+
+
+def test_teaching_moment_rejects_declined_without_warn_or_reason():
+    missing_warn = _teaching_moment_section(
+        """
+        status: declined
+        note:
+        target_updates:
+        warn:
+        reason: user declined capture
+        """
+    )
+    missing_reason = _teaching_moment_section(
+        """
+        status: declined
+        note:
+        target_updates:
+        warn: [R-DNA-7] Teaching moment chua capture: mapper must stay pure.
+        reason:
+        """
+    )
+    assert g.validate_teaching_moment(missing_warn).ok is False
+    assert g.validate_teaching_moment(missing_reason).ok is False
+
+
+def test_teaching_moment_rejects_pending_without_warn_or_reason():
+    missing_warn = _teaching_moment_section(
+        """
+        status: pending-confirmation
+        note:
+        target_updates:
+        warn:
+        reason: awaiting user confirmation
+        """
+    )
+    missing_reason = _teaching_moment_section(
+        """
+        status: pending-confirmation
+        note:
+        target_updates:
+        warn: [R-DNA-7] Teaching moment chua capture: factory boundary excludes validation logic.
+        reason:
+        """
+    )
+    assert g.validate_teaching_moment(missing_warn).ok is False
+    assert g.validate_teaching_moment(missing_reason).ok is False
+
+
+def test_cli_teaching_moment_exit_codes(tmp_path):
+    import importlib.util
+    cli_mod = Path(__file__).resolve().parents[1] / "cli.py"
+    spec = importlib.util.spec_from_file_location("cli", cli_mod)
+    cli = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(cli)
+
+    f = tmp_path / "AGENT_TRANSPARENCY.md"
+    f.write_text(
+        _teaching_moment_section(
+            """
+            status: none
+            note: no correction-with-principle observed in this session
+            target_updates:
+            warn:
+            reason:
+            """
+        ),
+        encoding="utf-8",
+    )
+    assert cli.main(["teaching-moment", str(f)]) == 0
+
+    f.write_text(_teaching_moment_section("status:\nnote:\n"), encoding="utf-8")
+    assert cli.main(["teaching-moment", str(f)]) == 1
