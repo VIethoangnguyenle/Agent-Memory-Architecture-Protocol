@@ -219,3 +219,33 @@ def test_parse_git_apply_is_unresolved():
     paths, unresolved = wg.parse_shell_writes("git apply fix.patch")
     assert paths == []
     assert unresolved is True
+
+
+def test_parse_gofmt_write():
+    assert wg.parse_shell_writes("gofmt -w main.go")[0] == [Path("main.go")]
+
+
+def test_parse_ruff_fix_and_format():
+    assert wg.parse_shell_writes("ruff --fix src/app.py")[0] == [Path("src/app.py")]
+    assert wg.parse_shell_writes("ruff format src/app.py")[0] == [Path("src/app.py")]
+
+
+def test_parse_black_write():
+    assert wg.parse_shell_writes("black src/app.py")[0] == [Path("src/app.py")]
+
+
+def test_parse_install_dest():
+    assert wg.parse_shell_writes("install -m 644 src/x build/x")[0] == [Path("build/x")]
+
+
+def test_parse_git_checkout_and_restore():
+    assert wg.parse_shell_writes("git checkout -- src/App.java")[0] == [Path("src/App.java")]
+    assert wg.parse_shell_writes("git restore src/App.java")[0] == [Path("src/App.java")]
+
+
+def test_parse_verb_via_absolute_path():
+    assert wg.parse_shell_writes("/usr/bin/sed -i 's/a/b/' src/App.java")[0] == [Path("src/App.java")]
+
+
+def test_parse_force_redirect():
+    assert wg.parse_shell_writes("echo x >| src/App.java")[0] == [Path("src/App.java")]

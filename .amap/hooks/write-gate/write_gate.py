@@ -20,8 +20,8 @@ import yaml
 
 _PATCH_FILE_RE = re.compile(r"^\*\*\* (?:Add|Update|Delete) File: (.+)$", re.MULTILINE)
 _DYNAMIC = re.compile(r"[\$`*?]")
-_REDIRECT_RE = re.compile(r"(?<![0-9>])>>?\s*([^\s|&;<>]+)")
-_SEGMENT_RE = re.compile(r"[\n;]|\|\||&&|\|")
+_REDIRECT_RE = re.compile(r"(?<![0-9>])>>?\|?\s*([^\s|&;<>]+)")
+_SEGMENT_RE = re.compile(r"[\n;]|\|\||&&|(?<!>)\|")
 _DEVNULL = {"/dev/null", "/dev/stdout", "/dev/stderr"}
 
 
