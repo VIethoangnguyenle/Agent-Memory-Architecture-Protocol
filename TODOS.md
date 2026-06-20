@@ -47,6 +47,7 @@
 - **Context:** [cli/scaffold.py:61-132](cli/scaffold.py#L61-L132) (`resolved_config_candidates`, `load_resolved_config`).
 - **Effort:** human ~1 ngày / CC ~30 phút.
 - **Priority:** P2.
+- **Bundle (S2, từ dashboard review 2026-06-20):** `framework_root` default **lệch nhau** giữa các module — dashboard reader default `.amap` ([cli/dashboard/reader.py:68](cli/dashboard/reader.py#L68)), orchestrator default `.agents` ([.amap/tools/microloop-orchestrator/orchestrator.py:103](.amap/tools/microloop-orchestrator/orchestrator.py#L103)). Chưa nổ vì resolved-config luôn ghi rõ key, nhưng là bẫy. Gom về **một** default canonical khi làm P2.3.
 
 ### P2.4 — Sửa quickstart README không copy-paste được
 - **What:** Bước 2 dùng placeholder *literal* `{framework_root}` trong lệnh `cp`. Resolve thành ví dụ thật (`.claude/` hoặc `.agents/`) hoặc nói rõ thay bằng gì theo platform.
@@ -54,6 +55,12 @@
 - **Context:** [README.md:207](README.md#L207).
 - **Effort:** CC ~5 phút.
 - **Priority:** P2.
+
+### P2.5 — Nâng dashboard runtime contract thành interface có single-source (chống drift)
+- **What:** Tạo một module hằng số contract dùng chung (tên event: `subagent_spawned/started/done/blocked`, `task_*`, `parent_brain_updated`, ...; và `VALID_RUNTIME_STATUS`) import bởi **cả** orchestrator (writer, ship sang target) **lẫn** dashboard reader (cli/). Cân nhắc thêm version field vào `ACTIVITY_LOG`/contract.
+- **Why:** Phát hiện 2026-06-20 (architect review tính năng dashboard): orchestrator và reader cùng phụ thuộc một bộ event/status nhưng mỗi bên **hard-code string riêng**. Reader xử unknown-event generic nên không crash, nhưng **không gì chống drift ngữ nghĩa** giữa hai lớp — đây là bề mặt coupling xuyên-lớp duy nhất của tính năng. `ACTIVITY_LOG.jsonl` giờ là interface runtime first-class, nên đáng được đối xử như interface (single source + version) thay vì spec markdown + literal rải rác.
+- **Context:** [.amap/tools/microloop-orchestrator/orchestrator.py](.amap/tools/microloop-orchestrator/orchestrator.py) (writer), [cli/dashboard/server.py](cli/dashboard/server.py) `read_runtime` (reader); spec [docs/superpowers/specs/2026-06-19-dashboard-runtime-contract-design.md](docs/superpowers/specs/2026-06-19-dashboard-runtime-contract-design.md) §6.
+- **Effort:** CC ~30-45 phút. **Priority:** P2 (interface drift). **KHÔNG làm trong PR #10** (freeze dashboard ở P6).
 
 ---
 
@@ -68,6 +75,24 @@
 - **What:** Sau khi xác nhận P2.1 (SP3 = mở rộng adapter, không phải greenfield), cập nhật §2/§4 roadmap: SP3 từ "spec mới, đòn bẩy build lớn nhất" → "mở rộng adapter + migrate ~16 ref + test". Điều này dịch lại bài toán "portability có đáng không".
 - **Context:** [docs/superpowers/specs/2026-06-17-upgrade-roadmap-design.md](docs/superpowers/specs/2026-06-17-upgrade-roadmap-design.md) §2, §4.
 - **Effort:** CC ~15 phút. **Priority:** P3. **Depends on:** P2.1.
+
+### P3.4 — Archive `active/` TRỌN VẸN theo ticket (root cause: archive một phần)
+- **What:** Khi sang ticket mới, archive/reset toàn bộ artifacts ticket cũ khỏi `knowledge/active/`: `TASK_QUEUE.md`, `TASK_HANDOFF.*.md`, `TASK_RESULT.*.md`, **và `PARENT_BRAIN.md`** (mirror cuộc trò chuyện). Dùng event `archive_started`/`archive_done` đã có. Hiện tại reset **một phần**: chỉ `AGENT_TRANSPARENCY` được reset sang ticket mới, các file còn lại bị bỏ lại → overlap.
+- **Why:** Phát hiện 2026-06-20 soi BA-Framework live, 3 nguồn 2 ticket cùng lúc: `AGENT_TRANSPARENCY` = `SME-TRANSFER-003` (đang `applying`), nhưng `TASK_QUEUE`+results = `SME-TRANSFER-002` (00:09 hôm trước), `PARENT_BRAIN` = cuộc trò chuyện `SME-TRANSFER-002` (17:29 hôm trước). Chính `PARENT_BRAIN` thú nhận "SME-TRANSFER-002 was already archived/reset in AGENT_TRANSPARENCY.md" → archive không trọn vẹn. Dashboard hiện phase ticket mới đè lên queue + conversation ticket cũ ("overlap"). Lỗi vòng đời artifact, không phải lỗi dashboard.
+- **Context:** orchestrator emit ([.amap/tools/microloop-orchestrator/orchestrator.py](.amap/tools/microloop-orchestrator/orchestrator.py)); contract [docs/superpowers/specs/2026-06-19-dashboard-runtime-contract-design.md](docs/superpowers/specs/2026-06-19-dashboard-runtime-contract-design.md) §6 (event `archive_*`). Liên quan P5 roadmap.
+- **Effort:** CC ~30-45 phút. **Priority:** P3 (gốc của P3.5).
+
+### P3.5 — Dashboard: ticket-aware, tách artifacts ticket-trước khỏi ticket hiện tại (symptom mitigation)
+- **What:** Trong `read_runtime`, lấy `current_ticket` từ `AGENT_TRANSPARENCY`; với `TASK_QUEUE` và `PARENT_BRAIN`, nếu `ticket_id` của chúng `≠ current_ticket` (hoặc mtime ≪ phase mtime) thì đánh dấu "từ ticket trước" thay vì gộp vào progress/parent-panel hiện tại. UI: không khoe `2/2 100%` và không hiện parent-brain cũ dưới ticket mới.
+- **Why:** Giảm overlap khi P3.4 chưa làm. Use case thật đã quan sát: queue=002, parent_brain=002, phase=003. **KHÔNG làm trong PR #10** — CEO verdict freeze dashboard ở P6; việc sau, sau khi quay lại từ P1.1.
+- **Context:** [cli/dashboard/server.py](cli/dashboard/server.py) `read_runtime`, [cli/dashboard/reader.py](cli/dashboard/reader.py) `read_run`.
+- **Effort:** CC ~30 phút. **Priority:** P3. **Depends on:** ưu tiên P3.4 trước (sửa gốc).
+
+### P3.6 — Tách orchestrator: pure loop-protocol vs dashboard emit (SRP nhẹ)
+- **What:** `orchestrator.py` đang gánh 2 vai trong một file: pure loop-protocol (`run_loop`/`next_task`/`apply_result`/`topo_sort` — DI, không I/O, unit-test được) và dashboard emit (`append_activity_event`/`write_parent_brain`/`initialize_runtime_queue` — I/O filesystem). Tách phần emit ra module riêng (vd `runtime_emit.py`) khi thuận tiện.
+- **Why:** SRP nhẹ; emit đặt cạnh nơi sở hữu lifecycle queue/handoff là hợp lý nên không gấp. Tách giúp test pure-protocol khỏi đụng filesystem rõ ràng hơn.
+- **Context:** [.amap/tools/microloop-orchestrator/orchestrator.py](.amap/tools/microloop-orchestrator/orchestrator.py).
+- **Effort:** CC ~20 phút. **Priority:** P3 (nhẹ nhất). **Depends on:** nên làm cùng/sau P2.5 (single-source constants).
 
 ## Done / Stale
 
