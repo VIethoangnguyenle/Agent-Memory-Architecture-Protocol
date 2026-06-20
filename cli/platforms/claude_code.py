@@ -43,6 +43,9 @@ class ClaudeCodePlatform(BasePlatform):
         "list_spaces":       "mcp__confluence__list_spaces",
         "get_space_pages":   "mcp__confluence__get_space_pages",
 
+        # ── Database (db_access MCP — server-level reference) ──
+        "db_query":          "db-remote",
+
         # ── Web ──
         "search_web":        "WebSearch",
         "read_url":          "WebFetch",

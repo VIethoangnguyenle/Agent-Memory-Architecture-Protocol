@@ -38,6 +38,9 @@ class CodexPlatform(BasePlatform):
         "get_page":          "get_page",
         "list_spaces":       "list_spaces",
         "get_space_pages":   "get_space_pages",
+        # ── Database (db_access MCP — server-level reference) ──
+        "db_query":          "db-remote",
+
         "search_web":        "search_web",
         "read_url":          "read_url",
     }
