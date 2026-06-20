@@ -38,6 +38,21 @@
 
 ---
 
+## Enforcement hardening (audit 2026-06-20)
+
+> Track riêng, ngoài roadmap P/UP. Nguồn: audit RULES/SKILLS/WORKFLOWS 2026-06-20 — phát hiện enforcement 2 tầng, phần lớn `[CRITICAL]` rule chỉ "trên giấy" (chỉ `knowledge-checkpoint` được hook chặn cơ học). 6 gap xếp theo đòn bẩy. Chi tiết handoff: [docs/superpowers/handoffs/2026-06-20-enforcement-followups-codex-handoff.md](docs/superpowers/handoffs/2026-06-20-enforcement-followups-codex-handoff.md).
+
+- **#1 — Bash-write bypass** ✅ **DONE** (C-22b, PR #12, branch `bash-write-gate`). Hook chỉ match `Edit|Write|MultiEdit`; ghi code qua Bash né gate. `parse_shell_writes` heuristic + matcher 3 runtime. Spec/plan: `2026-06-20-bash-write-gate-*`.
+- **#2 — `/opsx:apply` cửa sau** ✅ **DONE** (C-23, PR #13, branch `apply-gate`, stacked trên #12).
+- **#3 — gate chưa wired vào workflow** ✅ **DONE** (C-23, cùng PR #13). Mở rộng write-gate thành apply-gate: `validate_apply_gate` (Pha 2 DONE + no open `[BLOCKER-ARCH]`) cắm vào `evaluate_write`. Spec/plan: `2026-06-20-apply-gate-*`.
+- **#4 — skill phá hủy thiếu `pre_conditions:` máy đọc** ⬜ TODO (codex). knowledge-curator (reset `active/`) + spec-extract guard chỉ là prose; 8/14 skill không có `pre_conditions`, 0/14 khai báo `outputs:`.
+- **#5 — R-DNA-7 teaching-moment không có hook** ⬜ TODO (codex). Chỉ sống trong author-dna-builder + rule text; Pha 3/knowledge-curator không có bước capture → phụ thuộc agent tự nhớ. Cần brainstorm (behavioral).
+- **#6 — `db-remote` hard-coded + orphan `document-writer`** ⬜ TODO (codex). db-explorer/codebase-explorer hard-code `db-remote` trong khi KG tools template `{{ tools.* }}`; `document-writer` không workflow nào gọi.
+
+> Residual đã chấp nhận trong #1–#3: `eval`/dynamic-shell writes (threat model); R-Apply-1 confirm + spec-validator pre-apply (concern riêng, có thể spec sau).
+
+---
+
 ## P1 — Làm trước (đòn bẩy cao, chi phí thấp)
 
 ### P1.1 — U0 litmus phải có baseline arm (đo outcome, không đo process)
