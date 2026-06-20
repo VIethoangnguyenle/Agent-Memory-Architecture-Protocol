@@ -19,6 +19,7 @@
   `openspec/changes/<id>/` AND không còn `[BLOCKER-ARCH]` chưa resolve trong AGENT_TRANSPARENCY.md
   (BLOCKER cuối phải có `[BLOCKER-ARCH RESOLVED]` tương ứng). Thiếu/BLOCKER chưa resolve → ABORT.
   "Scope rõ nên bỏ spec" KHÔNG hợp lệ — spec artifact là bắt buộc, không phải phán đoán agent.
+  Apply-entry này được enforce cơ học bởi write-gate hook (apply-gate): code-write vào app-code bị chặn nếu AGENT_TRANSPARENCY.md thiếu `Pha 2 DONE` hoặc còn `[BLOCKER-ARCH]` chưa resolve — workflow-agnostic, áp cả khi gọi thẳng `/opsx:apply`.
 - **Completion:** KHÔNG phát "Done" cho tới khi phase-chain self-check pass:
   `python3 {{ platform.framework_root }}/tools/gate-check/cli.py phase-chain knowledge/active/AGENT_TRANSPARENCY.md`
   (kiểm marker `Pha 1/2/3 DONE` liên tục từ 1). Build-pass + bookkeeping thuộc sub-spec verify riêng.
