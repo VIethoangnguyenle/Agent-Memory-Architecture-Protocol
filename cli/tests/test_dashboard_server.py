@@ -221,6 +221,21 @@ def test_snapshot_task_queue_tasks_not_a_list_marks_stale(tmp_path):
     assert "tasks must be a list" in run["errors"][0]
 
 
+def test_snapshot_reader_stale_survives_runtime_merge(tmp_path):
+    # AGENT_TRANSPARENCY present but unparseable -> read_run marks stale.
+    # read_runtime never reads that file, so its stale=False must NOT clobber
+    # the reader's flag when the two dicts are merged in snapshot().
+    reg = tmp_path / "projects.yaml"
+    proj, active = _make_amap_project(tmp_path)
+    (active / "AGENT_TRANSPARENCY.md").write_text("not valid frontmatter\n", encoding="utf-8")
+    registry.register(reg, str(proj))
+
+    run = server.snapshot(reg)[0]
+
+    assert run["stale"] is True
+    assert run["errors"] == []
+
+
 @pytest.fixture
 def running_server(tmp_path):
     reg = tmp_path / "projects.yaml"

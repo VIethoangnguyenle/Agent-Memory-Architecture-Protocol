@@ -47,9 +47,10 @@ def snapshot(registry_file: Path) -> list[dict]:
         try:
             active = active_dir(p)  # resolve config once; shared by both readers
             run = serialize(read_run(p, active=active))
+            reader_stale = run["stale"]  # preserve before update() overwrites it
             runtime = read_runtime(p, active=active)
             run.update(runtime)
-            run["stale"] = run["stale"] or runtime["stale"]
+            run["stale"] = reader_stale or runtime["stale"]
             runs.append(run)
         except Exception as exc:
             runs.append({"name": Path(p).name, "project_path": p, "error": str(exc)})
