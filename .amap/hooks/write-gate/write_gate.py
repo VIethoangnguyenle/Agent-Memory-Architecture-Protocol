@@ -232,9 +232,16 @@ def evaluate_write(project_root: Path, target_path: Path, framework_root: str = 
         valid_rule_ids=valid_rule_ids,
         allow_no_knowledge=index_empty,
     )
-    if result.ok:
-        return Decision(True)
-    return Decision(False, f"Invalid KNOWLEDGE_CHECKPOINT before code write: {result.reason}")
+    if not result.ok:
+        return Decision(False, f"Invalid KNOWLEDGE_CHECKPOINT before code write: {result.reason}")
+
+    transparency = project_root / framework_root / "knowledge" / "active" / "AGENT_TRANSPARENCY.md"
+    if not transparency.exists():
+        return Decision(False, f"Missing {transparency.relative_to(project_root)} apply evidence before code write: {target_path}")
+    apply_result = gates.validate_apply_gate(transparency.read_text(encoding="utf-8"))
+    if not apply_result.ok:
+        return Decision(False, f"{apply_result.reason} before code write: {target_path}")
+    return Decision(True)
 
 
 def _print_runtime_decision(runtime: str, decision: Decision) -> int:

@@ -83,6 +83,9 @@ def test_allows_app_write_with_valid_checkpoint(tmp_path):
         "## Codebase evidence\nnode_id: svc.UserService#42\nblast-radius: 3 nodes\n",
         encoding="utf-8",
     )
+    (framework / "knowledge" / "active" / "AGENT_TRANSPARENCY.md").write_text(
+        "Pha 1 DONE\nPha 2 DONE\n", encoding="utf-8"
+    )
 
     result = wg.evaluate_write(tmp_path, Path("src/App.java"), framework_root=".amap")
     assert result.ok is True
@@ -310,6 +313,9 @@ def test_bash_write_to_code_allows_with_valid_checkpoint(tmp_path, monkeypatch):
         "## Codebase evidence\nnode_id: svc.UserService#42\nblast-radius: 3 nodes\n",
         encoding="utf-8",
     )
+    (tmp_path / ".amap" / "knowledge" / "active" / "AGENT_TRANSPARENCY.md").write_text(
+        "Pha 1 DONE\nPha 2 DONE\n", encoding="utf-8"
+    )
     payload = {"tool_name": "Bash", "tool_input": {"command": "tee src/App.java"}}
     code = wg.main(["--framework-root", ".amap"], stdin_text=json.dumps(payload))
     assert code == 0
@@ -354,3 +360,48 @@ def test_bash_stderr_redirect_to_code_blocks_without_checkpoint(tmp_path, monkey
     captured = capsys.readouterr()
     assert code == 2
     assert "KNOWLEDGE_CHECKPOINT" in captured.err
+
+
+def _write_valid_checkpoint(active_dir):
+    active_dir.mkdir(parents=True, exist_ok=True)
+    (active_dir / "KNOWLEDGE_CHECKPOINT.md").write_text(
+        "## DNA\nSP-6 staircase\n"
+        "## Codebase evidence\nnode_id: svc.UserService#42\nblast-radius: 3 nodes\n",
+        encoding="utf-8",
+    )
+
+
+def test_blocks_app_write_when_transparency_missing(tmp_path):
+    _write_valid_checkpoint(tmp_path / ".amap" / "knowledge" / "active")
+    result = wg.evaluate_write(tmp_path, Path("src/App.java"), framework_root=".amap")
+    assert result.ok is False
+    assert "AGENT_TRANSPARENCY" in result.reason
+
+
+def test_blocks_app_write_with_checkpoint_but_no_pha2(tmp_path):
+    active = tmp_path / ".amap" / "knowledge" / "active"
+    _write_valid_checkpoint(active)
+    (active / "AGENT_TRANSPARENCY.md").write_text("Pha 1 DONE\n", encoding="utf-8")
+    result = wg.evaluate_write(tmp_path, Path("src/App.java"), framework_root=".amap")
+    assert result.ok is False
+    assert "Pha 2 DONE" in result.reason
+
+
+def test_blocks_app_write_with_open_blocker(tmp_path):
+    active = tmp_path / ".amap" / "knowledge" / "active"
+    _write_valid_checkpoint(active)
+    (active / "AGENT_TRANSPARENCY.md").write_text(
+        "Pha 1 DONE\nPha 2 DONE\n[BLOCKER-ARCH] coupling risk\n", encoding="utf-8"
+    )
+    result = wg.evaluate_write(tmp_path, Path("src/App.java"), framework_root=".amap")
+    assert result.ok is False
+
+
+def test_allows_app_write_with_checkpoint_and_apply_evidence(tmp_path):
+    active = tmp_path / ".amap" / "knowledge" / "active"
+    _write_valid_checkpoint(active)
+    (active / "AGENT_TRANSPARENCY.md").write_text(
+        "Pha 1 DONE\nPha 2 DONE\n", encoding="utf-8"
+    )
+    result = wg.evaluate_write(tmp_path, Path("src/App.java"), framework_root=".amap")
+    assert result.ok is True
