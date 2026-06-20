@@ -239,3 +239,95 @@ def test_cli_apply_gate_exit_codes(tmp_path):
     assert cli.main(["apply-gate", str(f)]) == 0
     f.write_text("Pha 1 DONE\n", encoding="utf-8")
     assert cli.main(["apply-gate", str(f)]) == 1
+
+
+def _tm(section_body: str) -> str:
+    return "# AGENT_TRANSPARENCY\n\n## Teaching Moment Check\n\n" + section_body + "\n"
+
+
+def test_tm_pass_none_with_note():
+    body = "status: none\nnote: no correction-with-principle observed in this session\ntarget_updates:\nwarn:\nreason:"
+    assert g.validate_teaching_moment(_tm(body)).ok is True
+
+
+def test_tm_pass_captured_with_targets():
+    body = "status: captured\nnote: user confirmed split\ntarget_updates:\n  - author-dna.yaml: HP-12\n  - conventions.yaml: CP-3\nwarn:\nreason:"
+    assert g.validate_teaching_moment(_tm(body)).ok is True
+
+
+def test_tm_pass_declined_with_warn_and_reason():
+    body = "status: declined\nnote:\ntarget_updates:\nwarn: [R-DNA-7] Teaching moment chua capture: prefer composition.\nreason: user declined capture"
+    assert g.validate_teaching_moment(_tm(body)).ok is True
+
+
+def test_tm_pass_pending_with_warn_and_reason():
+    body = "status: pending-confirmation\nnote:\ntarget_updates:\nwarn: [R-DNA-7] Teaching moment chua capture: factory boundary.\nreason: awaiting user confirmation"
+    assert g.validate_teaching_moment(_tm(body)).ok is True
+
+
+def test_tm_fail_missing_section():
+    result = g.validate_teaching_moment("# AGENT_TRANSPARENCY\n\n## Phase State\n\nphase_state: applying\n")
+    assert result.ok is False
+    assert "missing" in result.reason.lower()
+
+
+def test_tm_fail_blank_status():
+    body = "status:\nnote:\ntarget_updates:\nwarn:\nreason:"
+    result = g.validate_teaching_moment(_tm(body))
+    assert result.ok is False
+    assert "status must be one of" in result.reason
+
+
+def test_tm_fail_invalid_status():
+    assert g.validate_teaching_moment(_tm("status: maybe\nnote: x")).ok is False
+
+
+def test_tm_fail_none_without_note():
+    result = g.validate_teaching_moment(_tm("status: none\nnote:\ntarget_updates:\nwarn:\nreason:"))
+    assert result.ok is False
+    assert "active assertion note" in result.reason
+
+
+def test_tm_fail_none_with_placeholder_note():
+    result = g.validate_teaching_moment(_tm("status: none\nnote: fill before archive"))
+    assert result.ok is False
+
+
+def test_tm_fail_captured_without_targets():
+    result = g.validate_teaching_moment(_tm("status: captured\nnote: x\ntarget_updates:\nwarn:\nreason:"))
+    assert result.ok is False
+    assert "target_updates" in result.reason
+
+
+def test_tm_fail_declined_without_warn():
+    result = g.validate_teaching_moment(_tm("status: declined\nnote:\ntarget_updates:\nwarn:\nreason: user declined"))
+    assert result.ok is False
+
+
+def test_tm_fail_declined_without_reason():
+    result = g.validate_teaching_moment(_tm("status: declined\nwarn: [R-DNA-7] x\nreason:"))
+    assert result.ok is False
+
+
+def test_tm_fail_pending_without_warn():
+    result = g.validate_teaching_moment(_tm("status: pending-confirmation\nreason: awaiting"))
+    assert result.ok is False
+
+
+def test_tm_fail_pending_without_reason():
+    result = g.validate_teaching_moment(_tm("status: pending-confirmation\nwarn: [R-DNA-7] x\nreason:"))
+    assert result.ok is False
+
+
+def test_cli_teaching_moment_exit_codes(tmp_path):
+    import importlib.util
+    cli_mod = Path(__file__).resolve().parents[1] / "cli.py"
+    spec = importlib.util.spec_from_file_location("cli", cli_mod)
+    cli = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(cli)
+
+    f = tmp_path / "AGENT_TRANSPARENCY.md"
+    f.write_text(_tm("status: none\nnote: nothing to capture this session"), encoding="utf-8")
+    assert cli.main(["teaching-moment", str(f)]) == 0
+    f.write_text(_tm("status:\nnote:"), encoding="utf-8")
+    assert cli.main(["teaching-moment", str(f)]) == 1

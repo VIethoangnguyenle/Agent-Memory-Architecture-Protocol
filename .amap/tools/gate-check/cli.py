@@ -13,6 +13,7 @@ VALIDATORS = {
     "context-request": "validate_context_request",
     "node-checkpoint": "validate_node_checkpoint",
     "apply-gate": "validate_apply_gate",
+    "teaching-moment": "validate_teaching_moment",
 }
 
 
