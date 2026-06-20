@@ -61,6 +61,13 @@ PRE-CHECK (theo R-Guard-1):
          WARN: "TOKEN_LOG.md chưa được ghi. Tạo retroactively (estimate từ AGENT_TRANSPARENCY) trước khi archive."
          Ghi cảnh báo vào AGENT_TRANSPARENCY: "[TOKEN-LOG-MISSING] TOKEN_LOG không tồn tại lúc archive."
          Tiếp tục archive (không ABORT) — nhưng ARCHIVE_META ghi `token_total_estimate: unknown`.
+  5. Teaching Moment gate (R-DNA-7): chạy
+     `python3 {{ platform.framework_root }}/tools/gate-check/cli.py teaching-moment {{ platform.framework_root }}/knowledge/active/AGENT_TRANSPARENCY.md`
+     → Exit 0: tiếp tục archive.
+     → Exit ≠ 0: ABORT archive, in lỗi cụ thể từ validator, yêu cầu agent resolve section
+       `## Teaching Moment Check` (đặt status hợp lệ + bằng chứng) rồi chạy lại.
+     Giới hạn: validator chỉ kiểm cấu trúc, không chứng minh được có teaching moment thật;
+     việc gọi gate này là honor-code (archive không bị PreToolUse write-gate chặn).
 OUTPUT: archive/{ticket_id}/ được tạo với đầy đủ file
 
 Status meanings:
