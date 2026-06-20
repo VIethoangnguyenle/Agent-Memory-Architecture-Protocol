@@ -54,8 +54,13 @@ PRE-CHECK (theo R-Guard-1):
   1. Đọc `phase_state` trong AGENT_TRANSPARENCY.md (block `## Phase State`)
   2. Nếu phase_state ∉ {completed, cancelled} và status=completed:
      → WARN: "phase_state chưa là `completed` — xác nhận apply đã xong chưa?"
-  3. Nếu phase_state = `blocked-by-arch` | `blocked-by-data`:
-     → ABORT: "Task đang bị BLOCK — không thể archive cho đến khi block được resolve"
+  3. Archive-ready gate (deterministic): chạy
+     `python3 {{ platform.framework_root }}/tools/gate-check/cli.py archive-ready {{ platform.framework_root }}/knowledge/active/AGENT_TRANSPARENCY.md`
+     → Exit ≠ 0 (phase_state = blocked-by-arch | blocked-by-data): ABORT archive, in lý do
+       cụ thể từ validator — không thể archive cho đến khi block được resolve.
+     → Exit 0: tiếp tục.
+     Giới hạn: check deterministic, nhưng việc gọi gate là honor-code (archive không bị
+     PreToolUse write-gate chặn).
    4. Kiểm tra `{{ platform.framework_root }}/knowledge/active/TOKEN_LOG.md` tồn tại và có nội dung (không chỉ template):
       → Nếu KHÔNG tồn tại hoặc chỉ là skeleton:
          WARN: "TOKEN_LOG.md chưa được ghi. Tạo retroactively (estimate từ AGENT_TRANSPARENCY) trước khi archive."
