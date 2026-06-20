@@ -252,6 +252,27 @@ def test_parse_force_redirect():
     assert wg.parse_shell_writes("echo x >| src/App.java")[0] == [Path("src/App.java")]
 
 
+def test_parse_stderr_redirect_to_file_is_caught():
+    paths, _ = wg.parse_shell_writes("npm run build 2> src/App.java")
+    assert paths == [Path("src/App.java")]
+
+
+def test_parse_stdout_fd_redirect_to_file_is_caught():
+    paths, _ = wg.parse_shell_writes("cmd 1> out.txt")
+    assert paths == [Path("out.txt")]
+
+
+def test_parse_fd_duplication_not_a_target():
+    paths, unresolved = wg.parse_shell_writes("cmd 2>&1")
+    assert paths == []
+    assert unresolved is False
+
+
+def test_parse_subshell_redirect_strips_paren():
+    paths, _ = wg.parse_shell_writes("(echo x > src/App.java)")
+    assert paths == [Path("src/App.java")]
+
+
 def _init_git_repo(root):
     subprocess.run(["git", "init", "-q"], cwd=str(root), check=True)
     (root / ".gitignore").write_text("coverage/\ndist/\n", encoding="utf-8")
@@ -324,3 +345,12 @@ def test_bash_dynamic_write_warns_and_allows(tmp_path, monkeypatch, capsys):
     captured = capsys.readouterr()
     assert code == 0
     assert "unresolved" in captured.err.lower()
+
+
+def test_bash_stderr_redirect_to_code_blocks_without_checkpoint(tmp_path, monkeypatch, capsys):
+    monkeypatch.chdir(tmp_path)
+    payload = {"tool_name": "Bash", "tool_input": {"command": "npm run build 2> src/App.java"}}
+    code = wg.main(["--framework-root", ".amap"], stdin_text=json.dumps(payload))
+    captured = capsys.readouterr()
+    assert code == 2
+    assert "KNOWLEDGE_CHECKPOINT" in captured.err
