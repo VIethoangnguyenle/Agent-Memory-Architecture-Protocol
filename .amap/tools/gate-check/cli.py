@@ -14,6 +14,7 @@ VALIDATORS = {
     "node-checkpoint": "validate_node_checkpoint",
     "apply-gate": "validate_apply_gate",
     "teaching-moment": "validate_teaching_moment",
+    "archive-ready": "validate_archive_ready",
 }
 
 

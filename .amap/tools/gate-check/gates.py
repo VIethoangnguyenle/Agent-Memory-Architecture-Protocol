@@ -146,6 +146,22 @@ def validate_teaching_moment(text: str) -> Result:
     return Result(True)
 
 
+_ARCHIVE_BLOCKED = {"blocked-by-arch", "blocked-by-data"}
+
+
+def validate_archive_ready(text: str) -> Result:
+    """Pre-archive guard: refuse to archive/reset while the task is blocked.
+    Reads phase_state from the '## Phase State' section. Deterministic check;
+    honor-code trigger (archive is not hook-intercepted)."""
+    m = re.search(_SECTION.format(name=re.escape("Phase State")), text, re.DOTALL | re.IGNORECASE)
+    section = m.group(1) if m else ""
+    ps = re.search(r"phase_state:\s*(\S+)", section)
+    phase_state = ps.group(1).strip() if ps else ""
+    if phase_state in _ARCHIVE_BLOCKED:
+        return Result(False, f"archive blocked: phase_state={phase_state} — resolve the blocker first")
+    return Result(True)
+
+
 def validate_context_request(text: str) -> Result:
     """Validate a subagent CONTEXT_REQUEST (YAML schema shared with the
     microloop-orchestrator contract: request_type=='context' + substantive

@@ -337,3 +337,47 @@ def test_seeded_template_fails_teaching_moment_validator():
     tpl = Path(__file__).resolve().parents[3] / "knowledge" / "templates" / "AGENT_TRANSPARENCY.tpl.md"
     content = tpl.read_text(encoding="utf-8")
     assert g.validate_teaching_moment(content).ok is False
+
+
+def _ps(value: str) -> str:
+    return f"# AGENT_TRANSPARENCY\n\n## Phase State\n\n```\nphase_state: {value}\n```\n\n## Next\n\nx\n"
+
+
+def test_archive_ready_fail_blocked_by_arch():
+    result = g.validate_archive_ready(_ps("blocked-by-arch"))
+    assert result.ok is False
+    assert "blocked-by-arch" in result.reason
+
+
+def test_archive_ready_fail_blocked_by_data():
+    assert g.validate_archive_ready(_ps("blocked-by-data")).ok is False
+
+
+def test_archive_ready_pass_completed():
+    assert g.validate_archive_ready(_ps("completed")).ok is True
+
+
+def test_archive_ready_pass_applying():
+    assert g.validate_archive_ready(_ps("applying")).ok is True
+
+
+def test_archive_ready_pass_phase2_done():
+    assert g.validate_archive_ready(_ps("phase-2-done")).ok is True
+
+
+def test_archive_ready_pass_when_no_phase_state():
+    assert g.validate_archive_ready("# AGENT_TRANSPARENCY\n\nno phase section here\n").ok is True
+
+
+def test_cli_archive_ready_exit_codes(tmp_path):
+    import importlib.util
+    cli_mod = Path(__file__).resolve().parents[1] / "cli.py"
+    spec = importlib.util.spec_from_file_location("cli", cli_mod)
+    cli = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(cli)
+
+    f = tmp_path / "AGENT_TRANSPARENCY.md"
+    f.write_text(_ps("applying"), encoding="utf-8")
+    assert cli.main(["archive-ready", str(f)]) == 0
+    f.write_text(_ps("blocked-by-arch"), encoding="utf-8")
+    assert cli.main(["archive-ready", str(f)]) == 1
