@@ -131,6 +131,7 @@
 .amap/tools/microloop-orchestrator/tests/test_hybrid_contract_dag.py
 .amap/tools/microloop-orchestrator/tests/test_outcome.py
 .amap/tools/microloop-orchestrator/tests/test_protocol.py
+.amap/tools/microloop-orchestrator/tests/test_runtime_contract.py
 .amap/tools/microloop-orchestrator/tests/test_slice.py
 .amap/tools/microloop-orchestrator/tests/test_stats.py
 .amap/tools/microloop-orchestrator/tests/test_toposort.py

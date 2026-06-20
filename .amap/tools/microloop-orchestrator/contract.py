@@ -6,7 +6,7 @@ style is avoided; the file IS the yaml). Keeps SP1a's dict-based simplicity.
 import yaml
 from pathlib import Path
 
-VALID_STATUS = {"pending", "in_progress", "done", "blocked"}
+VALID_STATUS = {"pending", "in_progress", "done", "blocked", "stale"}
 VALID_MODE = {"subagent", "fresh-session", "inline-reload"}
 VALID_NODE_STATUS = {"pending", "in_progress", "done", "blocked", "stale"}
 VALID_NODE_TYPE = {"contract", "leaf", "integration", "test", "review"}

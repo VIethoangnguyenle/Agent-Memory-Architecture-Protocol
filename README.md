@@ -328,6 +328,121 @@ Doctor không sửa config trừ khi bạn chạy:
 
 ---
 
+## Dashboard Control Tower
+
+AMAP có dashboard local để quan sát agent chính, micro-loop và subagent theo thời gian thực.
+Dashboard đọc các runtime artifact trong `knowledge/active/` và serve UI qua SSE, bind local
+ở `127.0.0.1`.
+
+### Chạy dashboard
+
+Đăng ký project cần theo dõi:
+
+```bash
+.venv/bin/python -m cli.amap dashboard register --path /path/to/your-project
+```
+
+Mở dashboard:
+
+```bash
+.venv/bin/python -m cli.amap dashboard serve --target /path/to/your-project --port 7077
+```
+
+Mở trong browser:
+
+```text
+http://127.0.0.1:7077/
+```
+
+Không mở browser tự động:
+
+```bash
+.venv/bin/python -m cli.amap dashboard serve --target /path/to/your-project --no-browser
+```
+
+In snapshot một lần trong terminal:
+
+```bash
+.venv/bin/python -m cli.amap dashboard --target /path/to/your-project
+```
+
+### Parent brain
+
+Dashboard hiển thị `parent brain` riêng với subagent prompt/result. Đây là mirror đọc được
+của IDE brain hoặc cuộc trò chuyện với human, lưu tại:
+
+```text
+{framework_root}/knowledge/active/PARENT_BRAIN.md
+```
+
+Với Antigravity, có thể sync best-effort từ local brain artifacts:
+
+```bash
+.venv/bin/python -m cli.amap dashboard sync-brain --target /path/to/your-project --brain-platform antigravity
+```
+
+Nếu Antigravity chưa ghi text artifact cho conversation hiện tại, lệnh sẽ báo không sync và
+không đè `PARENT_BRAIN.md` hiện có.
+
+### Dashboard đọc gì?
+
+| Artifact | Vai trò |
+|---|---|
+| `AGENT_TRANSPARENCY.md` | phase, ticket, confidence, trạng thái tổng |
+| `PARENT_BRAIN.md` | context trực quan của agent cha từ IDE brain/conversation |
+| `microloop/TASK_QUEUE.md` | task list, status, progress `x/N` |
+| `TASK_HANDOFF.*.md` | prompt/handoff từng subagent nhận |
+| `microloop/TASK_RESULT.*.md` | kết quả từng subagent hoặc node |
+| `microloop/ACTIVITY_LOG.jsonl` | timeline append-only cho parent và subagent |
+
+Dashboard chỉ đọc các file này khi serve. Việc sync parent brain là một command explicit riêng.
+
+### Troubleshooting
+
+**Vì sao progress là 0%?**
+
+Nếu chưa có `microloop/TASK_QUEUE.md`, dashboard không có mẫu số `N` để tính progress. Trong
+trạng thái này UI sẽ hiển thị phase-only hoặc `waiting for microloop TASK_QUEUE`.
+
+**Vì sao thấy subagent nhưng không thấy progress?**
+
+Có `TASK_HANDOFF.*.md` nhưng chưa có `TASK_QUEUE.md`. Đây là handoff-only transitional state.
+Pha 3 chuẩn phải tạo queue trước khi dispatch subagent.
+
+**Vì sao parent brain trống?**
+
+Chưa có `PARENT_BRAIN.md`, hoặc IDE adapter chưa sync được conversation. Với Antigravity, chạy
+`dashboard sync-brain`; nếu không có text artifacts, tạo mirror thủ công hoặc chờ runtime ghi
+brain artifact.
+
+**Vì sao dashboard đánh dấu stale?**
+
+Một artifact bị malformed, ví dụ YAML lỗi trong `TASK_QUEUE.md` hoặc JSONL lỗi trong
+`ACTIVITY_LOG.jsonl`. UI vẫn render project khác và hiển thị path lỗi.
+
+**Làm sao verify SSE?**
+
+Chạy dashboard rồi gọi endpoint:
+
+```bash
+curl -N http://127.0.0.1:7077/events
+```
+
+Message đầu tiên phải bắt đầu bằng `data: [` và chứa snapshot hiện tại.
+
+### Manual acceptance checklist
+
+- `amap dashboard serve` mở UI local.
+- `/api/runs` trả JSON snapshot.
+- `/events` gửi snapshot đầu tiên ngay khi connect.
+- Project không có active run hiển thị idle.
+- Project có `TASK_QUEUE.md` hiển thị progress thật `x/N`.
+- Subagent card hiển thị prompt và result drawer khi artifact tồn tại.
+- Parent brain panel hiển thị khi có `PARENT_BRAIN.md`.
+- Malformed queue/log không làm sập dashboard; UI hiển thị stale/error.
+
+---
+
 ## Knowledge Lifecycle
 
 ```txt
