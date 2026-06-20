@@ -6,6 +6,38 @@
 
 ---
 
+## Ưu tiên brainstorm / thực thi (next)
+
+> Xếp theo dependency + đòn bẩy. `[BRAINSTORM]` = cần `/brainstorm` hoặc office-hours trước khi build (còn ambiguity thiết kế); `[EXEC]` = đã specced hoặc cơ học, làm thẳng.
+
+**Bậc 0 — Linchpin (chặn mọi thứ về giá trị):**
+1. **P1.1** `[EXEC]` — chạy baseline-arm litmus. UP1 / UP5 / UP6 / P2.1-validate đều phụ thuộc. *(tốn time của bạn ~2-3 ngày chạy ticket thật — không thay thế được bằng CC)*
+
+**Bậc 1 — Guard rẻ:** ✅ **DONE** — UP3 (`test_snapshots.py` golden-snapshot có sẵn) + P3.1 (DRY `framework_version`, branch `platform-hardening`).
+
+**Bậc 2 — Đặt cược chiến lược, CHỈ sau khi P1.1 validate (cần brainstorm):**
+2. **UP1** `[BRAINSTORM]` — eval harness liên tục + wire SP1c substrate.
+3. **P2.1 + UP2** `[BRAINSTORM]` — capability-based portability + registry-as-data.
+4. **UP6** `[BRAINSTORM]` — OpenSpec first-class (đo bypass trước, hạ friction sau).
+5. **UP5** `[BRAINSTORM]` — phase collapse theo knowledge state (office-hours trước).
+
+**Bậc 3 — Dọn cấu trúc, độc lập validation (làm được NGAY mà không cần P1.1):**
+6. **P2.5** `[EXEC]` — dashboard contract single-source (~30-45′ CC, an toàn).
+7. **P3.6** `[EXEC]` — tách orchestrator pure-vs-emit (sau P2.5).
+8. **P2.3** `[BRAINSTORM-lite]` — gom resolved-config canonical. **Không mechanical:** chicken-and-egg (platform nằm TRONG config → không biết `framework_root` trước khi đọc). Chốt approach trước. Win nhỏ an toàn riêng: chỉ fix default `.amap`≠`.agents`.
+
+**Bậc 4 — Dashboard correctness (frozen ở P6; sau khi quay từ P1.1):**
+9. **P3.4** `[EXEC]` — archive `active/` trọn vẹn (root cause overlap bug đã quan sát live).
+10. **P3.5** `[EXEC]` — dashboard ticket-aware (sau P3.4).
+
+**Bậc 5 — Hệ quả / phụ thuộc:**
+11. **UP4** `[EXEC]` — `--dry-run` + drift detection.
+12. **P3.3** `[EXEC]` — update roadmap SP3 framing (sau P2.1).
+
+> Chưa có time cho P1.1 mà muốn tiến: cụm **P2.5 → P3.6** là EXEC an toàn, độc lập, làm được ngay. P2.3 cần brainstorm trước (chicken-and-egg).
+
+---
+
 ## P1 — Làm trước (đòn bẩy cao, chi phí thấp)
 
 ### P1.1 — U0 litmus phải có baseline arm (đo outcome, không đo process)
@@ -15,20 +47,6 @@
 - **Exit:** litmus-report chứa so sánh AMAP-arm vs baseline-arm trên **≥3 ticket** (tiny/standard/complex), verdict định lượng: giảm rework X%, tốn thêm Y% token.
 - **Effort:** human ~2-3 ngày / CC: thiết kế protocol ~30 phút (chạy ticket thật vẫn tốn thời gian thật).
 - **Priority:** P1. **Depends on:** U2-min (repo sạch) như roadmap.
-
-### P1.2 — Fix silent-failure trong tool resolution
-- **What:** `get_tool()` trả về chính tên abstract khi miss → template render thẳng chữ `find_blast_radius` (tool không tồn tại) vào instruction agent. Thêm: (a) test khẳng định mọi platform định nghĩa **cùng tập abstract-op key**, (b) guard lúc render cảnh báo/fail khi gặp op chưa map.
-- **Why:** Vi phạm "zero silent failures". `verify_no_unresolved` chỉ bắt marker `{{ `, không bắt abstract-op rò rỉ → output sai mà không ai biết.
-- **Context:** [cli/platforms/base.py:96-102](cli/platforms/base.py#L96-L102) (`get_tool`), [cli/scaffold.py:301-324](cli/scaffold.py#L301-L324) (`verify_no_unresolved`), [cli/tests/test_platforms.py](cli/tests/test_platforms.py).
-- **Effort:** human ~nửa ngày / CC ~15 phút.
-- **Priority:** P1 (nhỏ, an toàn).
-
-### P1.3 + P2.2 — Init automation and safe defaults
-- **What:** Add flags for `amap init`: `--platform`, `--mcp`, `--language`, `--yes`. Keep interactive as the default, but prevent enter-through from silently installing Antigravity + Java. Platform has no interactive default; language defaults to `other`.
-- **Why:** Init must be scriptable for CI/onboarding, and defaults must not silently choose the wrong runtime or language.
-- **Context:** [cli/commands/init.py](cli/commands/init.py), [cli/amap.py](cli/amap.py). Supersedes the old separate `P1.3` and `P2.2` entries.
-- **Effort:** CC ~30-45 minutes.
-- **Priority:** P1.
 
 ---
 
@@ -49,13 +67,6 @@
 - **Priority:** P2.
 - **Bundle (S2, từ dashboard review 2026-06-20):** `framework_root` default **lệch nhau** giữa các module — dashboard reader default `.amap` ([cli/dashboard/reader.py:68](cli/dashboard/reader.py#L68)), orchestrator default `.agents` ([.amap/tools/microloop-orchestrator/orchestrator.py:103](.amap/tools/microloop-orchestrator/orchestrator.py#L103)). Chưa nổ vì resolved-config luôn ghi rõ key, nhưng là bẫy. Gom về **một** default canonical khi làm P2.3.
 
-### P2.4 — Sửa quickstart README không copy-paste được
-- **What:** Bước 2 dùng placeholder *literal* `{framework_root}` trong lệnh `cp`. Resolve thành ví dụ thật (`.claude/` hoặc `.agents/`) hoặc nói rõ thay bằng gì theo platform.
-- **Why:** User copy-paste nguyên `{framework_root}` → lỗi ngay bước onboarding đầu.
-- **Context:** [README.md:207](README.md#L207).
-- **Effort:** CC ~5 phút.
-- **Priority:** P2.
-
 ### P2.5 — Nâng dashboard runtime contract thành interface có single-source (chống drift)
 - **What:** Tạo một module hằng số contract dùng chung (tên event: `subagent_spawned/started/done/blocked`, `task_*`, `parent_brain_updated`, ...; và `VALID_RUNTIME_STATUS`) import bởi **cả** orchestrator (writer, ship sang target) **lẫn** dashboard reader (cli/). Cân nhắc thêm version field vào `ACTIVITY_LOG`/contract.
 - **Why:** Phát hiện 2026-06-20 (architect review tính năng dashboard): orchestrator và reader cùng phụ thuộc một bộ event/status nhưng mỗi bên **hard-code string riêng**. Reader xử unknown-event generic nên không crash, nhưng **không gì chống drift ngữ nghĩa** giữa hai lớp — đây là bề mặt coupling xuyên-lớp duy nhất của tính năng. `ACTIVITY_LOG.jsonl` giờ là interface runtime first-class, nên đáng được đối xử như interface (single source + version) thay vì spec markdown + literal rải rác.
@@ -65,11 +76,6 @@
 ---
 
 ## P3 — Nice to have
-
-### P3.1 — DRY `framework_version "3.0"`
-- **What:** Hardcode 2 chỗ → một nguồn sự thật.
-- **Context:** [cli/platforms/base.py:117](cli/platforms/base.py#L117), [cli/scaffold.py:86](cli/scaffold.py#L86).
-- **Effort:** CC ~5 phút. **Priority:** P3.
 
 ### P3.3 — Cập nhật framing chi phí SP3 trong roadmap
 - **What:** Sau khi xác nhận P2.1 (SP3 = mở rộng adapter, không phải greenfield), cập nhật §2/§4 roadmap: SP3 từ "spec mới, đòn bẩy build lớn nhất" → "mở rộng adapter + migrate ~16 ref + test". Điều này dịch lại bài toán "portability có đáng không".
@@ -94,11 +100,6 @@
 - **Context:** [.amap/tools/microloop-orchestrator/orchestrator.py](.amap/tools/microloop-orchestrator/orchestrator.py).
 - **Effort:** CC ~20 phút. **Priority:** P3 (nhẹ nhất). **Depends on:** nên làm cùng/sau P2.5 (single-source constants).
 
-## Done / Stale
-
-### P3.2 — Next-steps footer sau `amap init`
-- **Status:** Done before Batch 1. `run_init()` already prints platform-root-aware next steps, and `cli/tests/test_init.py` covers the output.
-
 ---
 
 ## Upgrades — nâng cấp/đổi hướng cấu trúc (net-new, không phải fix)
@@ -112,20 +113,14 @@
 - **Context:** Mở rộng P1.1 từ litmus một-lần thành signal liên tục. Tái dùng instrumentation ở [.amap/procedures/token-tracking.md](.amap/procedures/token-tracking.md).
 - **Effort:** CC ~1-2 giờ dựng khung; chạy ticket thật vẫn tốn thời gian thật.
 - **Priority:** cao nhất trong Upgrades. **Depends on:** P1.1 (baseline arm).
+- **SP1c substrate (eng-review 2026-06-20):** `outcome.py`/`stats.py` (rule_effectiveness + prune_candidates + first_pass trend) hiện **orphan** — chỉ `test_outcome.py` gọi, `task.md` Pha 3 KHÔNG gọi, `outcome-log.yaml` chưa từng được ghi; không spec/plan nào coi nó là substrate. **Quyết định: resurrect làm 1 signal của UP1** (không xóa, không cắm ngay — wiring thuộc UP1, sau P1.1). Khi làm UP1: wire `build_record`/`append_to_log` vào `task.md` Pha 3, **bắt buộc append TRƯỚC `knowledge-curator.archive()`** (sai thứ tự = mất data âm thầm → **regression test bắt buộc**); reconcile path spec `.knowledge-layer/` → `{{ platform.framework_root }}/knowledge/long-term/`. Trục SP1c (rule-prune, bài W6) **bổ sung** chứ không trùng trục AMAP-vs-baseline của P1.1. Context: [.amap/tools/microloop-orchestrator/outcome.py](.amap/tools/microloop-orchestrator/outcome.py), [stats.py](.amap/tools/microloop-orchestrator/stats.py), [SP1c spec](docs/superpowers/specs/2026-06-17-sp1c-outcome-loop-design.md).
 
 ### UP2 — Platform/MCP registry dạng data, không phải code
 - **What:** Chuyển mỗi platform từ class Python (`tool_mapping` hardcode) sang YAML khai báo (một file/platform hoặc một registry). Thêm platform/MCP = thêm data.
 - **Why:** (a) biến FAQ "thêm platform custom" thành thật (không cần viết Python); (b) abstract-op keyset validate schema ở một chỗ → diệt nguyên lớp silent-failure **về cấu trúc**, không chỉ bằng test (gộp với P1.2); (c) P2.1 capability-resolution thành data-driven. Phép đơn giản hoá làm portability rẻ thật.
 - **Context:** [cli/platforms/base.py](cli/platforms/base.py), [cli/platforms/claude_code.py](cli/platforms/claude_code.py) và các platform khác.
 - **Effort:** human ~2-3 ngày / CC ~1 giờ.
-- **Priority:** sau UP1/UP3. **Depends on:** liên quan P1.2, P2.1.
-
-### UP3 — Golden-snapshot test mỗi platform
-- **What:** `amap init` cho từng platform vào fixture, snapshot toàn bộ cây output, diff mỗi lần đổi. Regression ở path-resolution fail CI ngay.
-- **Why:** Churn lặp (6 commit về path resolution) cho thấy bề mặt platform × framework_root rất giòn. Đây là một test bắt được phần lớn churn gần đây.
-- **Context:** [cli/tests/](cli/tests/), [cli/scaffold.py](cli/scaffold.py). Bổ trợ P2.3 (gom config canonical).
-- **Effort:** CC ~30 phút.
-- **Priority:** P1 hardening guard. Do before large portability refactors.
+- **Priority:** sau UP1. **Depends on:** P2.1. *(P1.2 + UP3 đã done — keyset validation + golden-snapshot có sẵn.)*
 
 ### UP4 — `amap init/update --dry-run` + drift detection
 - **What:** `--dry-run` hiện diff trước khi ghi; `amap status --check-drift` cảnh báo khi file framework-owned bị sửa tay (sẽ bị overwrite khi update).
@@ -140,3 +135,10 @@
 - **Context:** Liên quan U1 ([roadmap §4](docs/superpowers/specs/2026-06-17-upgrade-roadmap-design.md)), memory hierarchy active/long-term.
 - **Effort:** human ~1 tuần+ / CC ~vài giờ. **Direction — nên qua office-hours/spec trước khi build.**
 - **Priority:** sau khi validate xong (UP1 + P1.1). **Depends on:** P1.1, UP1.
+
+### UP6 — OpenSpec first-class, ít friction (đo bypass TRƯỚC, hạ thuế SAU)
+- **What:** Hai bước. (1) **Instrument**: thêm provenance `spec_path` vào record outcome (hoặc telemetry tương đương) để đo **% task Pha 2 thực sự đi qua opsx vs bypass**. (2) Sau khi có số: tách vai trò **format-of-record vs authoring-engine** → rule `R-Spec-3` (artifact bắt buộc, authoring-path linh hoạt) và cân nhắc skill `spec-orchestrator` bọc opsx (1 lệnh → 4 artifact + `openspec validate`, bỏ loop tay).
+- **Why:** `task.md` Pha 2 HARDBLOCK opsx nhưng thực tế bị bypass vì authoring-tax cao ([opsx-propose.md](.amap/workflows/opsx-propose.md): loop `openspec instructions --json` từng artifact, 4 artifact kể cả task nhỏ). Luật bị bypass làm hỏng chuỗi phase-gate. Adoption-tax đã quan sát nhưng chưa được track ở đâu trong backlog.
+- **Context:** [.amap/workflows/task.md](.amap/workflows/task.md) Pha 2, [.amap/workflows/opsx-propose.md](.amap/workflows/opsx-propose.md). Giao với U1/UP5 tiering: task tiny có cần đủ 4 artifact không.
+- **Effort:** instrument CC ~30 phút; R-Spec-3 + spec-orchestrator human ~1-2 ngày / CC ~1 giờ.
+- **Priority:** P2. **Depends on:** substrate telemetry (UP1/SP1c) để đo bypass TRƯỚC khi hạ friction. **Direction — đo trước, đừng build UX dựa trên phỏng đoán.**
