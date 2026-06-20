@@ -1,5 +1,6 @@
 import importlib.util
 import json
+import subprocess
 from pathlib import Path
 
 
@@ -249,3 +250,22 @@ def test_parse_verb_via_absolute_path():
 
 def test_parse_force_redirect():
     assert wg.parse_shell_writes("echo x >| src/App.java")[0] == [Path("src/App.java")]
+
+
+def _init_git_repo(root):
+    subprocess.run(["git", "init", "-q"], cwd=str(root), check=True)
+    (root / ".gitignore").write_text("coverage/\ndist/\n", encoding="utf-8")
+
+
+def test_git_ignored_true_for_ignored_path(tmp_path):
+    _init_git_repo(tmp_path)
+    assert wg._git_ignored(tmp_path, Path("coverage/lcov.info")) is True
+
+
+def test_git_ignored_false_for_tracked_source(tmp_path):
+    _init_git_repo(tmp_path)
+    assert wg._git_ignored(tmp_path, Path("src/App.java")) is False
+
+
+def test_git_ignored_false_when_not_a_git_repo(tmp_path):
+    assert wg._git_ignored(tmp_path, Path("coverage/lcov.info")) is False

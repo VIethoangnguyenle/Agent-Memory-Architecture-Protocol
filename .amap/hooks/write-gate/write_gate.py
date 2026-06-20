@@ -11,6 +11,7 @@ import importlib.util
 import json
 import re
 import shlex
+import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -139,6 +140,20 @@ def parse_shell_writes(command: str):
             seen.add(key)
             paths.append(p)
     return paths, unresolved
+
+
+def _git_ignored(project_root: Path, path: Path) -> bool:
+    """True if `path` is git-ignored under project_root. Not-a-git-repo, missing
+    git, or any error degrades to False (treat as a gated, non-ignored path)."""
+    try:
+        result = subprocess.run(
+            ["git", "check-ignore", "-q", path.as_posix()],
+            cwd=str(project_root),
+            capture_output=True,
+        )
+    except (FileNotFoundError, OSError):
+        return False
+    return result.returncode == 0
 
 
 def extract_target_paths(payload: dict):
