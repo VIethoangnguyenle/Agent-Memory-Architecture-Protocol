@@ -31,6 +31,7 @@ Trước khi bắt đầu bất kỳ nhánh nào, luôn chạy bước bootstrap
    - Ghi mới với task/ticket ID hiện tại.
    - Đánh dấu `[x] {{ platform.config_entry_point }}` và `[x] {{ platform.framework_root }}/rules/RULES.md` nếu đã đọc.
    - Ghi vào "Lịch sử pha": `Bootstrap | <thời điểm> | Task: <input>`.
+   - Bao gồm section `## Teaching Moment Check` ở trạng thái non-passing (status rỗng) như template `AGENT_TRANSPARENCY.tpl.md`. KHÔNG pre-fill `status: none`.
 
 4. Tạo hoặc reset `{{ platform.framework_root }}/knowledge/active/TOKEN_LOG.md`:
    - Nếu chưa tồn tại: tạo từ template `{{ platform.framework_root }}/knowledge/templates/TOKEN_LOG.tpl.md`.
@@ -415,6 +416,7 @@ Mục tiêu: dùng OpenSpec để áp dụng spec đã được chấp thuận v
    - `[ ]` CONTRACT_DAG.md has no `pending` / `in_progress` / `blocked` / `stale` nodes.
    - `[ ]` Every leaf node with `contract_ref` uses the current `contract_version`.
    - `[ ]` All `CONTEXT_REQUEST`, `CONTRACT_CHANGE_REQUEST`, and `INTEGRATION_REQUEST` files are resolved or explicitly documented.
+   - `[ ]` Teaching Moment Check trong AGENT_TRANSPARENCY.md đã resolved — chạy `python3 {{ platform.framework_root }}/tools/gate-check/cli.py teaching-moment {{ platform.framework_root }}/knowledge/active/AGENT_TRANSPARENCY.md` và pass (exit 0) trước khi gọi knowledge-curator.
    Nếu bất kỳ ô nào chưa tick: hoàn thành trước khi gọi knowledge-curator.
 
 9. **[SESSION-BOUNDARY — Pha 3]** Sau khi archive hoàn thành:

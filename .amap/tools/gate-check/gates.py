@@ -109,6 +109,43 @@ def _section_has_text(text: str, name: str) -> bool:
     return bool(match and match.group(1).strip())
 
 
+_TM_VALID = ("none", "captured", "declined", "pending-confirmation")
+_TM_PLACEHOLDERS = {"fill before archive"}
+
+
+def _tm_field(body: str, key: str, multiline: bool = False) -> str:
+    if multiline:
+        m = re.search(rf"^{key}:[ \t]*(.*(?:\n[ \t]+.*)*)", body, re.MULTILINE)
+    else:
+        m = re.search(rf"^{key}:[ \t]*(.*)$", body, re.MULTILINE)
+    return m.group(1).strip() if m else ""
+
+
+def validate_teaching_moment(text: str) -> Result:
+    """R-DNA-7 pre-archive acknowledgment. Structural invariants only — cannot
+    prove a teaching moment actually occurred (honor-code; see spec C-24)."""
+    m = re.search(_SECTION.format(name=re.escape("Teaching Moment Check")), text, re.DOTALL | re.IGNORECASE)
+    if not m:
+        return Result(False, "Teaching Moment Check section missing. Add section before archive.")
+    body = m.group(1)
+    status = _tm_field(body, "status")
+    if status not in _TM_VALID:
+        return Result(False, "status must be one of none, captured, declined, pending-confirmation.")
+    if status == "none":
+        note = _tm_field(body, "note")
+        if not note or note.lower() in _TM_PLACEHOLDERS:
+            return Result(False, "status none requires a non-empty active assertion note.")
+    elif status == "captured":
+        if not _tm_field(body, "target_updates", multiline=True):
+            return Result(False, "status captured requires non-empty target_updates.")
+    elif status in ("declined", "pending-confirmation"):
+        if "[R-DNA-7]" not in body:
+            return Result(False, f"status {status} requires [R-DNA-7] WARN and reason.")
+        if not _tm_field(body, "reason"):
+            return Result(False, f"status {status} requires [R-DNA-7] WARN and reason.")
+    return Result(True)
+
+
 def validate_context_request(text: str) -> Result:
     """Validate a subagent CONTEXT_REQUEST (YAML schema shared with the
     microloop-orchestrator contract: request_type=='context' + substantive

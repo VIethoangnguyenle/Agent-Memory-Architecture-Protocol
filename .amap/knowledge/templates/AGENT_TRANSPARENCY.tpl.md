@@ -90,6 +90,21 @@ phase_state: bootstrapped
 
 ---
 
+## Teaching Moment Check
+
+<!-- R-DNA-7: Resolve before archive. Do NOT pre-fill status: none.
+     status: one of none | captured | declined | pending-confirmation
+       none      → requires a real active-assertion note (not a placeholder)
+       captured  → requires target_updates (which long-term files got the entry)
+       declined / pending-confirmation → require a [R-DNA-7] warn line + reason -->
+status:
+note:
+target_updates:
+warn:
+reason:
+
+---
+
 ## Đánh giá Độ tin cậy tổng thể
 
 **<!-- CAO / TRUNG BÌNH / THẤP -->** — <!-- 1-2 câu lý do -->
