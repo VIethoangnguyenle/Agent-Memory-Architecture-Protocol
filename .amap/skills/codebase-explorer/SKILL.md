@@ -223,13 +223,13 @@ Chỉ đọc phần cần thiết, không đọc toàn bộ codebase.
 > - **Enum / Definition** resolve từ giá trị trong DB (ví dụ: `TypeDefinition.fromCode()`)
 > - **Adapter / Client** gọi external service dựa trên config DB
 >
-> → Agent **PHẢI** gọi `db-explorer` hoặc dùng MCP `db-remote` trực tiếp để **verify data thực tế** trước khi ghi kết luận gap vào EXPLORE_CONTEXT.
+> → Agent **PHẢI** gọi `db-explorer` hoặc dùng MCP `{{ tools.db_query }}` trực tiếp để **verify data thực tế** trước khi ghi kết luận gap vào EXPLORE_CONTEXT.
 
 Không kết luận gap chỉ từ code nếu gap đó có thể được verify bằng DB.
 
 **Checklist tối thiểu khi trigger**:
 1. Xác định bảng config/data liên quan từ Factory/Entity name.
-2. Dùng `db-remote` kiểm tra: bảng có tồn tại không, data đã được seed chưa, constraint có phù hợp không.
+2. Dùng `{{ tools.db_query }}` kiểm tra: bảng có tồn tại không, data đã được seed chưa, constraint có phù hợp không.
 3. Ghi kết quả verify vào EXPLORE_CONTEXT — rõ ràng phân biệt "đã có trong DB" vs "cần thêm/sửa".
 
 **Nếu không thể kết nối DB** (MCP unavailable, thiếu quyền…):
