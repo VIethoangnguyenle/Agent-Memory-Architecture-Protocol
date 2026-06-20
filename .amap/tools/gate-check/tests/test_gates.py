@@ -350,7 +350,9 @@ def test_archive_ready_fail_blocked_by_arch():
 
 
 def test_archive_ready_fail_blocked_by_data():
-    assert g.validate_archive_ready(_ps("blocked-by-data")).ok is False
+    result = g.validate_archive_ready(_ps("blocked-by-data"))
+    assert result.ok is False
+    assert "blocked-by-data" in result.reason
 
 
 def test_archive_ready_pass_completed():
