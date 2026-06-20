@@ -12,6 +12,7 @@ VALIDATORS = {
     "handoff-slice": "validate_handoff_slice",
     "context-request": "validate_context_request",
     "node-checkpoint": "validate_node_checkpoint",
+    "apply-gate": "validate_apply_gate",
 }
 
 

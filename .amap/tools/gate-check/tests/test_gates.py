@@ -201,3 +201,41 @@ def test_c22_skipped_spec_blocks_completion():
     # completion gate must reject a non-contiguous marker chain.
     transparency = "Pha 1 DONE\nPha 3 DONE"
     assert g.validate_phase_chain(transparency).ok is False
+
+
+def test_apply_gate_passes_with_pha2_and_no_blocker():
+    assert g.validate_apply_gate("Pha 1 DONE\nPha 2 DONE\n").ok is True
+
+
+def test_apply_gate_fails_without_pha2():
+    result = g.validate_apply_gate("Pha 1 DONE\n")
+    assert result.ok is False
+    assert "Pha 2 DONE" in result.reason
+
+
+def test_apply_gate_fails_with_open_blocker():
+    text = "Pha 1 DONE\nPha 2 DONE\n[BLOCKER-ARCH] coupling risk\n"
+    assert g.validate_apply_gate(text).ok is False
+
+
+def test_apply_gate_passes_when_blocker_resolved():
+    text = (
+        "Pha 1 DONE\nPha 2 DONE\n"
+        "[BLOCKER-ARCH] coupling risk\n"
+        "[BLOCKER-ARCH RESOLVED] 2026-06-20 user approved approach\n"
+    )
+    assert g.validate_apply_gate(text).ok is True
+
+
+def test_cli_apply_gate_exit_codes(tmp_path):
+    import importlib.util
+    cli_mod = Path(__file__).resolve().parents[1] / "cli.py"
+    spec = importlib.util.spec_from_file_location("cli", cli_mod)
+    cli = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(cli)
+
+    f = tmp_path / "AGENT_TRANSPARENCY.md"
+    f.write_text("Pha 1 DONE\nPha 2 DONE\n", encoding="utf-8")
+    assert cli.main(["apply-gate", str(f)]) == 0
+    f.write_text("Pha 1 DONE\n", encoding="utf-8")
+    assert cli.main(["apply-gate", str(f)]) == 1
