@@ -154,3 +154,68 @@ def test_main_blocks_with_antigravity_json_decision(tmp_path, monkeypatch, capsy
     captured = capsys.readouterr()
     assert code == 0
     assert json.loads(captured.out)["decision"] == "deny"
+
+
+def test_parse_redirect_write():
+    paths, unresolved = wg.parse_shell_writes("echo x > src/App.java")
+    assert paths == [Path("src/App.java")]
+    assert unresolved is False
+
+
+def test_parse_append_redirect():
+    paths, _ = wg.parse_shell_writes("echo x >> src/App.java")
+    assert paths == [Path("src/App.java")]
+
+
+def test_parse_ignores_devnull_and_fd_redirect():
+    paths, unresolved = wg.parse_shell_writes("run_tests > /dev/null 2>&1")
+    assert paths == []
+    assert unresolved is False
+
+
+def test_parse_tee():
+    paths, _ = wg.parse_shell_writes("echo x | tee src/App.java")
+    assert paths == [Path("src/App.java")]
+
+
+def test_parse_sed_inplace():
+    paths, _ = wg.parse_shell_writes("sed -i 's/a/b/' src/App.java")
+    assert paths == [Path("src/App.java")]
+
+
+def test_parse_cp_and_mv_dest():
+    assert wg.parse_shell_writes("cp /tmp/x src/App.java")[0] == [Path("src/App.java")]
+    assert wg.parse_shell_writes("mv old.java src/App.java")[0] == [Path("src/App.java")]
+
+
+def test_parse_dd_of():
+    paths, _ = wg.parse_shell_writes("dd if=/tmp/x of=src/App.java")
+    assert paths == [Path("src/App.java")]
+
+
+def test_parse_patch_format():
+    paths, _ = wg.parse_shell_writes("*** Add File: src/App.java\n+code\n")
+    assert paths == [Path("src/App.java")]
+
+
+def test_parse_prettier_write():
+    paths, _ = wg.parse_shell_writes("prettier --write src/App.js")
+    assert paths == [Path("src/App.js")]
+
+
+def test_parse_readonly_command_has_no_writes():
+    paths, unresolved = wg.parse_shell_writes("grep -r foo src && ls -la")
+    assert paths == []
+    assert unresolved is False
+
+
+def test_parse_dynamic_path_is_unresolved():
+    paths, unresolved = wg.parse_shell_writes('tee "$TARGET"')
+    assert paths == []
+    assert unresolved is True
+
+
+def test_parse_git_apply_is_unresolved():
+    paths, unresolved = wg.parse_shell_writes("git apply fix.patch")
+    assert paths == []
+    assert unresolved is True
