@@ -17,8 +17,7 @@ from typing import Optional
 import yaml
 
 from cli.dashboard import registry
-from cli.dashboard.reader import RunState, read_run
-from cli.scaffold import load_resolved_config
+from cli.dashboard.reader import RunState, active_dir, read_run
 
 DEFAULT_PORT = 7077
 POLL_SECONDS = 1.0
@@ -46,19 +45,21 @@ def snapshot(registry_file: Path) -> list[dict]:
     runs = []
     for p in registry.load(registry_file):
         try:
-            run = serialize(read_run(p))
-            runtime = read_runtime(p)
+            active = active_dir(p)  # resolve config once; shared by both readers
+            run = serialize(read_run(p, active=active))
+            runtime = read_runtime(p, active=active)
             run.update(runtime)
             run["stale"] = run["stale"] or runtime["stale"]
             runs.append(run)
-        except Exception:
-            runs.append({"name": Path(p).name, "project_path": p, "error": True})
+        except Exception as exc:
+            runs.append({"name": Path(p).name, "project_path": p, "error": str(exc)})
     return runs
 
 
-def read_runtime(project_path: str) -> dict:
+def read_runtime(project_path: str, active: Optional[Path] = None) -> dict:
     """Read dashboard runtime artifacts beyond the core RunState."""
-    active = _active_dir(project_path)
+    if active is None:
+        active = active_dir(project_path)
     if active is None:
         return {
             "parent_brain": None,
@@ -242,18 +243,6 @@ def _path_from_task(project_path: str, value) -> Optional[Path]:
     if path.is_absolute():
         return path
     return Path(project_path) / path
-
-
-def _active_dir(project_path: str) -> Optional[Path]:
-    resolved = load_resolved_config(Path(project_path))
-    if resolved is None:
-        return None
-    return (
-        Path(project_path)
-        / resolved.get("framework_root", ".amap")
-        / "knowledge"
-        / "active"
-    )
 
 
 def _handoff_id(path: Path) -> str:

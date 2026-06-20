@@ -192,6 +192,35 @@ def test_snapshot_bad_activity_log_marks_stale(tmp_path):
     assert "ACTIVITY_LOG.jsonl:2" in run["errors"][0]
 
 
+def test_snapshot_bad_task_queue_marks_stale(tmp_path):
+    reg = tmp_path / "projects.yaml"
+    proj, active = _make_amap_project(tmp_path)
+    microloop = active / "microloop"
+    microloop.mkdir()
+    (microloop / "TASK_QUEUE.md").write_text("tasks: [unterminated\n", encoding="utf-8")
+    registry.register(reg, str(proj))
+
+    run = server.snapshot(reg)[0]
+
+    assert run["stale"] is True
+    assert run["subagents"] == []
+    assert "TASK_QUEUE.md" in run["errors"][0]
+
+
+def test_snapshot_task_queue_tasks_not_a_list_marks_stale(tmp_path):
+    reg = tmp_path / "projects.yaml"
+    proj, active = _make_amap_project(tmp_path)
+    microloop = active / "microloop"
+    microloop.mkdir()
+    (microloop / "TASK_QUEUE.md").write_text("tasks: not-a-list\n", encoding="utf-8")
+    registry.register(reg, str(proj))
+
+    run = server.snapshot(reg)[0]
+
+    assert run["stale"] is True
+    assert "tasks must be a list" in run["errors"][0]
+
+
 @pytest.fixture
 def running_server(tmp_path):
     reg = tmp_path / "projects.yaml"

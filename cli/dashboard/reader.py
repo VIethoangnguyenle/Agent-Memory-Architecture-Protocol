@@ -55,15 +55,27 @@ def _read_frontmatter(path: Path) -> Optional[dict]:
     return data if isinstance(data, dict) else None
 
 
-def read_run(project_path: str) -> RunState:
+def active_dir(project_path: str, resolved: Optional[dict] = None) -> Optional[Path]:
+    """Resolve {project}/{framework_root}/knowledge/active, or None if not an AMAP project.
+
+    Shared by the reader, the SSE server, and the brain sync so config is
+    resolved once per project per poll instead of once per consumer.
+    """
+    if resolved is None:
+        resolved = load_resolved_config(Path(project_path))
+    if resolved is None:
+        return None
+    return Path(project_path) / resolved.get("framework_root", ".amap") / "knowledge" / "active"
+
+
+def read_run(project_path: str, active: Optional[Path] = None) -> RunState:
     state = RunState(project_path=str(project_path))
 
-    resolved = load_resolved_config(Path(project_path))
-    if resolved is None:
+    if active is None:
+        active = active_dir(project_path)
+    if active is None:
         return state  # not an AMAP project → idle
 
-    root = Path(project_path) / resolved.get("framework_root", ".amap")
-    active = root / "knowledge" / "active"
     mtimes: list[float] = []
 
     # AGENT_TRANSPARENCY frontmatter

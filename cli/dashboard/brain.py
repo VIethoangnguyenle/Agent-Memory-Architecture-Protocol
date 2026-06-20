@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
-from cli.scaffold import load_resolved_config
+from cli.dashboard.reader import active_dir
 
 TEXT_SUFFIXES = {".md", ".txt", ".jsonl", ".json", ".resolved"}
 MAX_ARTIFACTS = 6
@@ -49,7 +49,7 @@ def sync_antigravity_parent_brain(
 ) -> BrainSyncResult:
     """Mirror recent Antigravity brain text artifacts into PARENT_BRAIN.md."""
     project = Path(project_path).resolve()
-    active = _active_dir(project)
+    active = active_dir(str(project))
     if active is None:
         return BrainSyncResult(False, "target is not an AMAP project")
 
@@ -89,13 +89,6 @@ def sync_antigravity_parent_brain(
         conversation_id=conversation_id,
         artifact_count=len(artifacts),
     )
-
-
-def _active_dir(project: Path) -> Optional[Path]:
-    resolved = load_resolved_config(project)
-    if resolved is None:
-        return None
-    return project / resolved.get("framework_root", ".amap") / "knowledge" / "active"
 
 
 def _antigravity_conversation_id(project: Path, home: Path) -> Optional[str]:
