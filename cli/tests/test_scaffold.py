@@ -464,3 +464,12 @@ def test_scaffold_native_skill_exports_ignores_non_skill_workflow_plugins(tmp_pa
     stats = scaffold_native_skill_exports(plugins, tmp_path, platform, verbose=False)
 
     assert stats == {"exported": 0, "skipped": 0}
+
+
+def test_canonical_framework_root_matches_generic_platform():
+    from cli import CANONICAL_FRAMEWORK_ROOT
+    from cli.platforms import get_platform
+
+    # The canonical default must equal the base/generic platform's root so the
+    # constant can never drift from the real default.
+    assert CANONICAL_FRAMEWORK_ROOT == get_platform("generic").framework_root
