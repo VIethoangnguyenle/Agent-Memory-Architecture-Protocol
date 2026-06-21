@@ -59,9 +59,7 @@ class GenericPlatform(BasePlatform):
 
     capabilities = {
         "subagent": False,
-        "persistent_terminal": False,
         "artifacts": False,
-        "image_generation": False,
         "browser": False,
         "write_gate_hook": False,
     }

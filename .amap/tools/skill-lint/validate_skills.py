@@ -138,7 +138,7 @@ def check_f4_pre_conditions(fm: dict) -> tuple[bool | None, str]:
             return False, f"pre_conditions[{i}] không phải dict"
         required_keys = {"condition", "on_fail"}
         # entry cần có ít nhất (file hoặc phase) + condition + on_fail
-        has_target = any(k in entry for k in ("file", "phase", "tool", "input"))
+        has_target = any(k in entry for k in ("file", "phase"))
         if not has_target:
             return False, f"pre_conditions[{i}] thiếu 'file' hoặc 'phase'"
         missing = required_keys - set(entry.keys())
