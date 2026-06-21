@@ -10,7 +10,7 @@ from typing import List, Optional
 
 import yaml
 
-from cli import FRAMEWORK_VERSION
+from cli import FRAMEWORK_VERSION, CANONICAL_FRAMEWORK_ROOT
 from cli.renderer import render_string
 from cli.renderer import _TEXT_EXTENSIONS as _RENDERED_SUFFIXES
 
@@ -61,12 +61,17 @@ def get_ownership(plugin: dict) -> str:
 
 
 def resolved_config_candidates(target: Path) -> List[Path]:
-    """Return supported resolved-config locations in preference order."""
-    return [
-        target / ".agents" / "resolved-config.yaml",
-        target / ".claude" / "resolved-config.yaml",
-        target / ".amap" / "resolved-config.yaml",
-    ]
+    """Return supported resolved-config locations in preference order.
+
+    Roots are derived from the platform registry, so a new platform with a
+    new framework_root is covered automatically. The canonical root sorts
+    first → the fallback in load_resolved_config is deterministic.
+    """
+    from cli.platforms import PLATFORMS, get_platform
+
+    roots = {get_platform(k).framework_root for k in PLATFORMS}
+    ordered = [CANONICAL_FRAMEWORK_ROOT, *sorted(roots - {CANONICAL_FRAMEWORK_ROOT})]
+    return [target / root / "resolved-config.yaml" for root in ordered]
 
 
 def generate_resolved_config(
@@ -118,7 +123,7 @@ def load_resolved_config(target: Path) -> Optional[dict]:
         try:
             expected_root = get_platform(platform_key).framework_root
         except ValueError:
-            expected_root = ".amap"
+            expected_root = CANONICAL_FRAMEWORK_ROOT
         resolved.setdefault("framework_root", expected_root)
         resolved["_config_path"] = str(config_path)
         valid.append(resolved)

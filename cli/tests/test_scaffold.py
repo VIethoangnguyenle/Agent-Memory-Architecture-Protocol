@@ -213,13 +213,19 @@ def _write_resolved_config(target, content):
     config_path.write_text(content, encoding="utf-8")
 
 
-def test_resolved_config_candidates_include_native_and_legacy_roots(tmp_path):
-    candidates = [p.relative_to(tmp_path).as_posix() for p in resolved_config_candidates(tmp_path)]
-    assert candidates == [
-        ".agents/resolved-config.yaml",
-        ".claude/resolved-config.yaml",
-        ".amap/resolved-config.yaml",
+def test_resolved_config_candidates_derive_from_platform_registry(tmp_path):
+    from cli.platforms import PLATFORMS, get_platform
+
+    candidates = [
+        p.relative_to(tmp_path).as_posix() for p in resolved_config_candidates(tmp_path)
     ]
+    # Every platform's framework_root is represented (derived, not hardcoded).
+    expected_roots = {get_platform(k).framework_root for k in PLATFORMS}
+    assert {c.split("/")[0] for c in candidates} == expected_roots
+    # Canonical root is first → load fallback is deterministic.
+    assert candidates[0] == ".amap/resolved-config.yaml"
+    # Every entry is a resolved-config.yaml.
+    assert all(c.endswith("/resolved-config.yaml") for c in candidates)
 
 
 def test_generate_resolved_config_uses_platform_framework_root(tmp_path):
