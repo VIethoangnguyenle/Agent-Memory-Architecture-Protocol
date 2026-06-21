@@ -94,6 +94,23 @@ def generate_resolved_config(
             }},
             f, default_flow_style=False, allow_unicode=True,
         )
+    _sweep_stale_configs(target_dir, keep=config_path)
+
+
+def _sweep_stale_configs(target_dir: Path, keep: Path) -> None:
+    """Remove AMAP-generated resolved-config.yaml under candidate roots != keep.
+
+    Enforces the single-config invariant after a write (e.g. clears the old
+    config when a project switches platforms). Only deletes a file that parses
+    as an AMAP resolved config (has a ``resolved:`` mapping) — never an
+    unrelated same-named file. Best-effort: missing/unreadable files are skipped.
+    """
+    for candidate in resolved_config_candidates(target_dir):
+        if candidate == keep or not candidate.exists():
+            continue
+        if _read_resolved_config(candidate) is None:
+            continue
+        candidate.unlink()
 
 
 def _read_resolved_config(config_path: Path) -> Optional[dict]:
@@ -102,7 +119,7 @@ def _read_resolved_config(config_path: Path) -> Optional[dict]:
             data = yaml.safe_load(f)
     except yaml.YAMLError:
         return None
-    resolved = (data or {}).get("resolved")
+    resolved = data.get("resolved") if isinstance(data, dict) else None
     if not isinstance(resolved, dict):
         return None
     return resolved
