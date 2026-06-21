@@ -46,6 +46,15 @@ class GenericPlatform(BasePlatform):
 
         "search_web":        "search_web",
         "read_url":          "read_url",
+
+        # ── Dynamic Memory (agent-memory MCP — tool-level; optional at runtime) ──
+        "dynamic_memory_search":   "memory_smart_search",
+        "dynamic_memory_recall":   "memory_recall",
+        "dynamic_memory_sessions": "memory_sessions",
+        "dynamic_memory_audit":    "memory_audit",
+        "dynamic_memory_health":   "memory_health",
+        "dynamic_memory_save":     "memory_save",
+        "dynamic_memory_forget":   "memory_governance_delete",
     }
 
     capabilities = {

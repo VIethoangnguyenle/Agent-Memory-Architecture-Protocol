@@ -53,6 +53,15 @@ class AntigravityPlatform(BasePlatform):
 
         # ── Image ──
         "generate_image":    "generate_image",
+
+        # ── Dynamic Memory (agent-memory MCP — tool-level; optional at runtime) ──
+        "dynamic_memory_search":   "mcp_agent-memory_memory_smart_search",
+        "dynamic_memory_recall":   "mcp_agent-memory_memory_recall",
+        "dynamic_memory_sessions": "mcp_agent-memory_memory_sessions",
+        "dynamic_memory_audit":    "mcp_agent-memory_memory_audit",
+        "dynamic_memory_health":   "mcp_agent-memory_memory_health",
+        "dynamic_memory_save":     "mcp_agent-memory_memory_save",
+        "dynamic_memory_forget":   "mcp_agent-memory_memory_governance_delete",
     }
 
     capabilities = {

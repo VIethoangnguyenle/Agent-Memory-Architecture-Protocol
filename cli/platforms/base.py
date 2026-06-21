@@ -33,6 +33,14 @@ REQUIRED_TOOL_KEYS = frozenset({
     "db_query",
     "search_web",
     "read_url",
+    # ── Dynamic (episodic/advisory) memory — provider-mapped, runtime-optional ──
+    "dynamic_memory_search",
+    "dynamic_memory_recall",
+    "dynamic_memory_sessions",
+    "dynamic_memory_audit",
+    "dynamic_memory_health",
+    "dynamic_memory_save",
+    "dynamic_memory_forget",
 })
 
 OPTIONAL_TOOL_KEYS = frozenset({

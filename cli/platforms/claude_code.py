@@ -49,6 +49,15 @@ class ClaudeCodePlatform(BasePlatform):
         # ── Web ──
         "search_web":        "WebSearch",
         "read_url":          "WebFetch",
+
+        # ── Dynamic Memory (agent-memory MCP — tool-level; optional at runtime) ──
+        "dynamic_memory_search":   "mcp__agent-memory__memory_smart_search",
+        "dynamic_memory_recall":   "mcp__agent-memory__memory_recall",
+        "dynamic_memory_sessions": "mcp__agent-memory__memory_sessions",
+        "dynamic_memory_audit":    "mcp__agent-memory__memory_audit",
+        "dynamic_memory_health":   "mcp__agent-memory__memory_health",
+        "dynamic_memory_save":     "mcp__agent-memory__memory_save",
+        "dynamic_memory_forget":   "mcp__agent-memory__memory_governance_delete",
     }
 
     capabilities = {

@@ -170,7 +170,7 @@ Format (Giới hạn dưới 5 dòng):
 >   PHẢI gọi probe thật (`get_graph_stats`/`list_projects`) và ghi dòng `🔌 MCP:` chứa **SỐ THẬT**
 >   (nodes/edges/freshness). **Cấm** ghi "Runtime Ready" rỗng. Probe fail/absent → ghi dòng degrade
 >   `KG unavailable — grep fallback, MEDIUM`.
->   Nếu `resolved-config.yaml` khai báo `agent-memory` → probe `memory_health` và ghi
+>   Nếu `resolved-config.yaml` khai báo `agent-memory` → probe `{{ tools.dynamic_memory_health }}` và ghi
 >   `🔌 MCP: agent-memory: healthy` (hoặc trạng thái thật). Probe fail/absent → ghi dòng
 >   degrade `agent-memory unavailable — skip recall/save`.
 >   Không có MCP nào trong config → `🔌 MCP: none configured`.
