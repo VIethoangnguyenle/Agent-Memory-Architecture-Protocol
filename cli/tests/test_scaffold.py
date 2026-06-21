@@ -510,3 +510,17 @@ def test_generate_resolved_config_sweeps_stale_amap_config(tmp_path):
     assert (tmp_path / ".agents" / "resolved-config.yaml").exists()   # active written
     assert not stale.exists()                                         # stale swept
     assert bystander.read_text(encoding="utf-8") == "other: value\n"  # bystander kept
+
+
+def test_generate_resolved_config_sweep_survives_directory_at_candidate(tmp_path):
+    from cli.platforms import get_platform
+
+    # A directory sitting where a candidate resolved-config.yaml would be must
+    # not crash the sweep (best-effort: unreadable/non-file candidates skipped).
+    bogus = tmp_path / ".amap" / "resolved-config.yaml"
+    bogus.mkdir(parents=True)
+
+    generate_resolved_config(tmp_path, get_platform("antigravity"), ["socraticode"], "python")
+
+    assert (tmp_path / ".agents" / "resolved-config.yaml").exists()  # active written
+    assert bogus.is_dir()  # bogus directory left untouched

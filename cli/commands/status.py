@@ -6,6 +6,7 @@ language, and installed skills/workflows.
 
 from pathlib import Path
 
+from cli import CANONICAL_FRAMEWORK_ROOT
 from cli.platforms import get_platform
 from cli.scaffold import load_resolved_config
 
@@ -52,7 +53,7 @@ def run_status(target_dir: str) -> None:
     else:
         print(f"  ⚠️  No resolved-config.yaml — may be a legacy installation")
         print(f"     Run: amap init --target {target}")
-        framework_root = ".amap"
+        framework_root = CANONICAL_FRAMEWORK_ROOT
 
     root = target / framework_root
 

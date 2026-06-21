@@ -117,7 +117,7 @@ def _read_resolved_config(config_path: Path) -> Optional[dict]:
     try:
         with open(config_path, "r", encoding="utf-8") as f:
             data = yaml.safe_load(f)
-    except yaml.YAMLError:
+    except (yaml.YAMLError, OSError):
         return None
     resolved = data.get("resolved") if isinstance(data, dict) else None
     if not isinstance(resolved, dict):
