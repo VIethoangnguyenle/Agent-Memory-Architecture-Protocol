@@ -95,9 +95,7 @@ class BasePlatform(ABC):
         """Platform-specific capabilities."""
         return {
             "subagent": False,
-            "persistent_terminal": False,
             "artifacts": False,
-            "image_generation": False,
             "browser": False,
             "write_gate_hook": False,
         }

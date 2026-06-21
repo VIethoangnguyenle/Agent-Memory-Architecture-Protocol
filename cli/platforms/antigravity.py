@@ -66,9 +66,7 @@ class AntigravityPlatform(BasePlatform):
 
     capabilities = {
         "subagent": True,
-        "persistent_terminal": True,
         "artifacts": True,
-        "image_generation": True,
         "browser": True,
         "write_gate_hook": True,
     }

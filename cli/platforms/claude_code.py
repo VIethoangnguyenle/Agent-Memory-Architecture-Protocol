@@ -62,9 +62,7 @@ class ClaudeCodePlatform(BasePlatform):
 
     capabilities = {
         "subagent": True,       # Claude Code has Task tool
-        "persistent_terminal": True,
         "artifacts": False,     # No artifact system like Antigravity
-        "image_generation": False,
         "browser": False,
         "write_gate_hook": True,
     }
