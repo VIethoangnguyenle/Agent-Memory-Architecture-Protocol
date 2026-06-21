@@ -297,7 +297,7 @@ Agent sẵn sàng nhận task mới
 
 Gọi SAU `update_knowledge_snapshot`, TRƯỚC `reset_active_context`. Chỉ khi `status == "completed"`.
 
-Bao gồm 3 tầng lọc chất lượng (Gate → Dedup → Quota), `memory_save` call, kind selection guide,
+Bao gồm 3 tầng lọc chất lượng (Gate → Dedup → Quota), `{{ tools.dynamic_memory_save }}` call, kind selection guide,
 triển khai theo giai đoạn (R-Tool-6), và graduation trigger.
 
 > **Chi tiết đầy đủ**: Xem [references/m7-memory-push.md](references/m7-memory-push.md)
