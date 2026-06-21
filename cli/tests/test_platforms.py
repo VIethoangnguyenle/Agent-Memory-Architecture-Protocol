@@ -127,3 +127,39 @@ def test_all_platforms_map_db_query():
 def test_db_query_resolves_in_render_context():
     ctx = get_platform("claude-code").build_render_context(["db-remote"], "python")
     assert ctx["tools"]["db_query"] == "db-remote"
+
+
+DYNAMIC_MEMORY_OPS = {
+    "dynamic_memory_search",
+    "dynamic_memory_recall",
+    "dynamic_memory_sessions",
+    "dynamic_memory_audit",
+    "dynamic_memory_health",
+    "dynamic_memory_save",
+    "dynamic_memory_forget",
+}
+
+
+def test_all_platforms_map_dynamic_memory_ops():
+    for key, cls in PLATFORMS.items():
+        mapping = cls().tool_mapping
+        for op in DYNAMIC_MEMORY_OPS:
+            assert op in mapping, f"{key} missing {op} mapping"
+
+
+def test_dynamic_memory_ops_are_required_keys():
+    assert DYNAMIC_MEMORY_OPS <= REQUIRED_TOOL_KEYS
+
+
+def test_dynamic_memory_resolves_in_render_context_claude():
+    ctx = get_platform("claude-code").build_render_context(["agent-memory"], "python")
+    assert ctx["tools"]["dynamic_memory_save"] == "mcp__agent-memory__memory_save"
+    assert ctx["tools"]["dynamic_memory_search"] == "mcp__agent-memory__memory_smart_search"
+    assert ctx["tools"]["dynamic_memory_forget"] == "mcp__agent-memory__memory_governance_delete"
+
+
+def test_dynamic_memory_resolves_even_when_agent_memory_not_selected():
+    # REQUIRED => the op is always in the `tools` namespace; runtime degrade
+    # (R-Tool-6 / M7) handles the provider being absent, NOT template rendering.
+    ctx = get_platform("generic").build_render_context([], "other")
+    assert ctx["tools"]["dynamic_memory_save"] == "memory_save"
