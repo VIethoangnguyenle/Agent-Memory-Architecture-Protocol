@@ -16,6 +16,7 @@ from typing import Optional
 
 import yaml
 
+from cli import CANONICAL_FRAMEWORK_ROOT
 from cli.scaffold import load_resolved_config
 
 
@@ -65,7 +66,7 @@ def active_dir(project_path: str, resolved: Optional[dict] = None) -> Optional[P
         resolved = load_resolved_config(Path(project_path))
     if resolved is None:
         return None
-    return Path(project_path) / resolved.get("framework_root", ".amap") / "knowledge" / "active"
+    return Path(project_path) / resolved.get("framework_root", CANONICAL_FRAMEWORK_ROOT) / "knowledge" / "active"
 
 
 def read_run(project_path: str, active: Optional[Path] = None) -> RunState:
