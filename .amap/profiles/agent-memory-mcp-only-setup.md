@@ -13,7 +13,21 @@ governance (R-Tool-6, M7: one save per task, 3 quality filters, no-PII, top-K
 recall, source-of-truth priority). AMAP must own memory governance, so the end
 project wires **only the MCP tool surface** and leaves auto-capture off.
 
-## Setup (verify against upstream before use — example)
+## [CRITICAL] Register the server under the name `agent-memory`
+
+AMAP's tool mapping is pinned to the MCP server name **`agent-memory`** (with the
+hyphen) — e.g. `{{ tools.dynamic_memory_save }}` resolves to
+`mcp__agent-memory__memory_save` on Claude Code (see `cli/platforms/`).
+
+agentmemory's **default** registration name is `agentmemory` (no hyphen), so
+`agentmemory connect` / the npx default produce tools like
+`mcp__agentmemory__memory_save` — which will **NOT** match AMAP's references, and
+memory calls fail with "tool not found" (this is a wiring error, not the clean
+R-Tool-6 degrade). You MUST register the server as exactly `agent-memory`.
+Use the manual `mcpServers` block below (it controls the name) — do not rely on
+the provider's default name.
+
+## Setup (verify package/command against upstream before use — example)
 
 > Confirm the package name and command at the upstream repo:
 > https://github.com/rohitg00/agentmemory
@@ -24,7 +38,8 @@ project wires **only the MCP tool surface** and leaves auto-capture off.
    npx -y @agentmemory/mcp
    ```
 
-2. Or register the MCP server manually in your platform config (example shape):
+2. Register the MCP server manually in your platform config — the JSON key MUST be
+   `agent-memory` (this is the server name AMAP maps to):
 
    ```json
    {
