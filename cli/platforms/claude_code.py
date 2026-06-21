@@ -71,7 +71,7 @@ class ClaudeCodePlatform(BasePlatform):
 
     notes = [
         "CLAUDE.md is the config entry point",
-        "AMAP runtime scaffolds into .claude/",
+        "Maika runtime scaffolds into .claude/",
         "MCP tools use double underscore prefix: mcp__<server>__<tool>",
         "Claude Code uses Task tool for subagent delegation",
     ]

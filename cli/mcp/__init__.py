@@ -1,1 +1,1 @@
-"""MCP diagnostics and bridge support for AMAP."""
+"""MCP diagnostics and bridge support for Maika."""

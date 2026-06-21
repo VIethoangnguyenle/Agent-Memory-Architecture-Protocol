@@ -8,7 +8,7 @@ Primary commit: `ac8cab6 feat: surface parent brain in dashboard`
 
 Make the dashboard show the parent agent's own working context, not only subagent
 handoffs/results. The intended source of truth is the IDE brain/conversation with
-the human. AMAP now exposes a dashboard-readable mirror file so runtime-specific
+the human. Maika now exposes a dashboard-readable mirror file so runtime-specific
 IDE adapters can sync into one stable contract.
 
 ## What Changed
@@ -39,15 +39,15 @@ IDE adapters can sync into one stable contract.
 - `cli/dashboard/static/index.html`
   - `parentBrain(r)` rendering
   - placement inside idle, phase-only, and task-progress cards
-- `.amap/tools/microloop-orchestrator/orchestrator.py`
+- `.maika/tools/microloop-orchestrator/orchestrator.py`
   - `write_parent_brain`
   - event emission behavior
-- `.amap/workflows/task.md`
+- `.maika/workflows/task.md`
   - new Phase 3 parent brain mirror requirement
 - `cli/tests/test_dashboard_server.py`
   - `test_snapshot_includes_parent_brain_mirror`
   - static UI marker assertion
-- `.amap/tools/microloop-orchestrator/tests/test_runtime_contract.py`
+- `.maika/tools/microloop-orchestrator/tests/test_runtime_contract.py`
   - helper/event contract assertion
 - `docs/superpowers/specs/2026-06-19-dashboard-runtime-contract-design.md`
   - source-of-truth language and API schema
@@ -60,7 +60,7 @@ Passed:
 /usr/bin/python3 -m pytest cli/tests/ -q
 # 148 passed
 
-cd .amap/tools/microloop-orchestrator
+cd .maika/tools/microloop-orchestrator
 /usr/bin/python3 -m pytest tests/ -q
 # 61 passed
 ```
@@ -68,7 +68,7 @@ cd .amap/tools/microloop-orchestrator
 Runtime smoke:
 
 ```bash
-/usr/bin/python3 -m cli.amap dashboard serve --port 7077 --target /home/zane/Desktop/BA-Framework
+/usr/bin/python3 -m cli.maika dashboard serve --port 7077 --target /home/zane/Desktop/BA-Framework
 ```
 
 `/api/runs` confirmed for `BA-Framework`:
@@ -89,7 +89,7 @@ http://127.0.0.1:7077/
 The framework update was synced into `/home/zane/Desktop/BA-Framework` with:
 
 ```bash
-/usr/bin/python3 -m cli.amap update --target /home/zane/Desktop/BA-Framework --source /home/zane/Desktop/agent-memory-arch-v3
+/usr/bin/python3 -m cli.maika update --target /home/zane/Desktop/BA-Framework --source /home/zane/Desktop/agent-memory-arch-v3
 ```
 
 User-owned active/long-term knowledge was preserved. A runtime mirror was written
@@ -123,7 +123,7 @@ conversation/brain source when available and writes the task-relevant summary in
 Commit pending after this handoff:
 
 - Added `cli/dashboard/brain.py`.
-- Added `amap dashboard sync-brain --target <project> --brain-platform antigravity`.
+- Added `maika dashboard sync-brain --target <project> --brain-platform antigravity`.
 - The adapter reads:
   - `~/.gemini/antigravity-cli/cache/last_conversations.json`
   - `~/.gemini/antigravity/brain/<conversation-id>/...`

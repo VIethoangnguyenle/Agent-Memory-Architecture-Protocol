@@ -1,4 +1,4 @@
-"""Tests for amap init."""
+"""Tests for maika init."""
 
 import pytest
 
@@ -54,8 +54,8 @@ def test_parse_multi_values_accepts_repeated_and_comma_values():
     ]
 
 
-def test_resolve_init_choices_accepts_complete_non_interactive_options(amap_root):
-    manifest = load_manifest(amap_root)
+def test_resolve_init_choices_accepts_complete_non_interactive_options(maika_root):
+    manifest = load_manifest(maika_root)
 
     platform_key, selected_mcps, language = resolve_init_choices(
         manifest,
@@ -71,9 +71,9 @@ def test_resolve_init_choices_accepts_complete_non_interactive_options(amap_root
 
 
 def test_resolve_init_choices_honors_explicit_empty_mcps_without_prompt(
-    amap_root, monkeypatch
+    maika_root, monkeypatch
 ):
-    manifest = load_manifest(amap_root)
+    manifest = load_manifest(maika_root)
 
     def fail_if_prompted(*args, **kwargs):
         raise AssertionError("prompt_multi_checkbox should not be called")
@@ -93,8 +93,8 @@ def test_resolve_init_choices_honors_explicit_empty_mcps_without_prompt(
     assert language == "python"
 
 
-def test_resolve_init_choices_rejects_yes_with_missing_required_options(amap_root):
-    manifest = load_manifest(amap_root)
+def test_resolve_init_choices_rejects_yes_with_missing_required_options(maika_root):
+    manifest = load_manifest(maika_root)
 
     with pytest.raises(ValueError) as exc:
         resolve_init_choices(
@@ -108,8 +108,8 @@ def test_resolve_init_choices_rejects_yes_with_missing_required_options(amap_roo
     assert "--yes requires --platform and --language" in str(exc.value)
 
 
-def test_resolve_init_choices_rejects_invalid_platform(amap_root):
-    manifest = load_manifest(amap_root)
+def test_resolve_init_choices_rejects_invalid_platform(maika_root):
+    manifest = load_manifest(maika_root)
 
     with pytest.raises(ValueError) as exc:
         resolve_init_choices(
@@ -123,8 +123,8 @@ def test_resolve_init_choices_rejects_invalid_platform(amap_root):
     assert "Unknown platform" in str(exc.value)
 
 
-def test_resolve_init_choices_accepts_agent_memory(amap_root):
-    manifest = load_manifest(amap_root)
+def test_resolve_init_choices_accepts_agent_memory(maika_root):
+    manifest = load_manifest(maika_root)
 
     platform_key, selected_mcps, language = resolve_init_choices(
         manifest,
@@ -137,13 +137,13 @@ def test_resolve_init_choices_accepts_agent_memory(amap_root):
     assert selected_mcps == ["agent-memory"]
 
 
-def test_run_init_records_agent_memory_in_resolved_config(tmp_path, amap_root):
+def test_run_init_records_agent_memory_in_resolved_config(tmp_path, maika_root):
     from cli.scaffold import load_resolved_config
 
     target = tmp_path / "proj"
     run_init(
         target_dir=str(target),
-        amap_root=str(amap_root),
+        maika_root=str(maika_root),
         platform_key="generic",
         selected_mcps=["agent-memory"],
         language="other",
@@ -154,29 +154,29 @@ def test_run_init_records_agent_memory_in_resolved_config(tmp_path, amap_root):
     assert "agent-memory" in resolved["mcps"]
 
 
-def test_run_init_non_interactive_generic(tmp_path, amap_root):
+def test_run_init_non_interactive_generic(tmp_path, maika_root):
     target = tmp_path / "proj"
 
     run_init(
         target_dir=str(target),
-        amap_root=str(amap_root),
+        maika_root=str(maika_root),
         platform_key="generic",
         selected_mcps=[],
         language="other",
         assume_yes=True,
     )
 
-    assert (target / ".amap" / "resolved-config.yaml").exists()
+    assert (target / ".maika" / "resolved-config.yaml").exists()
     assert (target / "AGENTS.md").exists()
 
 
-def test_init_antigravity_uses_agents_as_only_framework_root(tmp_path, amap_root, monkeypatch):
+def test_init_antigravity_uses_agents_as_only_framework_root(tmp_path, maika_root, monkeypatch):
     target = tmp_path / "proj"
     _answers(monkeypatch, ["1", "1,2,3", "3", "y"])
 
-    run_init(target_dir=str(target), amap_root=str(amap_root))
+    run_init(target_dir=str(target), maika_root=str(maika_root))
 
-    assert not (target / ".amap").exists()
+    assert not (target / ".maika").exists()
     assert (target / ".agents" / "resolved-config.yaml").exists()
     assert (target / ".agents" / "rules" / "RULES.md").exists()
     assert (target / ".agents" / "skills" / "requirement-analyst" / "SKILL.md").exists()
@@ -184,64 +184,64 @@ def test_init_antigravity_uses_agents_as_only_framework_root(tmp_path, amap_root
     assert (target / "AGENTS.md").exists()
 
 
-def test_init_codex_uses_agents_as_only_framework_root(tmp_path, amap_root, monkeypatch):
+def test_init_codex_uses_agents_as_only_framework_root(tmp_path, maika_root, monkeypatch):
     target = tmp_path / "proj"
     _answers(monkeypatch, ["4", "1,2,3", "3", "y"])
 
-    run_init(target_dir=str(target), amap_root=str(amap_root))
+    run_init(target_dir=str(target), maika_root=str(maika_root))
 
-    assert not (target / ".amap").exists()
+    assert not (target / ".maika").exists()
     assert (target / ".agents" / "resolved-config.yaml").exists()
     assert (target / ".agents" / "skills" / "requirement-analyst" / "SKILL.md").exists()
 
 
-def test_init_claude_uses_claude_as_only_framework_root(tmp_path, amap_root, monkeypatch):
+def test_init_claude_uses_claude_as_only_framework_root(tmp_path, maika_root, monkeypatch):
     target = tmp_path / "proj"
     _answers(monkeypatch, ["2", "1,2,3", "3", "y"])
 
-    run_init(target_dir=str(target), amap_root=str(amap_root))
+    run_init(target_dir=str(target), maika_root=str(maika_root))
 
-    assert not (target / ".amap").exists()
+    assert not (target / ".maika").exists()
     assert (target / ".claude" / "resolved-config.yaml").exists()
     assert (target / ".claude" / "rules" / "RULES.md").exists()
     assert (target / ".claude" / "skills" / "requirement-analyst" / "SKILL.md").exists()
     assert (target / "CLAUDE.md").exists()
 
 
-def test_init_generic_keeps_amap_framework_root(tmp_path, amap_root, monkeypatch):
+def test_init_generic_keeps_maika_framework_root(tmp_path, maika_root, monkeypatch):
     target = tmp_path / "proj"
     _answers(monkeypatch, ["3", "1,2,3", "3", "y"])
 
-    run_init(target_dir=str(target), amap_root=str(amap_root))
+    run_init(target_dir=str(target), maika_root=str(maika_root))
 
-    assert (target / ".amap" / "resolved-config.yaml").exists()
-    assert (target / ".amap" / "skills" / "requirement-analyst" / "SKILL.md").exists()
+    assert (target / ".maika" / "resolved-config.yaml").exists()
+    assert (target / ".maika" / "skills" / "requirement-analyst" / "SKILL.md").exists()
     assert not (target / ".agents").exists()
     assert not (target / ".claude" / "skills").exists()
 
 
-def test_init_aborts_on_unresolved_marker(tmp_path, amap_root, monkeypatch):
+def test_init_aborts_on_unresolved_marker(tmp_path, maika_root, monkeypatch):
     target = tmp_path / "proj"
 
-    def fake_scaffold(plugins, amap, write_root, *a, **k):
+    def fake_scaffold(plugins, maika, write_root, *a, **k):
         (write_root / "bad.md").write_text("{{ leftover }}\n", encoding="utf-8")
         return {"rendered": 0, "copied": 1, "dirs": 0, "skipped": 0}
 
     monkeypatch.setattr("cli.commands.init.scaffold_plugins", fake_scaffold)
     _answers(monkeypatch, ["2", "1,2,3", "3", "y"])
 
-    run_init(target_dir=str(target), amap_root=str(amap_root))
+    run_init(target_dir=str(target), maika_root=str(maika_root))
 
     assert not (target / "CLAUDE.md").exists()
     assert not (target / ".claude").exists()
-    assert not (target / ".amap").exists()
+    assert not (target / ".maika").exists()
 
 
-def test_init_templatizes_entry_point_references(tmp_path, amap_root, monkeypatch):
+def test_init_templatizes_entry_point_references(tmp_path, maika_root, monkeypatch):
     target = tmp_path / "proj"
     _answers(monkeypatch, ["2", "1,2,3", "3", "y"])
 
-    run_init(target_dir=str(target), amap_root=str(amap_root))
+    run_init(target_dir=str(target), maika_root=str(maika_root))
 
     entry = (target / "CLAUDE.md").read_text(encoding="utf-8")
     assert "{{ " not in entry
@@ -254,13 +254,13 @@ def test_init_templatizes_entry_point_references(tmp_path, amap_root, monkeypatc
     assert "AGENTS.md" not in boot
 
 
-def test_antigravity_rendered_framework_files_do_not_reference_active_amap_paths(
-    tmp_path, amap_root, monkeypatch,
+def test_antigravity_rendered_framework_files_do_not_reference_active_maika_paths(
+    tmp_path, maika_root, monkeypatch,
 ):
     target = tmp_path / "proj"
     _answers(monkeypatch, ["1", "1,2,3", "3", "y"])
 
-    run_init(target_dir=str(target), amap_root=str(amap_root))
+    run_init(target_dir=str(target), maika_root=str(maika_root))
 
     offenders = []
     for path in target.rglob("*"):
@@ -269,18 +269,18 @@ def test_antigravity_rendered_framework_files_do_not_reference_active_amap_paths
         if path.suffix.lower() not in {".md", ".yaml", ".yml", ".txt"} and path.name != "AGENTS.md":
             continue
         text = path.read_text(encoding="utf-8", errors="ignore")
-        if ".amap/" in text and "legacy .amap" not in text and "source repo" not in text:
+        if ".maika/" in text and "legacy .maika" not in text and "source repo" not in text:
             offenders.append(path.relative_to(target).as_posix())
     assert offenders == []
 
 
-def test_codex_rendered_framework_files_do_not_reference_active_amap_paths(
-    tmp_path, amap_root, monkeypatch,
+def test_codex_rendered_framework_files_do_not_reference_active_maika_paths(
+    tmp_path, maika_root, monkeypatch,
 ):
     target = tmp_path / "proj"
     _answers(monkeypatch, ["4", "1,2,3", "3", "y"])
 
-    run_init(target_dir=str(target), amap_root=str(amap_root))
+    run_init(target_dir=str(target), maika_root=str(maika_root))
 
     offenders = []
     for path in target.rglob("*"):
@@ -289,18 +289,18 @@ def test_codex_rendered_framework_files_do_not_reference_active_amap_paths(
         if path.suffix.lower() not in {".md", ".yaml", ".yml", ".txt"} and path.name != "AGENTS.md":
             continue
         text = path.read_text(encoding="utf-8", errors="ignore")
-        if ".amap/" in text and "legacy .amap" not in text and "source repo" not in text:
+        if ".maika/" in text and "legacy .maika" not in text and "source repo" not in text:
             offenders.append(path.relative_to(target).as_posix())
     assert offenders == []
 
 
-def test_claude_code_rendered_framework_files_do_not_reference_active_amap_paths(
-    tmp_path, amap_root, monkeypatch,
+def test_claude_code_rendered_framework_files_do_not_reference_active_maika_paths(
+    tmp_path, maika_root, monkeypatch,
 ):
     target = tmp_path / "proj"
     _answers(monkeypatch, ["2", "1,2,3", "3", "y"])
 
-    run_init(target_dir=str(target), amap_root=str(amap_root))
+    run_init(target_dir=str(target), maika_root=str(maika_root))
 
     offenders = []
     for path in target.rglob("*"):
@@ -309,27 +309,27 @@ def test_claude_code_rendered_framework_files_do_not_reference_active_amap_paths
         if path.suffix.lower() not in {".md", ".yaml", ".yml", ".txt"} and path.name != "AGENTS.md":
             continue
         text = path.read_text(encoding="utf-8", errors="ignore")
-        if ".amap/" in text and "legacy .amap" not in text and "source repo" not in text:
+        if ".maika/" in text and "legacy .maika" not in text and "source repo" not in text:
             offenders.append(path.relative_to(target).as_posix())
     assert offenders == []
 
 
-def test_init_next_steps_use_platform_framework_root(tmp_path, amap_root, monkeypatch, capsys):
+def test_init_next_steps_use_platform_framework_root(tmp_path, maika_root, monkeypatch, capsys):
     target = tmp_path / "proj"
     _answers(monkeypatch, ["1", "1,2,3", "3", "y"])
 
-    run_init(target_dir=str(target), amap_root=str(amap_root))
+    run_init(target_dir=str(target), maika_root=str(maika_root))
 
     out = capsys.readouterr().out
     assert "Customize .agents/knowledge/long-term/persona.yaml" in out
-    assert ".amap/knowledge/long-term/persona.yaml" not in out
+    assert ".maika/knowledge/long-term/persona.yaml" not in out
 
 
-def test_init_scaffolds_mcp_bridge_when_platform_supports_tools(tmp_path, amap_root):
+def test_init_scaffolds_mcp_bridge_when_platform_supports_tools(tmp_path, maika_root):
     target = tmp_path / "proj"
     run_init(
         target_dir=str(target),
-        amap_root=str(amap_root),
+        maika_root=str(maika_root),
         platform_key="antigravity",
         selected_mcps=["socraticode"],
         language="python",
@@ -339,11 +339,11 @@ def test_init_scaffolds_mcp_bridge_when_platform_supports_tools(tmp_path, amap_r
     assert (target / ".agents" / "tools" / "mcp-bridge" / "mcp_client.py").exists()
 
 
-def test_init_prints_mcp_doctor_hint_when_mcps_selected(tmp_path, amap_root, capsys):
+def test_init_prints_mcp_doctor_hint_when_mcps_selected(tmp_path, maika_root, capsys):
     target = tmp_path / "proj"
     run_init(
         target_dir=str(target),
-        amap_root=str(amap_root),
+        maika_root=str(maika_root),
         platform_key="codex",
         selected_mcps=["socraticode"],
         language="python",
@@ -351,11 +351,11 @@ def test_init_prints_mcp_doctor_hint_when_mcps_selected(tmp_path, amap_root, cap
     )
 
     captured = capsys.readouterr()
-    assert "amap doctor mcp --target" in captured.out
+    assert "maika doctor mcp --target" in captured.out
 
 
 def test_cli_init_forwards_non_interactive_options(monkeypatch, tmp_path):
-    from cli import amap
+    from cli import maika
 
     captured = {}
 
@@ -366,7 +366,7 @@ def test_cli_init_forwards_non_interactive_options(monkeypatch, tmp_path):
     monkeypatch.setattr(
         "sys.argv",
         [
-            "amap",
+            "maika",
             "init",
             "--target",
             str(tmp_path),
@@ -380,7 +380,7 @@ def test_cli_init_forwards_non_interactive_options(monkeypatch, tmp_path):
         ],
     )
 
-    amap.main()
+    maika.main()
 
     assert captured["target_dir"] == str(tmp_path)
     assert captured["platform_key"] == "generic"
@@ -390,7 +390,7 @@ def test_cli_init_forwards_non_interactive_options(monkeypatch, tmp_path):
 
 
 def test_cli_init_preserves_omitted_mcp_as_none(monkeypatch, tmp_path):
-    from cli import amap
+    from cli import maika
 
     captured = {}
 
@@ -401,7 +401,7 @@ def test_cli_init_preserves_omitted_mcp_as_none(monkeypatch, tmp_path):
     monkeypatch.setattr(
         "sys.argv",
         [
-            "amap",
+            "maika",
             "init",
             "--target",
             str(tmp_path),
@@ -413,6 +413,6 @@ def test_cli_init_preserves_omitted_mcp_as_none(monkeypatch, tmp_path):
         ],
     )
 
-    amap.main()
+    maika.main()
 
     assert captured["selected_mcps"] is None

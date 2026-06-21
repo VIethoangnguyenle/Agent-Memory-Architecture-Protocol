@@ -1,7 +1,7 @@
 """Best-effort IDE brain sync for dashboard parent context.
 
 The dashboard remains read-only while serving. This module provides explicit
-commands that mirror runtime-specific IDE conversation/brain files into AMAP's
+commands that mirror runtime-specific IDE conversation/brain files into Maika's
 stable `PARENT_BRAIN.md` contract.
 """
 from __future__ import annotations
@@ -51,7 +51,7 @@ def sync_antigravity_parent_brain(
     project = Path(project_path).resolve()
     active = active_dir(str(project))
     if active is None:
-        return BrainSyncResult(False, "target is not an AMAP project")
+        return BrainSyncResult(False, "target is not an Maika project")
 
     home = Path(home).expanduser() if home is not None else Path.home()
     conversation_id = _antigravity_conversation_id(project, home)

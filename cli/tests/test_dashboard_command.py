@@ -1,4 +1,4 @@
-"""Tests for the amap dashboard command + wiring."""
+"""Tests for the maika dashboard command + wiring."""
 
 from cli.commands.dashboard import run_dashboard
 from cli.dashboard import registry
@@ -21,11 +21,11 @@ def test_register_then_list(tmp_path, capsys, monkeypatch):
 def test_default_snapshot_auto_adds_cwd_and_prints_idle(tmp_path, capsys, monkeypatch):
     reg = tmp_path / "projects.yaml"
     monkeypatch.setattr(registry, "default_registry_file", lambda: reg)
-    # a bare dir that is not an AMAP project → idle line, no crash
+    # a bare dir that is not an Maika project → idle line, no crash
     run_dashboard(target=str(tmp_path))
 
     out = capsys.readouterr().out
-    assert "AMAP runs" in out
+    assert "Maika runs" in out
     assert "idle" in out
     assert registry.load(reg) == [str(tmp_path.resolve())]
 

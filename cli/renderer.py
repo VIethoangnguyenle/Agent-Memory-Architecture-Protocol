@@ -24,7 +24,7 @@ def create_renderer(template_base_dir: str) -> Environment:
 
     Args:
         template_base_dir: Absolute path to the directory containing
-                          plugin templates (e.g., /path/to/amap/plugins/).
+                          plugin templates (e.g., /path/to/maika/plugins/).
     """
     env = Environment(
         loader=FileSystemLoader(template_base_dir),

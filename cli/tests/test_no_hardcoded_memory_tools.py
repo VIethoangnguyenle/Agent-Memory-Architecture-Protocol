@@ -1,4 +1,4 @@
-"""Guard: operational AMAP templates must not hardcode provider memory tool names.
+"""Guard: operational Maika templates must not hardcode provider memory tool names.
 
 Concrete memory tool names belong ONLY in cli/platforms/ mappings, the provider
 setup recipe, fixed degrade/status strings, and historical docs (see C-27 spec
@@ -10,7 +10,7 @@ import re
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-AMAP = REPO_ROOT / ".amap"
+Maika = REPO_ROOT / ".maika"
 OPERATIONAL_DIRS = ("rules", "skills", "procedures", "workflows")
 
 # \b word-boundary => the abstract op `dynamic_memory_save` (preceded by `_`)
@@ -23,7 +23,7 @@ LITERAL = re.compile(
 def test_no_hardcoded_memory_tool_names_in_operational_templates():
     offenders = []
     for sub in OPERATIONAL_DIRS:
-        base = AMAP / sub
+        base = Maika / sub
         if not base.exists():
             continue
         for path in base.rglob("*.md"):

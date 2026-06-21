@@ -1,6 +1,6 @@
-"""AMAP dashboard registry: which projects the dashboard observes.
+"""Maika dashboard registry: which projects the dashboard observes.
 
-Stored as YAML at $AMAP_HOME/projects.yaml (default ~/.amap/projects.yaml):
+Stored as YAML at $Maika_HOME/projects.yaml (default ~/.maika/projects.yaml):
 
     projects:
       - /abs/path/to/projectA
@@ -18,7 +18,7 @@ import yaml
 
 
 def default_registry_file() -> Path:
-    home = Path(os.environ.get("AMAP_HOME", Path.home() / ".amap"))
+    home = Path(os.environ.get("Maika_HOME", Path.home() / ".maika"))
     return home / "projects.yaml"
 
 

@@ -6,14 +6,14 @@ from cli.dashboard.reader import RunState, read_run
 
 
 def _make_project(tmp_path, *, transparency=None, queue=None):
-    """Build a minimal AMAP project under tmp_path with framework_root '.amap'."""
-    root = tmp_path / ".amap"
+    """Build a minimal Maika project under tmp_path with framework_root '.maika'."""
+    root = tmp_path / ".maika"
     active = root / "knowledge" / "active"
     active.mkdir(parents=True)
     (root / "resolved-config.yaml").write_text(
         "resolved:\n"
         "  platform: antigravity\n"
-        "  framework_root: .amap\n"
+        "  framework_root: .maika\n"
         "  language: python\n"
         "  framework_version: '3.0'\n",
         encoding="utf-8",
@@ -109,7 +109,7 @@ def test_zero_tasks_progress_is_zero(tmp_path):
     assert state.progress_pct == 0  # no ZeroDivisionError
 
 
-def test_not_an_amap_project_is_idle(tmp_path):
+def test_not_an_maika_project_is_idle(tmp_path):
     state = read_run(str(tmp_path))  # no resolved-config.yaml
     assert isinstance(state, RunState)
     assert state.phase_state is None

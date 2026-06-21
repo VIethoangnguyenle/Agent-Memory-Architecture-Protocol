@@ -12,14 +12,14 @@ from cli.dashboard import registry, server
 from cli.dashboard.reader import RunState
 
 
-def _make_amap_project(tmp_path, name="p"):
+def _make_maika_project(tmp_path, name="p"):
     proj = tmp_path / name
-    active = proj / ".amap" / "knowledge" / "active"
+    active = proj / ".maika" / "knowledge" / "active"
     active.mkdir(parents=True)
-    (proj / ".amap" / "resolved-config.yaml").write_text(
+    (proj / ".maika" / "resolved-config.yaml").write_text(
         "resolved:\n"
         "  platform: antigravity\n"
-        "  framework_root: .amap\n"
+        "  framework_root: .maika\n"
         "  language: python\n"
         "  framework_version: '3.0'\n",
         encoding="utf-8",
@@ -52,7 +52,7 @@ def test_snapshot_empty_registry(tmp_path):
     assert server.snapshot(tmp_path / "none.yaml") == []
 
 
-def test_snapshot_non_amap_project_is_idle(tmp_path):
+def test_snapshot_non_maika_project_is_idle(tmp_path):
     reg = tmp_path / "projects.yaml"
     proj = tmp_path / "p"
     proj.mkdir()
@@ -66,7 +66,7 @@ def test_snapshot_non_amap_project_is_idle(tmp_path):
 
 def test_snapshot_includes_subagent_handoff_prompts(tmp_path):
     reg = tmp_path / "projects.yaml"
-    proj, active = _make_amap_project(tmp_path)
+    proj, active = _make_maika_project(tmp_path)
     (active / "TASK_HANDOFF.napas-human.md").write_text(
         textwrap.dedent(
             """\
@@ -93,7 +93,7 @@ def test_snapshot_includes_subagent_handoff_prompts(tmp_path):
 
 def test_snapshot_includes_parent_brain_mirror(tmp_path):
     reg = tmp_path / "projects.yaml"
-    proj, active = _make_amap_project(tmp_path)
+    proj, active = _make_maika_project(tmp_path)
     (active / "PARENT_BRAIN.md").write_text(
         textwrap.dedent(
             """\
@@ -119,7 +119,7 @@ def test_snapshot_includes_parent_brain_mirror(tmp_path):
 
 def test_snapshot_merges_queue_result_and_activity_log(tmp_path):
     reg = tmp_path / "projects.yaml"
-    proj, active = _make_amap_project(tmp_path)
+    proj, active = _make_maika_project(tmp_path)
     microloop = active / "microloop"
     microloop.mkdir()
     (active / "TASK_HANDOFF.napas-human.md").write_text(
@@ -141,12 +141,12 @@ def test_snapshot_merges_queue_result_and_activity_log(tmp_path):
               - id: napas-human
                 desc: Create human SRS
                 status: done
-                handoff_path: .amap/knowledge/active/TASK_HANDOFF.napas-human.md
-                result_path: .amap/knowledge/active/microloop/TASK_RESULT.napas-human.md
+                handoff_path: .maika/knowledge/active/TASK_HANDOFF.napas-human.md
+                result_path: .maika/knowledge/active/microloop/TASK_RESULT.napas-human.md
               - id: napas-agent
                 desc: Create agent SRS
                 status: in_progress
-                handoff_path: .amap/knowledge/active/TASK_HANDOFF.napas-agent.md
+                handoff_path: .maika/knowledge/active/TASK_HANDOFF.napas-agent.md
             """
         ),
         encoding="utf-8",
@@ -179,7 +179,7 @@ def test_snapshot_merges_queue_result_and_activity_log(tmp_path):
 
 def test_snapshot_bad_activity_log_marks_stale(tmp_path):
     reg = tmp_path / "projects.yaml"
-    proj, active = _make_amap_project(tmp_path)
+    proj, active = _make_maika_project(tmp_path)
     microloop = active / "microloop"
     microloop.mkdir()
     (microloop / "ACTIVITY_LOG.jsonl").write_text('{"event":"ok"}\nnot-json\n', encoding="utf-8")
@@ -194,7 +194,7 @@ def test_snapshot_bad_activity_log_marks_stale(tmp_path):
 
 def test_snapshot_bad_task_queue_marks_stale(tmp_path):
     reg = tmp_path / "projects.yaml"
-    proj, active = _make_amap_project(tmp_path)
+    proj, active = _make_maika_project(tmp_path)
     microloop = active / "microloop"
     microloop.mkdir()
     (microloop / "TASK_QUEUE.md").write_text("tasks: [unterminated\n", encoding="utf-8")
@@ -209,7 +209,7 @@ def test_snapshot_bad_task_queue_marks_stale(tmp_path):
 
 def test_snapshot_task_queue_tasks_not_a_list_marks_stale(tmp_path):
     reg = tmp_path / "projects.yaml"
-    proj, active = _make_amap_project(tmp_path)
+    proj, active = _make_maika_project(tmp_path)
     microloop = active / "microloop"
     microloop.mkdir()
     (microloop / "TASK_QUEUE.md").write_text("tasks: not-a-list\n", encoding="utf-8")
@@ -226,7 +226,7 @@ def test_snapshot_reader_stale_survives_runtime_merge(tmp_path):
     # read_runtime never reads that file, so its stale=False must NOT clobber
     # the reader's flag when the two dicts are merged in snapshot().
     reg = tmp_path / "projects.yaml"
-    proj, active = _make_amap_project(tmp_path)
+    proj, active = _make_maika_project(tmp_path)
     (active / "AGENT_TRANSPARENCY.md").write_text("not valid frontmatter\n", encoding="utf-8")
     registry.register(reg, str(proj))
 
@@ -257,7 +257,7 @@ def test_index_served(running_server):
         body = r.read().decode()
         assert r.status == 200
         assert r.headers["Cache-Control"] == "no-store"
-        assert "AMAP" in body
+        assert "Maika" in body
         assert "view result" in body
         assert "parent brain" in body
         assert "event-parent" in body

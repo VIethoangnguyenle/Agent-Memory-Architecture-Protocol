@@ -16,7 +16,7 @@ def test_platform_framework_roots():
     assert get_platform("antigravity").framework_root == ".agents"
     assert get_platform("codex").framework_root == ".agents"
     assert get_platform("claude-code").framework_root == ".claude"
-    assert get_platform("generic").framework_root == ".amap"
+    assert get_platform("generic").framework_root == ".maika"
 
 
 def test_native_root_platforms_do_not_need_skill_mirror():
@@ -41,8 +41,8 @@ def test_cursor_is_out_of_scope_for_platform_selection():
     assert "cursor" not in PLATFORMS
 
 
-def test_generic_platform_defaults_to_amap_root():
-    assert GenericPlatform().framework_root == ".amap"
+def test_generic_platform_defaults_to_maika_root():
+    assert GenericPlatform().framework_root == ".maika"
     assert GenericPlatform().native_skill_export is None
 
 

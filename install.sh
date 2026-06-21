@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# AMAP installer — bootstrap a venv and scaffold/update AMAP into a target project.
+# Maika installer — bootstrap a venv and scaffold/update Maika into a target project.
 #
 # Usage: ./install.sh /path/to/your/project
 set -euo pipefail
 
-AMAP_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-VENV="$AMAP_ROOT/.venv"
+Maika_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+VENV="$Maika_ROOT/.venv"
 
 TARGET="${1:-}"
 if [ -z "$TARGET" ]; then
@@ -34,21 +34,21 @@ fi
 
 PY="$VENV/bin/python"
 
-# Install the amap CLI as an editable package and expose it on PATH.
-# pyproject.toml declares the console script: amap = cli.amap:main
-"$VENV/bin/pip" install --quiet -e "$AMAP_ROOT"
+# Install the maika CLI as an editable package and expose it on PATH.
+# pyproject.toml declares the console script: maika = cli.maika:main
+"$VENV/bin/pip" install --quiet -e "$Maika_ROOT"
 mkdir -p "$HOME/.local/bin"
-ln -sf "$VENV/bin/amap" "$HOME/.local/bin/amap"
-echo "→ Installed 'amap' → $HOME/.local/bin/amap"
+ln -sf "$VENV/bin/maika" "$HOME/.local/bin/maika"
+echo "→ Installed 'maika' → $HOME/.local/bin/maika"
 echo "  (ensure ~/.local/bin is on your PATH: export PATH=\"\$HOME/.local/bin:\$PATH\")"
 
-# Route to update if AMAP already installed, else init.
+# Route to update if Maika already installed, else init.
 if [ -f "$TARGET/.agents/resolved-config.yaml" ] || \
    [ -f "$TARGET/.claude/resolved-config.yaml" ] || \
-   [ -f "$TARGET/.amap/resolved-config.yaml" ]; then
-  echo "→ Existing AMAP install detected — updating."
-  ( cd "$AMAP_ROOT" && "$PY" -m cli.amap update --target "$TARGET" )
+   [ -f "$TARGET/.maika/resolved-config.yaml" ]; then
+  echo "→ Existing Maika install detected — updating."
+  ( cd "$Maika_ROOT" && "$PY" -m cli.maika update --target "$TARGET" )
 else
   echo "→ Fresh install."
-  ( cd "$AMAP_ROOT" && "$PY" -m cli.amap init --target "$TARGET" )
+  ( cd "$Maika_ROOT" && "$PY" -m cli.maika init --target "$TARGET" )
 fi

@@ -1,4 +1,4 @@
-"""Tests for amap status."""
+"""Tests for maika status."""
 
 from cli.commands.status import run_status
 
@@ -42,5 +42,5 @@ def test_status_detects_legacy_install(tmp_path, capsys):
     run_status(target_dir=str(target))
 
     out = capsys.readouterr().out
-    assert "No AMAP installation" not in out
+    assert "No Maika installation" not in out
     assert "legacy installation" in out

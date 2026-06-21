@@ -1,4 +1,4 @@
-"""amap status — Show current AMAP configuration in a project.
+"""maika status — Show current Maika configuration in a project.
 
 Reads resolved-config.yaml and reports the current platform, MCPs,
 language, and installed skills/workflows.
@@ -12,10 +12,10 @@ from cli.scaffold import load_resolved_config
 
 
 def run_status(target_dir: str) -> None:
-    """Show AMAP status for a target project."""
+    """Show Maika status for a target project."""
     target = Path(target_dir).resolve()
 
-    # ─── Check for AMAP installation ───
+    # ─── Check for Maika installation ───
     # Resolve the entry-point file from the recorded platform; fall back to
     # AGENTS.md for legacy installs predating resolved-config.yaml.
     resolved = load_resolved_config(target)
@@ -28,8 +28,8 @@ def run_status(target_dir: str) -> None:
         entry = "AGENTS.md"
 
     if not (target / entry).exists():
-        print(f"\n  ❌ No AMAP installation found in {target}")
-        print(f"     Run: amap init --target {target}")
+        print(f"\n  ❌ No Maika installation found in {target}")
+        print(f"     Run: maika init --target {target}")
         return
 
     print()
@@ -45,14 +45,14 @@ def run_status(target_dir: str) -> None:
         version = resolved.get("framework_version", "unknown")
         framework_root = resolved.get("framework_root", get_platform(platform).framework_root)
 
-        print(f"  🔧 Framework: AMAP v{version}")
+        print(f"  🔧 Framework: Maika v{version}")
         print(f"  🔌 Platform:  {platform}")
         print(f"  📦 MCPs:      {', '.join(mcps) if mcps else 'none'}")
         print(f"  💬 Language:  {language}")
         print(f"  🧭 Root:      {framework_root}")
     else:
         print(f"  ⚠️  No resolved-config.yaml — may be a legacy installation")
-        print(f"     Run: amap init --target {target}")
+        print(f"     Run: maika init --target {target}")
         framework_root = CANONICAL_FRAMEWORK_ROOT
 
     root = target / framework_root

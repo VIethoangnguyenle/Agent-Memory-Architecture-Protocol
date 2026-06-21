@@ -50,7 +50,7 @@ OPTIONAL_TOOL_KEYS = frozenset({
 
 
 class PlatformToolMappingError(ValueError):
-    """Raised when a platform adapter cannot resolve required AMAP tool keys."""
+    """Raised when a platform adapter cannot resolve required Maika tool keys."""
 
 
 class BasePlatform(ABC):
@@ -58,7 +58,7 @@ class BasePlatform(ABC):
 
     A platform represents a specific AI agent runtime environment
     (Antigravity, Claude Code, Cursor, etc.) and defines how
-    abstract AMAP operations map to concrete tool calls.
+    abstract Maika operations map to concrete tool calls.
     """
 
     @property
@@ -129,12 +129,12 @@ class BasePlatform(ABC):
 
     @property
     def framework_root(self) -> str:
-        """Canonical AMAP runtime root inside a target project.
+        """Canonical Maika runtime root inside a target project.
 
         This is where rules, skills, workflows, procedures, tools, profiles,
         knowledge, and resolved-config.yaml are scaffolded for the platform.
         """
-        return ".amap"
+        return ".maika"
 
     @property
     def notes(self) -> List[str]:
@@ -155,7 +155,7 @@ class BasePlatform(ABC):
         )
 
     def validate_tool_mapping(self) -> None:
-        """Fail early when a platform adapter drifts from AMAP's tool contract."""
+        """Fail early when a platform adapter drifts from Maika's tool contract."""
         tool_keys = set(self.tool_mapping)
         allowed_keys = REQUIRED_TOOL_KEYS | OPTIONAL_TOOL_KEYS
         missing = REQUIRED_TOOL_KEYS - tool_keys - self.unsupported_tools

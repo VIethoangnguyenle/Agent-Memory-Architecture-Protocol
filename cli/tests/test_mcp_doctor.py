@@ -95,8 +95,8 @@ def test_doctor_report_redacts_secrets_in_matched_server_config(tmp_path):
     assert "supersecret" not in text
 
 
-def test_doctor_reports_friendly_error_when_not_amap_project(tmp_path, capsys):
-    target = tmp_path / "not-amap"
+def test_doctor_reports_friendly_error_when_not_maika_project(tmp_path, capsys):
+    target = tmp_path / "not-maika"
     target.mkdir()
 
     run_doctor_mcp(str(target), fix=False, assume_yes=False, home=tmp_path / "home")

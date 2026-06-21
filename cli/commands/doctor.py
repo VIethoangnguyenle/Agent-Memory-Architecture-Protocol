@@ -1,4 +1,4 @@
-"""amap doctor - diagnostics for AMAP runtime dependencies."""
+"""maika doctor - diagnostics for Maika runtime dependencies."""
 
 from pathlib import Path
 from typing import Optional
@@ -18,7 +18,7 @@ def run_doctor_mcp(
         status = build_doctor_status(target, home_path)
     except ValueError as exc:
         print(f"\n  {exc}")
-        print("  Run `amap init` first, or point --target at an AMAP project.")
+        print("  Run `maika init` first, or point --target at an Maika project.")
         return
     report = write_report(target, status)
     print(f"\n  MCP doctor report: {report}")

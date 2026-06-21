@@ -1,4 +1,4 @@
-"""AMAP dashboard reader: parse a project's contract files into a RunState.
+"""Maika dashboard reader: parse a project's contract files into a RunState.
 
 Reads (read-only) from {project}/{framework_root}/knowledge/active/:
   - AGENT_TRANSPARENCY.md    (YAML frontmatter: phase_state, ticket_id)
@@ -57,7 +57,7 @@ def _read_frontmatter(path: Path) -> Optional[dict]:
 
 
 def active_dir(project_path: str, resolved: Optional[dict] = None) -> Optional[Path]:
-    """Resolve {project}/{framework_root}/knowledge/active, or None if not an AMAP project.
+    """Resolve {project}/{framework_root}/knowledge/active, or None if not an Maika project.
 
     Shared by the reader, the SSE server, and the brain sync so config is
     resolved once per project per poll instead of once per consumer.
@@ -75,7 +75,7 @@ def read_run(project_path: str, active: Optional[Path] = None) -> RunState:
     if active is None:
         active = active_dir(project_path)
     if active is None:
-        return state  # not an AMAP project → idle
+        return state  # not an Maika project → idle
 
     mtimes: list[float] = []
 

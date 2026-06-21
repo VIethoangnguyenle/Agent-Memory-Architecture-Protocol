@@ -1,4 +1,4 @@
-"""Platform-specific MCP config discovery for AMAP doctor."""
+"""Platform-specific MCP config discovery for Maika doctor."""
 
 from dataclasses import dataclass
 from pathlib import Path
@@ -57,7 +57,7 @@ _ADAPTERS = {
     ),
     "generic": McpPlatformAdapter(
         platform="generic",
-        framework_root=".amap",
+        framework_root=".maika",
         candidates=(),
     ),
 }

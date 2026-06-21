@@ -1,4 +1,4 @@
-"""amap dashboard serve - local web dashboard (SSE) over registered AMAP runs.
+"""maika dashboard serve - local web dashboard (SSE) over registered Maika runs.
 
 Read-only. Serves one HTML page plus an SSE stream that pushes a JSON snapshot
 of every registered project's RunState whenever it changes. Binds 127.0.0.1
@@ -332,13 +332,13 @@ def serve(target: str = ".", port: int = DEFAULT_PORT, open_browser: bool = True
     except OSError as exc:
         print(
             f"\n  Cannot bind 127.0.0.1:{port} ({exc}). "
-            "Try: amap dashboard serve --port <other>\n"
+            "Try: maika dashboard serve --port <other>\n"
         )
         return
     httpd.daemon_threads = True
     httpd.registry_file = reg
     url = f"http://127.0.0.1:{port}/"
-    print(f"\n  AMAP dashboard live: {url}   (Ctrl+C to stop)\n")
+    print(f"\n  Maika dashboard live: {url}   (Ctrl+C to stop)\n")
     if open_browser:
         try:
             webbrowser.open(url)

@@ -1,4 +1,4 @@
-"""amap init — Scaffold AMAP framework into a target project."""
+"""maika init — Scaffold Maika framework into a target project."""
 
 import shutil
 import tempfile
@@ -143,20 +143,20 @@ def gather_choices(manifest: dict) -> Tuple[str, List[str], str]:
 
 def run_init(
     target_dir: str,
-    amap_root: Optional[str] = None,
+    maika_root: Optional[str] = None,
     platform_key: Optional[str] = None,
     selected_mcps: Optional[List[str]] = None,
     language: Optional[str] = None,
     assume_yes: bool = False,
 ) -> None:
-    """Main init command — scaffold AMAP into a target project."""
+    """Main init command — scaffold Maika into a target project."""
     target = Path(target_dir).resolve()
-    amap = Path(amap_root).resolve() if amap_root else Path(__file__).resolve().parent.parent.parent
+    maika = Path(maika_root).resolve() if maika_root else Path(__file__).resolve().parent.parent.parent
 
-    print(f"\n  AMAP Framework v3.0 — init")
-    print(f"  Target: {target}\n  Source: {amap}")
+    print(f"\n  Maika Framework v3.0 — init")
+    print(f"  Target: {target}\n  Source: {maika}")
 
-    manifest = load_manifest(amap)
+    manifest = load_manifest(maika)
     platform_key, selected_mcps, language = resolve_init_choices(
         manifest,
         platform_key=platform_key,
@@ -176,13 +176,13 @@ def run_init(
         return
 
     context = platform.build_render_context(selected_mcps, language)
-    jinja_env = create_renderer(str(amap))
-    print("\nScaffolding AMAP framework...\n")
+    jinja_env = create_renderer(str(maika))
+    print("\nScaffolding Maika framework...\n")
 
-    staging = Path(tempfile.mkdtemp(prefix="amap-init-"))
+    staging = Path(tempfile.mkdtemp(prefix="maika-init-"))
     try:
         stats = scaffold_plugins(
-            manifest.get("plugins", []), amap, staging, context, jinja_env,
+            manifest.get("plugins", []), maika, staging, context, jinja_env,
             manifest.get("mcp_capabilities", {}), selected_mcps,
         )
         scaffold_native_skill_exports(manifest.get("plugins", []), staging, platform)
@@ -201,7 +201,7 @@ def run_init(
 
     total = stats["rendered"] + stats["copied"] + stats["dirs"]
     print(f"\n{'═' * 50}")
-    print(f"  Done! AMAP scaffolded for {platform.display_name}")
+    print(f"  Done! Maika scaffolded for {platform.display_name}")
     print(f"  {total} plugins installed, {stats['skipped']} skipped")
     print(f"{'═' * 50}")
     print("\n  Next steps:")
@@ -209,4 +209,4 @@ def run_init(
     print("  2. Run /dna-scan to build author DNA")
     print("  3. Start your first task: /task <ticket-or-idea>\n")
     if selected_mcps:
-        print(f"  4. Run MCP diagnostics: amap doctor mcp --target {target}\n")
+        print(f"  4. Run MCP diagnostics: maika doctor mcp --target {target}\n")

@@ -75,7 +75,7 @@ class AntigravityPlatform(BasePlatform):
 
     notes = [
         "AGENTS.md is loaded via user_rules in Antigravity config",
-        "AMAP runtime scaffolds into .agents/",
+        "Maika runtime scaffolds into .agents/",
         "MCP tools use prefix: mcp_<server>_<tool>",
         "Supports browser_subagent for visual tasks",
     ]

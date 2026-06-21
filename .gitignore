@@ -1,5 +1,5 @@
-.amap/tools/rule-projector/generated/*
-!.amap/tools/rule-projector/generated/.gitkeep
+.maika/tools/rule-projector/generated/*
+!.maika/tools/rule-projector/generated/.gitkeep
 __pycache__/
 *.pyc
 *.egg-info/
@@ -7,4 +7,4 @@ __pycache__/
 .worktrees/
 
 # Per-dev: persona là phong cách tương tác riêng từng developer (seed từ persona.template.yaml)
-.amap/knowledge/long-term/persona.yaml
+.maika/knowledge/long-term/persona.yaml

@@ -1,4 +1,4 @@
-"""amap update — re-render framework files, preserve user files.
+"""maika update — re-render framework files, preserve user files.
 
 Renders into a temp staging dir, verifies zero unresolved markers, then
 syncs framework files over the target. Aborts without touching the target
@@ -23,28 +23,28 @@ from cli.scaffold import (
 )
 
 
-def warn_legacy_amap(target: Path, platform) -> None:
-    legacy = target / ".amap"
-    if platform.framework_root != ".amap" and legacy.exists():
-        print(f"  ⚠️  legacy .amap remains at {legacy}; not removed automatically.")
+def warn_legacy_maika(target: Path, platform) -> None:
+    legacy = target / ".maika"
+    if platform.framework_root != ".maika" and legacy.exists():
+        print(f"  ⚠️  legacy .maika remains at {legacy}; not removed automatically.")
 
 
-def run_update(target_dir: str, amap_root: Optional[str] = None, reconfigure: bool = False) -> None:
-    """Re-render framework files into an existing AMAP project."""
+def run_update(target_dir: str, maika_root: Optional[str] = None, reconfigure: bool = False) -> None:
+    """Re-render framework files into an existing Maika project."""
     target = Path(target_dir).resolve()
-    amap = Path(amap_root).resolve() if amap_root else Path(__file__).resolve().parent.parent.parent
+    maika = Path(maika_root).resolve() if maika_root else Path(__file__).resolve().parent.parent.parent
 
     resolved = load_resolved_config(target)
     if resolved is None:
-        print(f"\n  ❌ No AMAP installation found in {target}")
-        print(f"     Run: amap init --target {target}")
+        print(f"\n  ❌ No Maika installation found in {target}")
+        print(f"     Run: maika init --target {target}")
         return
 
-    manifest = load_manifest(amap)
+    manifest = load_manifest(maika)
 
     if reconfigure:
         from cli.commands.init import gather_choices
-        print("\n  AMAP update — reconfigure\n")
+        print("\n  Maika update — reconfigure\n")
         platform_key, selected_mcps, language = gather_choices(manifest)
     else:
         platform_key = resolved.get("platform", "generic")
@@ -54,13 +54,13 @@ def run_update(target_dir: str, amap_root: Optional[str] = None, reconfigure: bo
     platform = get_platform(platform_key)
     framework_root = resolved.get("framework_root", platform.framework_root)
     context = platform.build_render_context(selected_mcps, language)
-    jinja_env = create_renderer(str(amap))
+    jinja_env = create_renderer(str(maika))
 
-    print(f"\n  Updating AMAP ({platform.display_name})...\n")
-    staging = Path(tempfile.mkdtemp(prefix="amap-update-"))
+    print(f"\n  Updating Maika ({platform.display_name})...\n")
+    staging = Path(tempfile.mkdtemp(prefix="maika-update-"))
     try:
         scaffold_plugins(
-            manifest.get("plugins", []), amap, staging, context, jinja_env,
+            manifest.get("plugins", []), maika, staging, context, jinja_env,
             manifest.get("mcp_capabilities", {}), selected_mcps,
             only_framework=True,
         )
@@ -87,13 +87,13 @@ def run_update(target_dir: str, amap_root: Optional[str] = None, reconfigure: bo
                 if stale.exists():
                     stale.unlink()
                     print(f"  🗑️  Removed stale entry point: {other_entry}")
-        for root in [".agents", ".claude", ".amap"]:
+        for root in [".agents", ".claude", ".maika"]:
             root_path = target / root
             if root != platform.framework_root and root_path.exists():
                 print(f"  ⚠️  stale framework root detected: {root_path}")
     else:
         framework_root = resolved.get("framework_root", framework_root)
 
-    warn_legacy_amap(target, platform)
+    warn_legacy_maika(target, platform)
 
     print(f"\n  ✅ Updated {count} framework files. User files preserved.\n")

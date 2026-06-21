@@ -1,1 +1,1 @@
-"""AMAP dashboard: read-only observability over AMAP run artifacts."""
+"""Maika dashboard: read-only observability over Maika run artifacts."""

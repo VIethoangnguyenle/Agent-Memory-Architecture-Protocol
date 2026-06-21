@@ -22,46 +22,46 @@ def test_get_ownership_defaults_to_framework():
     assert get_ownership({"name": "x", "ownership": "user"}) == "user"
 
 
-def test_load_manifest_has_plugins(amap_root):
-    manifest = load_manifest(amap_root)
+def test_load_manifest_has_plugins(maika_root):
+    manifest = load_manifest(maika_root)
     assert len(manifest["plugins"]) > 0
     assert "mcp_capabilities" in manifest
 
 
-def test_has_capability(amap_root):
-    manifest = load_manifest(amap_root)
+def test_has_capability(maika_root):
+    manifest = load_manifest(maika_root)
     caps = manifest["mcp_capabilities"]
     assert has_capability(["socraticode"], caps, "code_exploration") is True
     assert has_capability([], caps, "code_exploration") is False
 
 
-def test_manifest_declares_agent_memory_capability(amap_root):
-    manifest = load_manifest(amap_root)
+def test_manifest_declares_agent_memory_capability(maika_root):
+    manifest = load_manifest(maika_root)
     caps = manifest["mcp_capabilities"]
     assert "agent-memory" in caps
     assert caps["agent-memory"]["provides"] == "memory"
 
 
-def test_has_capability_recognizes_memory(amap_root):
-    manifest = load_manifest(amap_root)
+def test_has_capability_recognizes_memory(maika_root):
+    manifest = load_manifest(maika_root)
     caps = manifest["mcp_capabilities"]
     assert has_capability(["agent-memory"], caps, "memory") is True
     assert has_capability([], caps, "memory") is False
 
 
-def test_resolve_source_path_maps_skills(amap_root):
-    p = resolve_source_path(amap_root, "skills/codebase-explorer/")
-    assert p == amap_root / ".amap/skills/codebase-explorer/"
+def test_resolve_source_path_maps_skills(maika_root):
+    p = resolve_source_path(maika_root, "skills/codebase-explorer/")
+    assert p == maika_root / ".maika/skills/codebase-explorer/"
 
 
-def test_resolve_source_path_maps_meta_prompt(amap_root):
-    p = resolve_source_path(amap_root, "meta-prompt.md")
-    assert p == amap_root / ".amap/meta-prompt.md"
+def test_resolve_source_path_maps_meta_prompt(maika_root):
+    p = resolve_source_path(maika_root, "meta-prompt.md")
+    assert p == maika_root / ".maika/meta-prompt.md"
 
 
-def test_resolve_source_path_maps_hooks(amap_root):
-    p = resolve_source_path(amap_root, "hooks/write-gate/")
-    assert p == amap_root / ".amap/hooks/write-gate/"
+def test_resolve_source_path_maps_hooks(maika_root):
+    p = resolve_source_path(maika_root, "hooks/write-gate/")
+    assert p == maika_root / ".maika/hooks/write-gate/"
 
 
 def test_scaffold_plugin_renders_template_source(tmp_path, jinja_env, claude_context):
@@ -107,9 +107,9 @@ def test_scaffold_plugin_unknown_tool_key_raises_before_target_write(
 
 
 def test_scaffold_plugins_skips_platform_capability_plugin_when_absent(
-    tmp_path, amap_root, jinja_env, claude_context
+    tmp_path, maika_root, jinja_env, claude_context
 ):
-    source = amap_root / ".amap" / "knowledge" / "templates" / "TOKEN_LOG.tpl.md"
+    source = maika_root / ".maika" / "knowledge" / "templates" / "TOKEN_LOG.tpl.md"
     assert source.exists()
 
     plugins = [{
@@ -125,7 +125,7 @@ def test_scaffold_plugins_skips_platform_capability_plugin_when_absent(
         "capabilities": {**claude_context["capabilities"], "write_gate_hook": False},
     }
     stats = scaffold_plugins(
-        plugins, amap_root, tmp_path, context, jinja_env,
+        plugins, maika_root, tmp_path, context, jinja_env,
         mcp_capabilities={}, selected_mcps=[], verbose=False,
     )
 
@@ -134,7 +134,7 @@ def test_scaffold_plugins_skips_platform_capability_plugin_when_absent(
 
 
 def test_scaffold_plugins_includes_platform_capability_plugin_when_present(
-    tmp_path, amap_root, jinja_env, claude_context
+    tmp_path, maika_root, jinja_env, claude_context
 ):
     plugins = [{
         "name": "write-gate-settings",
@@ -149,7 +149,7 @@ def test_scaffold_plugins_includes_platform_capability_plugin_when_present(
         "capabilities": {**claude_context["capabilities"], "write_gate_hook": True},
     }
     stats = scaffold_plugins(
-        plugins, amap_root, tmp_path, context, jinja_env,
+        plugins, maika_root, tmp_path, context, jinja_env,
         mcp_capabilities={}, selected_mcps=[], verbose=False,
     )
 
@@ -158,7 +158,7 @@ def test_scaffold_plugins_includes_platform_capability_plugin_when_present(
 
 
 def test_scaffold_plugins_skips_platform_specific_plugin_for_other_platform(
-    tmp_path, amap_root, jinja_env, claude_context
+    tmp_path, maika_root, jinja_env, claude_context
 ):
     plugins = [{
         "name": "codex-write-gate-settings",
@@ -169,7 +169,7 @@ def test_scaffold_plugins_skips_platform_specific_plugin_for_other_platform(
     }]
 
     stats = scaffold_plugins(
-        plugins, amap_root, tmp_path, claude_context, jinja_env,
+        plugins, maika_root, tmp_path, claude_context, jinja_env,
         mcp_capabilities={}, selected_mcps=[], verbose=False,
     )
 
@@ -177,8 +177,8 @@ def test_scaffold_plugins_skips_platform_specific_plugin_for_other_platform(
     assert not (tmp_path / ".codex" / "hooks.json").exists()
 
 
-def test_knowledge_dirs_are_user_owned(amap_root):
-    manifest = load_manifest(amap_root)
+def test_knowledge_dirs_are_user_owned(maika_root):
+    manifest = load_manifest(maika_root)
     by_name = {p["name"]: p for p in manifest["plugins"]}
     assert get_ownership(by_name["knowledge-active-skeleton"]) == "user"
     assert get_ownership(by_name["knowledge-long-term"]) == "user"
@@ -186,8 +186,8 @@ def test_knowledge_dirs_are_user_owned(amap_root):
     assert get_ownership(by_name["knowledge-templates"]) == "framework"
 
 
-def test_manifest_declares_write_gate_plugins(amap_root):
-    manifest = load_manifest(amap_root)
+def test_manifest_declares_write_gate_plugins(maika_root):
+    manifest = load_manifest(maika_root)
     by_name = {p["name"]: p for p in manifest["plugins"]}
     assert by_name["write-gate-core"]["source"] == "hooks/write-gate/"
     assert by_name["write-gate-core"]["requires_platform_capability"] == "write_gate_hook"
@@ -199,8 +199,8 @@ def test_manifest_declares_write_gate_plugins(amap_root):
     assert by_name["antigravity-write-gate-hooks"]["requires_platform_capability"] == "write_gate_hook"
 
 
-def test_manifest_declares_mcp_bridge_plugin(amap_root):
-    manifest = load_manifest(amap_root)
+def test_manifest_declares_mcp_bridge_plugin(maika_root):
+    manifest = load_manifest(maika_root)
     by_name = {p["name"]: p for p in manifest["plugins"]}
     assert by_name["mcp-bridge"]["type"] == "tool"
     assert by_name["mcp-bridge"]["source"] == "tools/mcp-bridge/"
@@ -208,7 +208,7 @@ def test_manifest_declares_mcp_bridge_plugin(amap_root):
 
 
 def _write_resolved_config(target, content):
-    config_path = target / ".amap" / "resolved-config.yaml"
+    config_path = target / ".maika" / "resolved-config.yaml"
     config_path.parent.mkdir(parents=True, exist_ok=True)
     config_path.write_text(content, encoding="utf-8")
 
@@ -223,7 +223,7 @@ def test_resolved_config_candidates_derive_from_platform_registry(tmp_path):
     expected_roots = {get_platform(k).framework_root for k in PLATFORMS}
     assert {c.split("/")[0] for c in candidates} == expected_roots
     # Canonical root is first → load fallback is deterministic.
-    assert candidates[0] == ".amap/resolved-config.yaml"
+    assert candidates[0] == ".maika/resolved-config.yaml"
     # Every entry is a resolved-config.yaml.
     assert all(c.endswith("/resolved-config.yaml") for c in candidates)
 
@@ -236,7 +236,7 @@ def test_generate_resolved_config_uses_platform_framework_root(tmp_path):
 
     config = tmp_path / ".agents" / "resolved-config.yaml"
     assert config.exists()
-    assert not (tmp_path / ".amap").exists()
+    assert not (tmp_path / ".maika").exists()
     body = config.read_text(encoding="utf-8")
     assert "platform: antigravity" in body
     assert "framework_root: .agents" in body
@@ -295,7 +295,7 @@ def test_load_resolved_config_returns_none_when_malformed_yaml(tmp_path):
     assert load_resolved_config(tmp_path) is None
 
 
-def test_load_resolved_config_reads_legacy_amap_config(tmp_path):
+def test_load_resolved_config_reads_legacy_maika_config(tmp_path):
     _write_resolved_config(
         tmp_path,
         "resolved:\n  platform: generic\n  mcps: []\n  language: python\n",
@@ -303,7 +303,7 @@ def test_load_resolved_config_reads_legacy_amap_config(tmp_path):
 
     resolved = load_resolved_config(tmp_path)
     assert resolved["platform"] == "generic"
-    assert resolved["framework_root"] == ".amap"
+    assert resolved["framework_root"] == ".maika"
 
 
 def test_verify_no_unresolved_flags_offending_py_file(tmp_path):
@@ -337,7 +337,7 @@ def test_export_as_flat_command_strips_frontmatter_and_inlines_pre_conditions():
         "name: requirement-analyst\n"
         "description: Standardize tickets into REQUIREMENT.md.\n"
         "pre_conditions:\n"
-        "  - file: .amap/knowledge/active/AGENT_TRANSPARENCY.md\n"
+        "  - file: .maika/knowledge/active/AGENT_TRANSPARENCY.md\n"
         "    condition: exists\n"
         "    on_fail: \"ABORT - bootstrap hasn't run\"\n"
         "---\n"
@@ -385,7 +385,7 @@ class _FakePlatform:
 
 def test_scaffold_native_skill_exports_noop_when_unsupported(tmp_path):
     plugins = [{"name": "requirement-analyst", "type": "skill", "copy_dir": True,
-                "output": ".amap/skills/requirement-analyst/"}]
+                "output": ".maika/skills/requirement-analyst/"}]
     platform = _FakePlatform(None)
 
     stats = scaffold_native_skill_exports(plugins, tmp_path, platform, verbose=False)
@@ -394,14 +394,14 @@ def test_scaffold_native_skill_exports_noop_when_unsupported(tmp_path):
 
 
 def test_scaffold_native_skill_exports_mirrors_skill_verbatim(tmp_path):
-    skill_dir = tmp_path / ".amap" / "skills" / "requirement-analyst"
+    skill_dir = tmp_path / ".maika" / "skills" / "requirement-analyst"
     skill_dir.mkdir(parents=True)
     (skill_dir / "SKILL.md").write_text(
         "---\nname: requirement-analyst\ndescription: Standardize tickets.\n---\n\nBody.\n",
         encoding="utf-8",
     )
     plugins = [{"name": "requirement-analyst", "type": "skill", "copy_dir": True,
-                "output": ".amap/skills/requirement-analyst/"}]
+                "output": ".maika/skills/requirement-analyst/"}]
     platform = _FakePlatform({"dir": ".claude/skills", "strip_frontmatter": False, "flatten": False})
 
     stats = scaffold_native_skill_exports(plugins, tmp_path, platform, verbose=False)
@@ -413,13 +413,13 @@ def test_scaffold_native_skill_exports_mirrors_skill_verbatim(tmp_path):
 
 
 def test_scaffold_native_skill_exports_inserts_name_for_workflow(tmp_path):
-    workflow_path = tmp_path / ".amap" / "workflows" / "task.md"
+    workflow_path = tmp_path / ".maika" / "workflows" / "task.md"
     workflow_path.parent.mkdir(parents=True)
     workflow_path.write_text(
         "---\ndescription: Main task orchestrator.\n---\n\n# /task\n",
         encoding="utf-8",
     )
-    plugins = [{"name": "workflow-task", "type": "workflow", "output": ".amap/workflows/task.md"}]
+    plugins = [{"name": "workflow-task", "type": "workflow", "output": ".maika/workflows/task.md"}]
     platform = _FakePlatform({"dir": ".claude/skills", "strip_frontmatter": False, "flatten": False})
 
     scaffold_native_skill_exports(plugins, tmp_path, platform, verbose=False)
@@ -431,14 +431,14 @@ def test_scaffold_native_skill_exports_inserts_name_for_workflow(tmp_path):
 
 
 def test_scaffold_native_skill_exports_flattens_and_strips_for_cursor(tmp_path):
-    skill_dir = tmp_path / ".amap" / "skills" / "requirement-analyst"
+    skill_dir = tmp_path / ".maika" / "skills" / "requirement-analyst"
     skill_dir.mkdir(parents=True)
     (skill_dir / "SKILL.md").write_text(
         "---\nname: requirement-analyst\ndescription: Standardize tickets.\n---\n\nBody.\n",
         encoding="utf-8",
     )
     plugins = [{"name": "requirement-analyst", "type": "skill", "copy_dir": True,
-                "output": ".amap/skills/requirement-analyst/"}]
+                "output": ".maika/skills/requirement-analyst/"}]
     platform = _FakePlatform({"dir": ".cursor/commands", "strip_frontmatter": True, "flatten": True})
 
     scaffold_native_skill_exports(plugins, tmp_path, platform, verbose=False)
@@ -451,10 +451,10 @@ def test_scaffold_native_skill_exports_flattens_and_strips_for_cursor(tmp_path):
 
 
 def test_scaffold_native_skill_exports_skips_missing_frontmatter(tmp_path):
-    workflow_path = tmp_path / ".amap" / "workflows" / "tdd.md"
+    workflow_path = tmp_path / ".maika" / "workflows" / "tdd.md"
     workflow_path.parent.mkdir(parents=True)
     workflow_path.write_text("# /tdd\n\nNo frontmatter here.\n", encoding="utf-8")
-    plugins = [{"name": "workflow-tdd", "type": "workflow", "output": ".amap/workflows/tdd.md"}]
+    plugins = [{"name": "workflow-tdd", "type": "workflow", "output": ".maika/workflows/tdd.md"}]
     platform = _FakePlatform({"dir": ".claude/skills", "strip_frontmatter": False, "flatten": False})
 
     stats = scaffold_native_skill_exports(plugins, tmp_path, platform, verbose=False)
@@ -464,7 +464,7 @@ def test_scaffold_native_skill_exports_skips_missing_frontmatter(tmp_path):
 
 
 def test_scaffold_native_skill_exports_ignores_non_skill_workflow_plugins(tmp_path):
-    plugins = [{"name": "rules-manifest", "type": "rule", "output": ".amap/rules/RULES.md"}]
+    plugins = [{"name": "rules-manifest", "type": "rule", "output": ".maika/rules/RULES.md"}]
     platform = _FakePlatform({"dir": ".claude/skills", "strip_frontmatter": False, "flatten": False})
 
     stats = scaffold_native_skill_exports(plugins, tmp_path, platform, verbose=False)
@@ -490,14 +490,14 @@ def test_read_resolved_config_returns_none_for_top_level_scalar(tmp_path):
     assert _read_resolved_config(p) is None
 
 
-def test_generate_resolved_config_sweeps_stale_amap_config(tmp_path):
+def test_generate_resolved_config_sweeps_stale_maika_config(tmp_path):
     from cli.platforms import get_platform
 
-    # Stale AMAP-generated config left from a previous (generic) install.
-    stale = tmp_path / ".amap" / "resolved-config.yaml"
+    # Stale Maika-generated config left from a previous (generic) install.
+    stale = tmp_path / ".maika" / "resolved-config.yaml"
     stale.parent.mkdir(parents=True)
     stale.write_text(
-        "resolved:\n  platform: generic\n  framework_root: .amap\n",
+        "resolved:\n  platform: generic\n  framework_root: .maika\n",
         encoding="utf-8",
     )
     # An unrelated file that merely shares the name must be preserved.
@@ -517,7 +517,7 @@ def test_generate_resolved_config_sweep_survives_directory_at_candidate(tmp_path
 
     # A directory sitting where a candidate resolved-config.yaml would be must
     # not crash the sweep (best-effort: unreadable/non-file candidates skipped).
-    bogus = tmp_path / ".amap" / "resolved-config.yaml"
+    bogus = tmp_path / ".maika" / "resolved-config.yaml"
     bogus.mkdir(parents=True)
 
     generate_resolved_config(tmp_path, get_platform("antigravity"), ["socraticode"], "python")

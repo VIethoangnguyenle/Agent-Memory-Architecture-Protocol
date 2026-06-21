@@ -3,7 +3,7 @@ import json
 from pathlib import Path
 
 
-BRIDGE = Path(__file__).resolve().parents[2] / ".amap" / "tools" / "mcp-bridge" / "mcp_client.py"
+BRIDGE = Path(__file__).resolve().parents[2] / ".maika" / "tools" / "mcp-bridge" / "mcp_client.py"
 
 
 def load_bridge():

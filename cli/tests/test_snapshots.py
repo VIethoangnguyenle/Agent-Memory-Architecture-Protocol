@@ -39,13 +39,13 @@ def _snapshot_tree(root: Path) -> str:
 
 
 @pytest.mark.parametrize("platform_key", sorted(PLATFORM_OPTIONS))
-def test_platform_scaffold_tree_matches_snapshot(tmp_path, amap_root, platform_key):
+def test_platform_scaffold_tree_matches_snapshot(tmp_path, maika_root, platform_key):
     target = tmp_path / "proj"
     options = PLATFORM_OPTIONS[platform_key]
 
     run_init(
         target_dir=str(target),
-        amap_root=str(amap_root),
+        maika_root=str(maika_root),
         platform_key=platform_key,
         selected_mcps=options["mcps"],
         language=options["language"],
@@ -59,13 +59,13 @@ def test_platform_scaffold_tree_matches_snapshot(tmp_path, amap_root, platform_k
     if platform_key in {"antigravity", "codex"}:
         assert "AGENTS.md" in actual
         assert ".agents/resolved-config.yaml" in actual
-        assert ".amap/resolved-config.yaml" not in actual
+        assert ".maika/resolved-config.yaml" not in actual
     elif platform_key == "claude-code":
         assert "CLAUDE.md" in actual
         assert ".claude/resolved-config.yaml" in actual
-        assert ".amap/resolved-config.yaml" not in actual
+        assert ".maika/resolved-config.yaml" not in actual
     elif platform_key == "generic":
         assert "AGENTS.md" in actual
-        assert ".amap/resolved-config.yaml" in actual
+        assert ".maika/resolved-config.yaml" in actual
         assert ".agents/resolved-config.yaml" not in actual
         assert ".claude/resolved-config.yaml" not in actual

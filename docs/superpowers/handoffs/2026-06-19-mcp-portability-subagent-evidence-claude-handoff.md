@@ -13,7 +13,7 @@ All completed work is committed on the branch. The worktree was clean before thi
 
 Baseline before implementation:
 
-- `pytest cli/tests .amap/tools/gate-check/tests .amap/hooks/write-gate/tests -q`
+- `pytest cli/tests .maika/tools/gate-check/tests .maika/hooks/write-gate/tests -q`
 - Result: `121 passed in 2.91s`
 
 ## Completed Tasks
@@ -94,7 +94,7 @@ Tests:
 
 - `pytest cli/tests/test_mcp_doctor.py -v`
 - Result after fix: `4 passed`
-- CLI smoke used `python3 -m cli.amap doctor mcp --help` because `python` was not available in this shell.
+- CLI smoke used `python3 -m cli.maika doctor mcp --help` because `python` was not available in this shell.
 
 ## Next Task
 
@@ -107,7 +107,7 @@ Task 5 expected scope:
 - Modify `cli/mcp/doctor.py`
 - Modify `cli/commands/doctor.py`
 - Modify `cli/tests/test_mcp_doctor.py`
-- Implement safe Antigravity config copy/backup fix behavior only under `amap doctor mcp --fix`.
+- Implement safe Antigravity config copy/backup fix behavior only under `maika doctor mcp --fix`.
 - Keep fix behavior opt-in via `--yes` or interactive confirmation.
 - Do not broaden into scaffold, runtime rules, subagent gates, or write-gate work yet.
 
@@ -132,8 +132,8 @@ Then follow Task 5 from the plan using TDD.
 
 - Commit as each task or task-fix completes.
 - Keep native MCP as preferred path; bridge is diagnostic/fallback only.
-- `amap init/update` must not mutate user MCP config.
-- Config edits require `amap doctor mcp --fix` plus `--yes` or explicit confirmation.
+- `maika init/update` must not mutate user MCP config.
+- Config edits require `maika doctor mcp --fix` plus `--yes` or explicit confirmation.
 - Reports must not print secrets, headers, tokens, or raw environment values.
 - Subagents must not be the first actor to probe MCP.
 - Orchestrator must review subagent output before accepting code.
@@ -144,6 +144,6 @@ The original checkout at `/home/zane/Desktop/Agent-Memory-Architecture-Protocol`
 
 - deleted `TODOS.md`
 - deleted `TODOS2.md`
-- untracked `amap_setup_mcp_proposal.md`
+- untracked `maika_setup_mcp_proposal.md`
 
 Those were not touched or staged in this worktree.

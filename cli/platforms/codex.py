@@ -63,8 +63,8 @@ class CodexPlatform(BasePlatform):
 
     notes = [
         "AGENTS.md is the config entry point (developers.openai.com/codex/guides/agents-md)",
-        "AMAP runtime scaffolds into .agents/",
+        "Maika runtime scaffolds into .agents/",
         "tool_mapping is abstract passthrough — Codex CLI's internal tool names are not "
-        "publicly documented; map manually if your AMAP skills need concrete tool calls",
+        "publicly documented; map manually if your Maika skills need concrete tool calls",
         "Skills/workflows export directly into the .agents/ framework root",
     ]

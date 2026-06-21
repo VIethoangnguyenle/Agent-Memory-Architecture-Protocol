@@ -27,7 +27,7 @@ class DoctorStatus:
 def build_doctor_status(target: Path, home: Path) -> DoctorStatus:
     resolved = load_resolved_config(target)
     if resolved is None:
-        raise ValueError(f"No AMAP resolved-config.yaml found under {target}")
+        raise ValueError(f"No Maika resolved-config.yaml found under {target}")
     platform = resolved.get("platform", "generic")
     framework_root = resolved.get("framework_root", get_mcp_adapter(platform).framework_root)
     selected = list(resolved.get("mcps") or [])
@@ -50,7 +50,7 @@ def build_doctor_status(target: Path, home: Path) -> DoctorStatus:
             matched=[],
             missing=selected,
             bridge_state="not-probed",
-            recommendation="create or link a valid MCP config with amap doctor mcp --fix",
+            recommendation="create or link a valid MCP config with maika doctor mcp --fix",
         )
 
     matched, missing = selected_server_matches(best_config, selected)
@@ -114,7 +114,7 @@ def write_report(target: Path, status: DoctorStatus) -> Path:
 def apply_fix(target: Path, home: Path, assume_yes: bool) -> Path | None:
     resolved = load_resolved_config(target)
     if resolved is None:
-        raise ValueError(f"No AMAP resolved-config.yaml found under {target}")
+        raise ValueError(f"No Maika resolved-config.yaml found under {target}")
     platform = resolved.get("platform", "generic")
     if platform != "antigravity":
         return None

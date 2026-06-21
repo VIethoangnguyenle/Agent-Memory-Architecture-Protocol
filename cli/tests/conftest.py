@@ -1,4 +1,4 @@
-"""Shared fixtures for AMAP CLI tests."""
+"""Shared fixtures for Maika CLI tests."""
 
 from pathlib import Path
 
@@ -9,14 +9,14 @@ from cli.platforms import get_platform
 
 
 @pytest.fixture
-def amap_root() -> Path:
-    """Repo root = the AMAP source (this repo)."""
+def maika_root() -> Path:
+    """Repo root = the Maika source (this repo)."""
     return Path(__file__).resolve().parent.parent.parent
 
 
 @pytest.fixture
-def jinja_env(amap_root):
-    return create_renderer(str(amap_root))
+def jinja_env(maika_root):
+    return create_renderer(str(maika_root))
 
 
 @pytest.fixture

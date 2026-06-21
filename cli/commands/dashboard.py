@@ -1,10 +1,10 @@
-"""amap dashboard — register projects and print a one-shot run progress snapshot.
+"""maika dashboard — register projects and print a one-shot run progress snapshot.
 
 Slice scope (P0-P2): no server. Subcommands:
-  amap dashboard register   [--path DIR]   add a project (default: --target)
-  amap dashboard unregister [--path DIR]   remove a project
-  amap dashboard list                      list registered projects
-  amap dashboard                           auto-add cwd, then print progress of all runs
+  maika dashboard register   [--path DIR]   add a project (default: --target)
+  maika dashboard unregister [--path DIR]   remove a project
+  maika dashboard list                      list registered projects
+  maika dashboard                           auto-add cwd, then print progress of all runs
 """
 from __future__ import annotations
 
@@ -70,7 +70,7 @@ def run_dashboard(
     registry.prune_missing(reg)
     registry.register(reg, target)
     projects = registry.load(reg)
-    print(f"\n  📊 AMAP runs ({len(projects)} project(s)):\n")
+    print(f"\n  📊 Maika runs ({len(projects)} project(s)):\n")
     for p in projects:
         _print_run(read_run(p))
     print()

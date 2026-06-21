@@ -46,7 +46,7 @@ def test_codex_adapter_lists_project_config_toml_first(tmp_path):
 
 def test_generic_adapter_has_no_native_candidates(tmp_path):
     adapter = get_mcp_adapter("generic")
-    assert adapter.framework_root == ".amap"
+    assert adapter.framework_root == ".maika"
     assert adapter.config_candidates(tmp_path / "proj", tmp_path / "home") == []
 
 
