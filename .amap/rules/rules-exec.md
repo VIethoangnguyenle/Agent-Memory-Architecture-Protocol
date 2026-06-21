@@ -72,11 +72,11 @@ Cách xác định tier:
 - Nếu chưa có REQUIREMENT → dùng **standard** làm mặc định.
 - Ghi tier đã chọn vào AGENT_TRANSPARENCY: `[BUDGET] Tier: {tier} — lý do: {reason}`.
 
-- **Memory budget** — áp dụng cho `memory_smart_search` + `memory_recall` (chỉ khi `agent-memory` có trong `resolved-config.yaml → mcps`; nếu không, mọi memory call bị skip theo R-Tool-6):
+- **Memory budget** — áp dụng cho `{{ tools.dynamic_memory_search }}` + `{{ tools.dynamic_memory_recall }}` (chỉ khi `agent-memory` có trong `resolved-config.yaml → mcps`; nếu không, mọi memory call bị skip theo R-Tool-6):
   - **Pha 1** (`/task <input>`): tối đa **5 memory calls**.
   - **Pha 2** (`/task spec`): tối đa **3 memory calls**.
-  - **Pha 3** (`/task apply`): **0 memory read calls**; **1 `memory_save` call** qua `knowledge-curator` post-task hook only.
-  - `memory_sessions`, `memory_audit`, `memory_health` là **exempt** — không tính vào budget.
+  - **Pha 3** (`/task apply`): **0 memory read calls**; **1 `{{ tools.dynamic_memory_save }}` call** qua `knowledge-curator` post-task hook only.
+  - `{{ tools.dynamic_memory_sessions }}`, `{{ tools.dynamic_memory_audit }}`, `{{ tools.dynamic_memory_health }}` là **exempt** — không tính vào budget.
 - Khi đạt 80% budget của một pha:
   - Ghi cảnh báo vào `AGENT_TRANSPARENCY.md`: `[BUDGET-WARNING] Pha X: đã dùng Y/Z calls`.
 - Khi vượt 100%:
