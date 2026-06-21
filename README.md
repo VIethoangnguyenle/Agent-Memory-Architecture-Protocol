@@ -1,4 +1,26 @@
-# Agent Memory Architecture Protocol
+<div align="center">
+
+<img src="docs/assets/banner.svg" alt="AMAP — Agent Memory Architecture Protocol" width="100%" />
+
+# 🧠 Agent Memory Architecture Protocol
+
+### _Bộ nhớ · Workflow · Guardrails · Audit trail cho AI coding agent_
+
+<p>
+  <img src="https://img.shields.io/badge/AMAP-v3.0-6f42c1?style=for-the-badge&logo=protocolsdotio&logoColor=white" alt="AMAP v3.0" />
+  <img src="https://img.shields.io/badge/license-MIT-green?style=for-the-badge" alt="MIT License" />
+  <img src="https://img.shields.io/badge/python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python 3.10+" />
+  <img src="https://img.shields.io/badge/PRs-welcome-ff69b4?style=for-the-badge" alt="PRs Welcome" />
+</p>
+
+<p>
+  <img src="https://img.shields.io/badge/Antigravity-000000?style=flat-square&logo=google&logoColor=white" alt="Antigravity" />
+  <img src="https://img.shields.io/badge/Codex_CLI-412991?style=flat-square&logo=openai&logoColor=white" alt="Codex CLI" />
+  <img src="https://img.shields.io/badge/Claude_Code-D97757?style=flat-square&logo=anthropic&logoColor=white" alt="Claude Code" />
+  <img src="https://img.shields.io/badge/Generic_AGENTS.md-555555?style=flat-square&logo=markdown&logoColor=white" alt="Generic" />
+</p>
+
+</div>
 
 > **AMAP v3.0** biến AI coding agent từ một cửa sổ chat biết viết code thành một worker có **bộ nhớ**, **workflow**, **guardrails**, và **audit trail**.
 
@@ -12,20 +34,20 @@ Memory + Workflow + Guardrails = Agent làm việc có kỷ luật
 
 ---
 
-## Bạn nhận được gì?
+## 🎁 Bạn nhận được gì?
 
-- **Persistent memory**: requirement, explore context, architecture snapshot, conventions, author DNA và archive được lưu thành file trong repo.
-- **Phase-gated workflow**: agent đi qua `Ideation -> Requirement -> Architecture -> Spec -> Apply`, không nhảy thẳng vào code.
-- **Knowledge-first reasoning**: quyết định kỹ thuật dựa trên code, DB, docs và knowledge graph thay vì trí nhớ ngắn hạn.
-- **Guardrails có cấu trúc**: rules về flow, tool permission, PII, cost budget, convention, teaching moments và human confirmation.
-- **Multi-platform runtime**: render vào root native cho Antigravity, Codex, Claude Code hoặc generic `AGENTS.md`.
-- **Update an toàn**: framework-owned files được re-render, còn project knowledge và persona của bạn được giữ lại.
+- 💾 **Persistent memory**: requirement, explore context, architecture snapshot, conventions, author DNA và archive được lưu thành file trong repo.
+- 🚦 **Phase-gated workflow**: agent đi qua `Ideation -> Requirement -> Architecture -> Spec -> Apply`, không nhảy thẳng vào code.
+- 🔍 **Knowledge-first reasoning**: quyết định kỹ thuật dựa trên code, DB, docs và knowledge graph thay vì trí nhớ ngắn hạn.
+- 🛡️ **Guardrails có cấu trúc**: rules về flow, tool permission, PII, cost budget, convention, teaching moments và human confirmation.
+- 🧩 **Multi-platform runtime**: render vào root native cho Antigravity, Codex, Claude Code hoặc generic `AGENTS.md`.
+- 🔄 **Update an toàn**: framework-owned files được re-render, còn project knowledge và persona của bạn được giữ lại.
 
 AMAP không thay thế Claude, Codex, Cursor, Gemini hay bất kỳ AI coding agent nào. Nó là **hệ điều hành làm việc** để các agent đó đọc và tuân theo trong repo của bạn.
 
 ---
 
-## Quickstart
+## 🚀 Quickstart
 
 ### 1. Cài AMAP vào một dự án
 
@@ -110,7 +132,7 @@ Agent sẽ tạo hoặc cập nhật các artifact trong `knowledge/active/`, lo
 
 ---
 
-## Vì sao AMAP tồn tại?
+## 🤔 Vì sao AMAP tồn tại?
 
 AI coding agent thường fail không phải vì không biết syntax. Nó fail vì thiếu state.
 
@@ -127,7 +149,7 @@ Thesis của AMAP: **agent đáng tin hơn khi project knowledge sống trong re
 
 ---
 
-## Mental Model
+## 🧩 Mental Model
 
 AMAP có 3 lớp chính.
 
@@ -162,7 +184,7 @@ Các công cụ hỗ trợ runtime:
 
 ---
 
-## Workflow chính
+## 🔄 Workflow chính
 
 AMAP áp dụng một flow bắt buộc cho task thực tế:
 
@@ -188,7 +210,7 @@ Rule quan trọng: `/task apply` chỉ được đi tiếp khi spec đã có, ar
 
 ---
 
-## Kiến trúc thư mục
+## 📂 Kiến trúc thư mục
 
 AMAP render runtime trực tiếp vào framework root của platform đã chọn:
 
@@ -233,7 +255,7 @@ project-root/
 
 ---
 
-## Skills
+## 🛠️ Skills
 
 AMAP ship một bộ skill module hoá theo vai trò.
 
@@ -254,7 +276,7 @@ AMAP ship một bộ skill module hoá theo vai trò.
 
 ---
 
-## Workflows
+## ⚡ Workflows
 
 | Command | Mục đích |
 |---|---|
@@ -275,7 +297,7 @@ AMAP ship một bộ skill module hoá theo vai trò.
 
 ---
 
-## Rules và Guardrails
+## 🛡️ Rules và Guardrails
 
 AMAP không chỉ là một bộ prompt. Nó là rule system có manifest và sub-files:
 
@@ -293,7 +315,7 @@ Các rule quan trọng được đánh dấu `[CRITICAL]`; rule nền hoặc tha
 
 ---
 
-## MCP Integration
+## 🔌 MCP Integration
 
 AMAP resolve tool names tại scaffold time. Khi bạn chạy `amap init`, CLI render skill/workflow với tool name đúng cho platform và MCP bạn chọn.
 
@@ -328,7 +350,7 @@ Doctor không sửa config trừ khi bạn chạy:
 
 ---
 
-## Dashboard Control Tower
+## 📊 Dashboard Control Tower
 
 AMAP có dashboard local để quan sát agent chính, micro-loop và subagent theo thời gian thực.
 Dashboard đọc các runtime artifact trong `knowledge/active/` và serve UI qua SSE, bind local
@@ -443,7 +465,7 @@ Message đầu tiên phải bắt đầu bằng `data: [` và chứa snapshot hi
 
 ---
 
-## Knowledge Lifecycle
+## ♻️ Knowledge Lifecycle
 
 ```txt
 Task active
@@ -478,7 +500,7 @@ Long-term stores:
 
 ---
 
-## Ví dụ Bootstrap Report
+## 📋 Ví dụ Bootstrap Report
 
 Khi agent bắt đầu một session trong repo có AMAP, nó bootstrap context và báo trạng thái:
 
@@ -495,7 +517,7 @@ Ready for task
 
 ---
 
-## Thiết kế đúng ở đâu?
+## 🎯 Thiết kế đúng ở đâu?
 
 AMAP cam kết 4 thuộc tính:
 
@@ -515,7 +537,7 @@ Nguyên tắc vận hành:
 
 ---
 
-## FAQ
+## ❓ FAQ
 
 ### Có dùng được cho repo private hoặc enterprise không?
 
@@ -551,7 +573,7 @@ Runtime hiện có tích hợp OpenSpec cho propose/apply/archive. Các workflow
 
 ---
 
-## Development
+## 🔧 Development
 
 Chạy test CLI:
 
@@ -569,7 +591,7 @@ Package metadata nằm trong [pyproject.toml](pyproject.toml). Manifest scaffold
 
 ---
 
-## Contributing
+## 🤝 Contributing
 
 Đóng góp được chào đón:
 
@@ -582,12 +604,18 @@ Khi thay đổi runtime `.amap/`, ưu tiên giữ instruction ngắn, portable, 
 
 ---
 
-## License
+## 📄 License
 
 MIT License. Xem [LICENSE](LICENSE).
 
 ---
 
-<p align="center">
-  <strong>AMAP giúp agent không chỉ viết code, mà làm việc như một thành viên có trí nhớ của team.</strong>
-</p>
+<div align="center">
+
+### 🧠 _AMAP giúp agent không chỉ viết code, mà làm việc như một thành viên có trí nhớ của team._
+
+<sub>Made with discipline · Memory + Workflow + Guardrails</sub>
+
+⭐ Nếu thấy hữu ích, hãy star repo để ủng hộ!
+
+</div>
