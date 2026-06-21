@@ -68,21 +68,21 @@ Khi mâu thuẫn với kiến thức chính (`knowledge-snapshot.md`, db-explore
 
 | Tool | Quyền truy cập | Budget |
 |------|----------------|--------|
-| `memory_smart_search` | ✅ Được phép | Tính vào memory budget |
-| `memory_recall` | ✅ Được phép | Tính vào memory budget |
-| `memory_sessions` | ✅ Được phép | **Miễn** — chỉ chẩn đoán |
-| `memory_audit` | ✅ Được phép | **Miễn** — chỉ chẩn đoán |
-| `memory_health` | ✅ Được phép | **Miễn** — kiểm tra hạ tầng |
-| `memory_save` | ⛔ Chỉ qua `knowledge-curator` post-task hook | 1 lần ghi / Pha 3 |
-| `memory_governance_delete` | ⛔ Không bao giờ (chỉ admin thủ công) | — |
+| `{{ tools.dynamic_memory_search }}` | ✅ Được phép | Tính vào memory budget |
+| `{{ tools.dynamic_memory_recall }}` | ✅ Được phép | Tính vào memory budget |
+| `{{ tools.dynamic_memory_sessions }}` | ✅ Được phép | **Miễn** — chỉ chẩn đoán |
+| `{{ tools.dynamic_memory_audit }}` | ✅ Được phép | **Miễn** — chỉ chẩn đoán |
+| `{{ tools.dynamic_memory_health }}` | ✅ Được phép | **Miễn** — kiểm tra hạ tầng |
+| `{{ tools.dynamic_memory_save }}` | ⛔ Chỉ qua `knowledge-curator` post-task hook | 1 lần ghi / Pha 3 |
+| `{{ tools.dynamic_memory_forget }}` | ⛔ Không bao giờ (chỉ admin thủ công) | — |
 
-`memory_sessions`, `memory_audit`, và `memory_health` là diagnostic tools — không ảnh hưởng reasoning, miễn khỏi memory budget.
+`{{ tools.dynamic_memory_sessions }}`, `{{ tools.dynamic_memory_audit }}`, và `{{ tools.dynamic_memory_health }}` là diagnostic tools — không ảnh hưởng reasoning, miễn khỏi memory budget.
 
 #### Ngữ cảnh sử dụng được phép
 
-- **Pha 1 exploration**: agent phát hiện module/table/service trong `REQUIREMENT.md` trùng với archive cũ → đề xuất `memory_smart_search` trước khi thực thi; ghi tín hiệu trong `AGENT_TRANSPARENCY.md`.
-- **Trước spec (Pre-spec)**: `memory_recall` để tra cứu quyết định kiến trúc trước đó.
-- **Sau task (Pha 3)**: `memory_save` chỉ qua `knowledge-curator` post-task hook.
+- **Pha 1 exploration**: agent phát hiện module/table/service trong `REQUIREMENT.md` trùng với archive cũ → đề xuất `{{ tools.dynamic_memory_search }}` trước khi thực thi; ghi tín hiệu trong `AGENT_TRANSPARENCY.md`.
+- **Trước spec (Pre-spec)**: `{{ tools.dynamic_memory_recall }}` để tra cứu quyết định kiến trúc trước đó.
+- **Sau task (Pha 3)**: `{{ tools.dynamic_memory_save }}` chỉ qua `knowledge-curator` post-task hook.
 
 #### Xử lý xung đột
 
@@ -101,7 +101,7 @@ Khi kết quả memory ảnh hưởng đến reasoning, agent PHẢI ghi vào `A
 #### Degrade khi agent-memory không cấu hình
 
 Nếu `resolved-config.yaml → mcps` KHÔNG chứa `agent-memory`:
-- Mọi `memory_smart_search` / `memory_recall` bị **bỏ qua** — KHÔNG gọi, KHÔNG bịa kết quả.
+- Mọi `{{ tools.dynamic_memory_search }}` / `{{ tools.dynamic_memory_recall }}` bị **bỏ qua** — KHÔNG gọi, KHÔNG bịa kết quả.
 - Ghi vào `AGENT_TRANSPARENCY.md`: `agent-memory unavailable — skip recall/save`.
 - M7 post-task push (xem `knowledge-curator`) tự bỏ qua ở Tầng 0 (pre-check).
 
@@ -109,7 +109,7 @@ Nếu `resolved-config.yaml → mcps` KHÔNG chứa `agent-memory`:
 
 #### Bảo vệ đường ghi (Write-path guard)
 
-Gọi `memory_save` hoặc `memory_governance_delete` ngoài `knowledge-curator` post-task hook là **CẤM**.
+Gọi `{{ tools.dynamic_memory_save }}` hoặc `{{ tools.dynamic_memory_forget }}` ngoài `knowledge-curator` post-task hook là **CẤM**.
 Agent không được auto-save memory trong exploration, spec, hoặc apply phases.
 
 ---
