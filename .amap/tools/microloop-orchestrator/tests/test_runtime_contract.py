@@ -80,6 +80,7 @@ def test_update_task_status_rejects_unknown_task(tmp_path):
         ticket_id="X",
         spec_path="p",
         tasks=[{"id": "T1", "desc": "one", "depends_on": []}],
+        framework_root=".agents",
     )
 
     try:
@@ -88,3 +89,19 @@ def test_update_task_status_rejects_unknown_task(tmp_path):
         assert "not in queue" in str(exc)
     else:
         raise AssertionError("expected ValueError")
+
+
+def test_initialize_runtime_queue_requires_framework_root(tmp_path):
+    active = tmp_path / ".agents" / "knowledge" / "active"
+    active.mkdir(parents=True)
+    try:
+        orchestrator.initialize_runtime_queue(
+            active,
+            ticket_id="X",
+            spec_path="p",
+            tasks=[{"id": "T1", "desc": "one", "depends_on": []}],
+        )
+    except TypeError:
+        pass
+    else:
+        raise AssertionError("expected TypeError when framework_root is omitted")

@@ -10,7 +10,7 @@ from typing import List, Optional
 
 import yaml
 
-from cli import FRAMEWORK_VERSION
+from cli import FRAMEWORK_VERSION, CANONICAL_FRAMEWORK_ROOT
 from cli.renderer import render_string
 from cli.renderer import _TEXT_EXTENSIONS as _RENDERED_SUFFIXES
 
@@ -61,12 +61,17 @@ def get_ownership(plugin: dict) -> str:
 
 
 def resolved_config_candidates(target: Path) -> List[Path]:
-    """Return supported resolved-config locations in preference order."""
-    return [
-        target / ".agents" / "resolved-config.yaml",
-        target / ".claude" / "resolved-config.yaml",
-        target / ".amap" / "resolved-config.yaml",
-    ]
+    """Return supported resolved-config locations in preference order.
+
+    Roots are derived from the platform registry, so a new platform with a
+    new framework_root is covered automatically. The canonical root sorts
+    first → the fallback in load_resolved_config is deterministic.
+    """
+    from cli.platforms import PLATFORMS, get_platform
+
+    roots = {get_platform(k).framework_root for k in PLATFORMS}
+    ordered = [CANONICAL_FRAMEWORK_ROOT, *sorted(roots - {CANONICAL_FRAMEWORK_ROOT})]
+    return [target / root / "resolved-config.yaml" for root in ordered]
 
 
 def generate_resolved_config(
@@ -89,15 +94,32 @@ def generate_resolved_config(
             }},
             f, default_flow_style=False, allow_unicode=True,
         )
+    _sweep_stale_configs(target_dir, keep=config_path)
+
+
+def _sweep_stale_configs(target_dir: Path, keep: Path) -> None:
+    """Remove AMAP-generated resolved-config.yaml under candidate roots != keep.
+
+    Enforces the single-config invariant after a write (e.g. clears the old
+    config when a project switches platforms). Only deletes a file that parses
+    as an AMAP resolved config (has a ``resolved:`` mapping) — never an
+    unrelated same-named file. Best-effort: missing/unreadable files are skipped.
+    """
+    for candidate in resolved_config_candidates(target_dir):
+        if candidate == keep or not candidate.exists():
+            continue
+        if _read_resolved_config(candidate) is None:
+            continue
+        candidate.unlink()
 
 
 def _read_resolved_config(config_path: Path) -> Optional[dict]:
     try:
         with open(config_path, "r", encoding="utf-8") as f:
             data = yaml.safe_load(f)
-    except yaml.YAMLError:
+    except (yaml.YAMLError, OSError):
         return None
-    resolved = (data or {}).get("resolved")
+    resolved = data.get("resolved") if isinstance(data, dict) else None
     if not isinstance(resolved, dict):
         return None
     return resolved
@@ -118,7 +140,7 @@ def load_resolved_config(target: Path) -> Optional[dict]:
         try:
             expected_root = get_platform(platform_key).framework_root
         except ValueError:
-            expected_root = ".amap"
+            expected_root = CANONICAL_FRAMEWORK_ROOT
         resolved.setdefault("framework_root", expected_root)
         resolved["_config_path"] = str(config_path)
         valid.append(resolved)

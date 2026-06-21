@@ -100,7 +100,7 @@ def _first_nonempty_line(text):
 
 
 def initialize_runtime_queue(active_dir, ticket_id, spec_path, tasks,
-                             execution_mode="subagent", framework_root=".agents"):
+                             execution_mode="subagent", *, framework_root):
     """Create dashboard-visible TASK_QUEUE.md before dispatching subagents."""
     normalized = []
     for task in topo_sort(tasks):

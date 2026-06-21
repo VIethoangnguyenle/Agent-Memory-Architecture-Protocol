@@ -213,13 +213,19 @@ def _write_resolved_config(target, content):
     config_path.write_text(content, encoding="utf-8")
 
 
-def test_resolved_config_candidates_include_native_and_legacy_roots(tmp_path):
-    candidates = [p.relative_to(tmp_path).as_posix() for p in resolved_config_candidates(tmp_path)]
-    assert candidates == [
-        ".agents/resolved-config.yaml",
-        ".claude/resolved-config.yaml",
-        ".amap/resolved-config.yaml",
+def test_resolved_config_candidates_derive_from_platform_registry(tmp_path):
+    from cli.platforms import PLATFORMS, get_platform
+
+    candidates = [
+        p.relative_to(tmp_path).as_posix() for p in resolved_config_candidates(tmp_path)
     ]
+    # Every platform's framework_root is represented (derived, not hardcoded).
+    expected_roots = {get_platform(k).framework_root for k in PLATFORMS}
+    assert {c.split("/")[0] for c in candidates} == expected_roots
+    # Canonical root is first → load fallback is deterministic.
+    assert candidates[0] == ".amap/resolved-config.yaml"
+    # Every entry is a resolved-config.yaml.
+    assert all(c.endswith("/resolved-config.yaml") for c in candidates)
 
 
 def test_generate_resolved_config_uses_platform_framework_root(tmp_path):
@@ -464,3 +470,57 @@ def test_scaffold_native_skill_exports_ignores_non_skill_workflow_plugins(tmp_pa
     stats = scaffold_native_skill_exports(plugins, tmp_path, platform, verbose=False)
 
     assert stats == {"exported": 0, "skipped": 0}
+
+
+def test_canonical_framework_root_matches_generic_platform():
+    from cli import CANONICAL_FRAMEWORK_ROOT
+    from cli.platforms import get_platform
+
+    # The canonical default must equal the base/generic platform's root so the
+    # constant can never drift from the real default.
+    assert CANONICAL_FRAMEWORK_ROOT == get_platform("generic").framework_root
+
+
+def test_read_resolved_config_returns_none_for_top_level_scalar(tmp_path):
+    # A stray same-named file whose YAML is a bare scalar must not crash.
+    from cli.scaffold import _read_resolved_config
+
+    p = tmp_path / "resolved-config.yaml"
+    p.write_text("just a bare string\n", encoding="utf-8")
+    assert _read_resolved_config(p) is None
+
+
+def test_generate_resolved_config_sweeps_stale_amap_config(tmp_path):
+    from cli.platforms import get_platform
+
+    # Stale AMAP-generated config left from a previous (generic) install.
+    stale = tmp_path / ".amap" / "resolved-config.yaml"
+    stale.parent.mkdir(parents=True)
+    stale.write_text(
+        "resolved:\n  platform: generic\n  framework_root: .amap\n",
+        encoding="utf-8",
+    )
+    # An unrelated file that merely shares the name must be preserved.
+    bystander = tmp_path / ".claude" / "resolved-config.yaml"
+    bystander.parent.mkdir(parents=True)
+    bystander.write_text("other: value\n", encoding="utf-8")
+
+    generate_resolved_config(tmp_path, get_platform("antigravity"), ["socraticode"], "python")
+
+    assert (tmp_path / ".agents" / "resolved-config.yaml").exists()   # active written
+    assert not stale.exists()                                         # stale swept
+    assert bystander.read_text(encoding="utf-8") == "other: value\n"  # bystander kept
+
+
+def test_generate_resolved_config_sweep_survives_directory_at_candidate(tmp_path):
+    from cli.platforms import get_platform
+
+    # A directory sitting where a candidate resolved-config.yaml would be must
+    # not crash the sweep (best-effort: unreadable/non-file candidates skipped).
+    bogus = tmp_path / ".amap" / "resolved-config.yaml"
+    bogus.mkdir(parents=True)
+
+    generate_resolved_config(tmp_path, get_platform("antigravity"), ["socraticode"], "python")
+
+    assert (tmp_path / ".agents" / "resolved-config.yaml").exists()  # active written
+    assert bogus.is_dir()  # bogus directory left untouched
