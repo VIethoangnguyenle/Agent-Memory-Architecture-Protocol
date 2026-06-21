@@ -4,6 +4,8 @@ Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-s
 
 **Tradeoff:** These guidelines bias toward caution over speed. For trivial tasks, use judgment.
 
+**Framework development:** When changing the AMAP framework itself (`.amap/`, `cli/`), follow the rules in [`.amap/DEVELOPMENT_RULES.md`](.amap/DEVELOPMENT_RULES.md) — no declaration without a consumer, build for observed failures only, net-negative complexity by default.
+
 ## 1. Think Before Coding
 
 **Don't assume. Don't hide confusion. Surface tradeoffs.**
