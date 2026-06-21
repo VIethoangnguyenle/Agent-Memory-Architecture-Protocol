@@ -1,7 +1,7 @@
 # Memory Tool Capability Templating + ranh giới provider agentmemory
 
 **Ngày:** 2026-06-21
-**Trạng thái:** Design (chờ review)
+**Trạng thái:** Approved — sẵn sàng writing-plans (review gate 2026-06-21)
 **Mã:** C-27 (nối tiếp C-26 db-query templating)
 **Nguồn:** phiên brainstorming 2026-06-21; nền tảng [AMAP-v3-assessment.md](../../AMAP-v3-assessment.md) §W5/§7-SP2 và spec [2026-06-19-agent-memory-mcp-capability-design.md](2026-06-19-agent-memory-mcp-capability-design.md).
 
@@ -63,13 +63,15 @@ npx -y @agentmemory/mcp        # chỉ MCP shim — KHÔNG cài 12 hooks
 ```
 hoặc thêm thủ công block `mcpServers` vào config platform; **KHÔNG** chạy `agentmemory connect --with-hooks`, **bỏ** 15 skill của agentmemory (chồng lấn knowledge-curator/bootstrap). AMAP giữ toàn quyền memory governance qua M7.
 
-→ AMAP ship: **một setup recipe** (markdown) mô tả cách này; KHÔNG ship engine. Vị trí đề xuất: `.amap/profiles/agent-memory-setup.md` (dùng thư mục `profiles/` đã reserve ở SP0). State agentmemory nằm ở `~/.agentmemory/` — **không commit vào repo** (khớp nguyên tắc sẵn có).
+→ AMAP ship: **một setup recipe** (markdown) mô tả cách này; KHÔNG ship engine. Vị trí đề xuất: `.amap/profiles/agent-memory-mcp-only-setup.md` (dùng thư mục `profiles/` đã reserve ở SP0). State agentmemory nằm ở `~/.agentmemory/` — **không commit vào repo** (khớp nguyên tắc sẵn có).
 
 ## 5. Thiết kế
 
 ### Phần 1 — Abstract memory ops trong tool layer
 
 Theo đúng precedent `db_query`: abstract op nằm trong **`REQUIRED_TOOL_KEYS`** (không phải `OPTIONAL_TOOL_KEYS`), map ở **mọi** platform. Lý do bắt buộc REQUIRED: các tên này được tham chiếu trong **rule core luôn render** (R-Tool-6 luôn ship), nên `{{ tools.* }}` phải luôn resolve — nếu để OPTIONAL và một platform quên map, `StrictUndefined` sẽ làm render fail. `db_query` (MCP `db-remote` cũng optional) đã theo đúng logic này.
+
+> **`REQUIRED_TOOL_KEYS` = bắt buộc cho *template rendering*, KHÔNG phải bắt buộc cho *runtime*.** Nó chỉ đảm bảo mọi platform khai báo *sẽ gọi tool nào nếu* agent-memory được bật. Runtime memory capability vẫn **optional + degradable**: nếu `resolved-config.yaml → mcps` không có `agent-memory`, mọi recall/save bị skip (R-Tool-6 degrade, M7 Tầng 0) — không đổi bởi spec này.
 
 Thêm 7 op vào [base.py](../../../cli/platforms/base.py) `REQUIRED_TOOL_KEYS`. Prefix `dynamic_memory_` để khẳng định bản chất episodic/advisory, phân biệt rõ với repo knowledge.
 
@@ -112,13 +114,20 @@ Hành vi "đưa kinh nghiệm ổn định vào repo knowledge" là `knowledge-c
 
 ### Phần 4 — Setup recipe (provider boundary)
 
-Tạo `.amap/profiles/agent-memory-setup.md`: lệnh `npx -y @agentmemory/mcp`, mẫu block `mcpServers`, cảnh báo "KHÔNG `connect --with-hooks`, KHÔNG dùng 15 skill agentmemory, KHÔNG commit `~/.agentmemory/`". Recipe là tài liệu tĩnh; không phải executable, không auto-run.
+Tạo `.amap/profiles/agent-memory-mcp-only-setup.md`: lệnh `npx -y @agentmemory/mcp`, mẫu block `mcpServers`, cảnh báo "KHÔNG `connect --with-hooks`, KHÔNG dùng 15 skill agentmemory, KHÔNG commit `~/.agentmemory/`". Recipe là tài liệu tĩnh; không phải executable, không auto-run.
+
+> **Verify upstream trước khi final:** tên package (`@agentmemory/mcp`), lệnh và block config phải được đối chiếu lại với tài liệu upstream của `rohitg00/agentmemory` lúc viết plan. Nếu chưa chắc, ghi dưới dạng **example** kèm link upstream, KHÔNG ghi như normative command — để recipe không thành tài liệu sai nếu upstream đổi tên package/lệnh. (`.amap/adapters/` **chưa** tạo ở phase này — recipe là setup guidance, không phải adapter executable.)
 
 ### Phần 5 — Testing & verify
 
 - [cli/tests/](../../../cli/tests/): assert 7 `dynamic_memory_*` op có trong `REQUIRED_TOOL_KEYS`; `validate_tool_mapping()` pass cho cả 5 platform (map đủ); `build_render_context` đưa op vào namespace `tools`.
 - Snapshot tests: cập nhật nếu output render đổi.
-- Verify de-hardcode: grep toàn `.amap/` (file templated) → **0** literal `memory_smart_search|memory_recall|memory_sessions|memory_audit|memory_health|memory_save|memory_governance_delete` ngoài (a) platform mapping trong `cli/`, (b) dòng degrade cố định. `verify_no_unresolved` (đã có) đảm bảo không còn `{{ }}` sót sau init.
+- Verify de-hardcode: grep **chỉ áp dụng cho operational templated files** (`.amap/rules/`, `.amap/skills/`, `.amap/procedures/`, `.amap/workflows/`) → **0** literal `memory_smart_search|memory_recall|memory_sessions|memory_audit|memory_health|memory_save|memory_governance_delete`. `verify_no_unresolved` (đã có) đảm bảo không còn `{{ }}` sót sau init.
+- **Concrete tool name ĐƯỢC PHÉP còn lại** (không tính là vi phạm, loại khỏi grep gate):
+  - (a) platform mapping code trong `cli/` — đây là *nơi duy nhất* quyết định tên concrete;
+  - (b) provider setup recipe (`.amap/profiles/agent-memory-mcp-only-setup.md`) — mô tả tool thật của provider;
+  - (c) chuỗi degrade/status log cố định (vd `agent-memory unavailable — skip recall/save`);
+  - (d) tài liệu historical design/spec/archive (`docs/`, `.amap/knowledge/archive/`) — KHÔNG refactor docs lịch sử.
 
 ## 6. Tiêu chí thành công
 
@@ -126,7 +135,7 @@ Tạo `.amap/profiles/agent-memory-setup.md`: lệnh `npx -y @agentmemory/mcp`, 
 - Render init (có agent-memory): `{{ tools.dynamic_memory_save }}` → tên tool đúng prefix từng platform; 0 marker sót.
 - Render init (không agent-memory): vẫn render OK (op vẫn map, runtime degrade lo phần vắng) — không lỗi.
 - 0 literal tool name memory trong file templated (trừ dòng degrade); M7 không còn câu "native — không cần mapping".
-- `.amap/profiles/agent-memory-setup.md` mô tả cài MCP-only, hooks OFF.
+- `.amap/profiles/agent-memory-mcp-only-setup.md` mô tả cài MCP-only, hooks OFF.
 - R-Tool-6 semantic (budget/restricted/admin/conflict) không đổi.
 
 ## 7. Rủi ro
@@ -145,3 +154,15 @@ Tạo `.amap/profiles/agent-memory-setup.md`: lệnh `npx -y @agentmemory/mcp`, 
 - Cơ chế capability/degrade của spec 2026-06-19: **không đổi** (chỉ thay biểu diễn tool).
 - `db_query` và mọi abstract op hiện có: không ảnh hưởng.
 - Không thêm dependency, không bundle engine, không đụng knowledge layer.
+
+## 9. Acceptance (định hướng nghiệm thu)
+
+Sau refactor:
+
+- Operational templates (`.amap/rules|skills|procedures|workflows`) **không còn hardcode** 7 tên tool literal; thay bằng `{{ tools.dynamic_memory_* }}`.
+- **Platform mapping (`cli/platforms/`) là nơi DUY NHẤT** quyết định tên concrete.
+- AMAP render được **cả khi** memory capability enabled **và** disabled.
+- **Không** thêm runtime dependency mới; **không** bundle/vendor/auto-install/auto-run agentmemory.
+- Auto-capture hooks của agentmemory **không** được bật bởi AMAP.
+- **Không đổi semantics** R-Tool-6, rules-exec, M7, R-KL-3.
+- Promote-to-knowledge **vẫn** là core governance (`knowledge-curator` → `knowledge-snapshot.md`), không map sang provider.
